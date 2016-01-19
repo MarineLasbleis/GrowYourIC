@@ -1,0 +1,16 @@
+# Parameters file
+# Project : From geodynamic to Seismic observations in the Earth's inner core
+
+
+seismic_method:
+   s_type: real data
+   fname: results.dat
+   columns: [9, 10, 11, 12, 13, 14, 15]
+   lines: 1
+   Nlines: 3184
+geodynamics:
+   g_type: translation
+   v: 3. # units is Ric/tau_ic 
+
+Nd: 20 #number of points in the trajectory (for average and plot)
+Ric: 1221. #radius IC
