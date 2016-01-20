@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# Time-stamp: <2016-01-19 11:29:07 marine>
+# Time-stamp: <2016-01-20 10:16:03 marine>
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 # Subproject : Getting seismic data (or making them)
 # Author : Marine Lasbleis
@@ -26,7 +26,6 @@ def from_seismo_to_cartesian(r, theta, phi):
     """
     theta = (90-theta) * np.pi/180. # colatitude in rad
     phi = phi * np.pi/180.
-    
     x = r*np.sin(theta)*np.cos(phi)
     y = r*np.sin(theta)*np.sin(phi)
     z = r*np.cos(theta)
@@ -46,12 +45,8 @@ def from_cartesian_to_seismo(x, y, z):
     (same length as the input)
 
     """
-
-    
-    
     r = np.sqrt(x**2+y**2+z**2)
     theta = np.arccos(z/r)*180./np.pi # colatitude, in degree
-
     phi = np.where(y>=0., np.arccos(x/np.sqrt(x**2+y**2)), 2.*np.pi-np.arccos(x/np.sqrt(x**2+y**2)) )
     phi = phi*180./np.pi
     #phi = np.arctan(y/x)*180./np.pi # longitude, in degree
@@ -60,7 +55,7 @@ def from_cartesian_to_seismo(x, y, z):
     
 
 
-def random_points(type_="turningpoint", seismo="surface"):
+def random_points(method):#,type_="turningpoint", seismo="surface"):
     """ Create a random raypath in the IC
 
     type : type of the output. it can be:
@@ -72,15 +67,17 @@ def random_points(type_="turningpoint", seismo="surface"):
     with uniform distribution of orientation (angle zeta)
 
     """
-    depth_min = 0.
-    depth_max = 100 #in km
+
+    
+    depth_min = method['s_dmin']
+    depth_max = method['s_dmax'] #in km
     
 
-    if seismo == "surface":
+    if method['random_type'] == "surface":
         depth_turningpoint = np.random.uniform(depth_min, depth_max)
         position = [np.arcsin(np.random.uniform(-1, 1.))*180./np.pi, np.random.uniform(0., 360.)] # theta (latitude) and phi (longitude)
         orientation = np.random.uniform(0., 180.)
-    elif seismo == "surface_equatorial":
+    elif method['random_type'] == "surface_equatorial":
         depth_turningpoint = np.random.uniform(depth_min, depth_max)
         position = [0., np.random.uniform(0., 360.)] # theta (latitude) and phi (longitude)
         orientation = np.random.uniform(0., 180.)
@@ -88,7 +85,7 @@ def random_points(type_="turningpoint", seismo="surface"):
         sys.exit("you need to choose a model for the repartition of seismic data")
         
     
-    pathway = {'type': type_, 'depth':depth_turningpoint, 'latitude': position[0], 'longitude': position[1], 'angle': orientation}
+    pathway = {'depth':depth_turningpoint, 'latitude': position[0], 'longitude': position[1], 'angle': orientation}
     return pathway
 
 
