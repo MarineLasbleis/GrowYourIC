@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# Time-stamp: <2016-01-27 16:40:28 marine>
+# Time-stamp: <2016-02-01 11:21:10 marine>
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 # Subproject : Building IC structure
 # Author : Marine Lasbleis
@@ -18,19 +18,19 @@ def advection(old_position, scheme="none"):
     return new_position
 
 
-def growth(old_position, rIC_t, dr, last_number, N):
-    """ """
-    
+def growth(old_position, rIC_t, dr, t, N):
+    """ Grow your IC by adding points on the layer at radius rIC_t+dr
+
+    N : number of points in the layer
+    """
+
     radius_newpoints = rIC_t+dr
-    print radius_newpoints
     phi = np.linspace(0, 360, N)
     theta = np.zeros((N))
     add_on = np.concatenate((radius_newpoints*np.ones((N)), theta, phi,
-                             np.arange(last_number, last_number+N))).reshape(4, N)
-    print np.shape(add_on), np.shape(old_position)
+                             t*np.ones(N))).reshape(4, N)
     new_position = np.concatenate((old_position, add_on), axis=1)
 
-    
     return new_position
 
 
@@ -40,6 +40,18 @@ def insideIC(position, rIC_t):
     inside = 1 #1 if true, 0 is false
 
     return inside
+
+def density_points(N0):
+    """ density of points at the surface for r=1"""
+    return N0/(4.*np.pi)
+
+def numberpoints_surface(r, density):
+    """ return the number of points needed to cover the surface at radius 'r' with a density 'density'
+
+    r: radius (radius = 1 correspond to IC now)
+    density: density of points at the surface (corresponding to r=1)
+    """
+    return int(4.*np.pi*r**2.*density)
 
 
 if __name__ == '__main__':
@@ -52,7 +64,7 @@ if __name__ == '__main__':
 
     # initialisation 
 
-    r = np.linspace(0.1, 0.8, 2)
+    r = np.linspace(0.1, 0.5, 5)
     #theta = np.linspace(-90, 90, 20)
     phi = np.linspace(0, 360, 20)
     print np.shape(phi)
@@ -62,13 +74,27 @@ if __name__ == '__main__':
         innercore = np.concatenate((innercore, add_on), axis=1)
 
     dummy, N_points = np.shape(innercore)
-    innercore = np.concatenate((innercore, np.arange(N_points).reshape(1,N_points)), axis=0)
+    innercore = np.concatenate((innercore, 0.4*np.ones(N_points).reshape(1,N_points)), axis=0)
+    #    innercore = np.concatenate((innercore, np.arange(N_points).reshape(1,N_points)), axis=0)
 
     innercore = advection(innercore)
 
-    innercore = growth(innercore, 0.8, 0.1, N_points, 20)    
+
+    density = density_points(30)
+    innercore = growth(innercore, 0.5, 0.1, 0.5, numberpoints_surface(0.5, density))
+    innercore = growth(innercore, 0.6, 0.1, 0.6, numberpoints_surface(0.6, density))
+    innercore = growth(innercore, 0.7, 0.1, 0.7, numberpoints_surface(0.7, density))  
         
+    fig, ax = plt.subplots(1)
+    x, y, z = seismo.from_seismo_to_cartesian(innercore[0,:], innercore[1,:], innercore[2,:])
+    ax.scatter(x, y, innercore[3,:]*100)
+
+
+    fig2, ax2 = plt.subplots()
+    ax2.plot(innercore[0,:], innercore[3,:], ".")
     
     print innercore
     print np.shape(innercore)
     print np.diff(innercore[3,:])
+
+    plt.show()
