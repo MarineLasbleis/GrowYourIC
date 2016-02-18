@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# Time-stamp: <2016-02-01 11:42:19 marine>
+# Time-stamp: <2016-02-18 16:19:21 marine>
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 # Subproject : Building IC structure
 # Author : Marine Lasbleis
@@ -10,9 +10,15 @@ import matplotlib.pyplot as plt
 
 import seismo
 
-def advection(old_position, scheme="none"):
+def advection(old_position, scheme=None):
     """ Advection of the point old_position """
-    new_position = old_position
+
+    if scheme==None:
+        new_position = old_position
+
+    else:
+        pass
+        
     return new_position
 
 
@@ -36,6 +42,7 @@ def growth(old_position, rIC_t, t, N):
 def insideIC(position, rIC_t):
     """ """
     inside = 1 #1 if true, 0 is false
+    
     return inside
 
 def density_points(N0):
