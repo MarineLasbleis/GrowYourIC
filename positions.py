@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# Time-stamp: <2016-02-19 16:19:23 marine>
+# Time-stamp: <2016-02-19 22:45:38 marine>
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 
 # Author : Marine Lasbleis
@@ -54,7 +54,7 @@ def from_cartesian_to_seismo(x, y, z):
 
 
 
-class Position:
+class Point:
     """ Position of a point in the Earth.
 
     can be computed in cartesian coordinates or in "seismological" coordinates.
@@ -69,7 +69,9 @@ class Position:
         elif set_method == "seismo":
             self.r, self.theta, self.phi = float(a), float(b), float(c)
             self.x, self.y, self.z = from_seismo_to_cartesian(a, b, c)
-        assert(abs(np.sqrt(self.x**2+self.y**2+self.z**2)-self.r)< 2.*sys.float_info.epsilon)
+        ## print "(r,t,p)", self.r, self.theta, self.phi
+        ## print "depsilon, r, r'", abs(np.sqrt(self.x**2+self.y**2+self.z**2)-self.r), self.r, np.sqrt(self.x**2+self.y**2+self.z**2)
+        assert(abs(np.sqrt(self.x**2+self.y**2+self.z**2)-self.r)< 1e4*sys.float_info.epsilon)
 
     def random_point(self, set_method="uniform"):#,type_="turningpoint", seismo="surface"):
         """ Create a random point (not raypath)
@@ -101,17 +103,17 @@ class Raypath:
         if set_method == "BT-point":
             if len(arg) == 3:
                 arg = arg + ("seismo",) #by default, assuming seismo-like coordinates.
-            self.bottom_turning_point = Position(arg[0], arg[1], arg[2], arg[3])
+            self.bottom_turning_point = Point(arg[0], arg[1], arg[2], arg[3])
         elif set_method == "in-out": #assume seismo-like coordinate
-            self.in_point = Position(arg[0], arg[1], arg[2], "seismo")
-            self.out_point = Position(arg[3], arg[4], arg[5], "seismo")
+            self.in_point = Point(arg[0], arg[1], arg[2], "seismo")
+            self.out_point = Point(arg[3], arg[4], arg[5], "seismo")
 
     def b_t_point(self, *arg):
         """ Bottom turning point of the trajectory """
         if  self.bottom_turning_point == None:
             assert(len(arg)==4), "coordinates need to be on the form a,b,c,type"
             assert(arg[3]=="seismo" or arg[3]=="cartesian"), 'types of coordinates not well defined!'
-            self.bottom_turning_point = Position(arg[0], arg[1], arg[2], arg[3])
+            self.bottom_turning_point = Point(arg[0], arg[1], arg[2], arg[3])
         else:
             print "Bottom point of raypath already calculated"
 
@@ -119,7 +121,7 @@ class Raypath:
     def straigth_trajectory(self, Point1, Point2, N):
         """ Trajectory is a straigth line between Point1 and Point2, with N points.
 
-        Point1, Point2: Position()
+        Point1, Point2: Point()
         N: integer (number of points on the trajectory)
         
         Use the cartesian coordinates of both points.
@@ -128,7 +130,7 @@ class Raypath:
         _vector = [Point2.x-Point1.x, Point2.y-Point1.y, Point2.z-Point1.z]
         _length = np.sqrt(_vector[0]**2+_vector[1]**2+_vector[2]**2)
         for dx in np.linspace(0, 1, N):
-            _Points.append(Position(Point1.x+_vector[0]*dx, Point1.y+_vector[1]*dx, Point1.z+_vector[2]*dx, "cartesian"))
+            _Points.append(Point(Point1.x+_vector[0]*dx, Point1.y+_vector[1]*dx, Point1.z+_vector[2]*dx, "cartesian"))
         return _Points, _length
         
     def straigth_in_out(self, N):
@@ -156,7 +158,7 @@ class Raypath:
 if __name__ == '__main__':
 
 
-    ## position1 = Position(1 , 0, 0, "seismo")
+    ## position1 = Point(1 , 0, 0, "seismo")
     ## print position1.x, position1.y, position1.z
     ## print position1.r, position1.theta, position1.phi
 
