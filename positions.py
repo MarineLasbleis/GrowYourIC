@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# Time-stamp: <2016-02-19 16:14:52 marine>
+# Time-stamp: <2016-02-19 16:19:23 marine>
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 
 # Author : Marine Lasbleis
@@ -122,7 +122,7 @@ class Raypath:
         Point1, Point2: Position()
         N: integer (number of points on the trajectory)
         
-        Use the cartesian coordinates of both in and out points.
+        Use the cartesian coordinates of both points.
         """
         _Points = []
         _vector = [Point2.x-Point1.x, Point2.y-Point1.y, Point2.z-Point1.z]
@@ -149,7 +149,7 @@ class Raypath:
             self.points = points1 + points2[1:]
             
         else:
-            raise Exception("in, out and bottom tunring points have not been defined!")
+            raise Exception("in, out or bottom turning points have not been defined!")
 
 
         
