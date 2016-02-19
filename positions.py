@@ -1,11 +1,13 @@
 #!/usr/local/bin/python
-# Time-stamp: <2016-02-19 11:19:50 marine>
+# Time-stamp: <2016-02-19 16:14:52 marine>
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 
 # Author : Marine Lasbleis
 
 
 import numpy as np
+
+import sys # .float_info import epsilon # to use assert on floating point equivalence
 
 
 def from_seismo_to_cartesian(r, theta, phi):
@@ -50,6 +52,8 @@ def from_cartesian_to_seismo(x, y, z):
     return r, 90.-theta, phi
 
 
+
+
 class Position:
     """ Position of a point in the Earth.
 
@@ -65,6 +69,7 @@ class Position:
         elif set_method == "seismo":
             self.r, self.theta, self.phi = float(a), float(b), float(c)
             self.x, self.y, self.z = from_seismo_to_cartesian(a, b, c)
+        assert(abs(np.sqrt(self.x**2+self.y**2+self.z**2)-self.r)< 2.*sys.float_info.epsilon)
 
     def random_point(self, set_method="uniform"):#,type_="turningpoint", seismo="surface"):
         """ Create a random point (not raypath)
@@ -110,45 +115,76 @@ class Raypath:
         else:
             print "Bottom point of raypath already calculated"
 
-    def straigth_in_out(self, N):
-        """ Trajectory is a straigth line between in and out points, with N points.
 
+    def straigth_trajectory(self, Point1, Point2, N):
+        """ Trajectory is a straigth line between Point1 and Point2, with N points.
+
+        Point1, Point2: Position()
+        N: integer (number of points on the trajectory)
+        
         Use the cartesian coordinates of both in and out points.
         """
+        _Points = []
+        _vector = [Point2.x-Point1.x, Point2.y-Point1.y, Point2.z-Point1.z]
+        _length = np.sqrt(_vector[0]**2+_vector[1]**2+_vector[2]**2)
+        for dx in np.linspace(0, 1, N):
+            _Points.append(Position(Point1.x+_vector[0]*dx, Point1.y+_vector[1]*dx, Point1.z+_vector[2]*dx, "cartesian"))
+        return _Points, _length
+        
+    def straigth_in_out(self, N):
+        """ Trajectory is a straigth line between in and out points, with N points. """
         if not (self.in_point == None or self.out_point == None):
             self.points = []
-            vector = [self.out_point.x-self.in_point.x, self.out_point.y-self.in_point.y, self.out_point.z-self.in_point.z]
-            self.length = np.sqrt(vector[0]**2+vector[1]**2+vector[2]**2)
-            for dx in np.linspace(0, 1, N):
-                self.points.append(Position(self.in_point.x+vector[0]*dx, self.in_point.y+vector[1]*dx, self.in_point.z+vector[2]*dx, "cartesian"))
+            self.points, self.length = self.straigth_trajectory(self.in_point, self.out_point, N)
         else:
             raise Exception("in and out points have not been defined!")
+        
+    def straigth_in_out_bt(self, N):
+        """ Trajectory is a straigth line between in and out points, with 2N-1 points. """
+        if not (self.in_point == None or self.out_point == None or self.bottom_turning_point == None):
+            points1, length1 = self.straigth_trajectory(self.in_point, self.bottom_turning_point, N)
+            points2, length2 = self.straigth_trajectory(self.bottom_turning_point, self.out_point, N)
+            self.points = []
+            self.length = length1+length2
+            self.points = points1 + points2[1:]
             
-    
+        else:
+            raise Exception("in, out and bottom tunring points have not been defined!")
+
 
         
 if __name__ == '__main__':
 
 
-    position1 = Position(1 , 0, 0, "seismo")
-    print position1.x, position1.y, position1.z
-    print position1.r, position1.theta, position1.phi
+    ## position1 = Position(1 , 0, 0, "seismo")
+    ## print position1.x, position1.y, position1.z
+    ## print position1.r, position1.theta, position1.phi
 
-    position1.random_point()
-    print position1.x, position1.y, position1.z
-    print position1.r, position1.theta, position1.phi
-
-
-    trajectory = Raypath("BT-point", 1, 0, 0)
-    print trajectory.bottom_turning_point.r
-    trajectory.b_t_point()
+    ## position1.random_point()
+    ## print position1.x, position1.y, position1.z
+    ## print position1.r, position1.theta, position1.phi
 
 
-    trajectory = Raypath("in-out", 1, 0, 0, 1, 90, 0)
-    print trajectory.bottom_turning_point
-    trajectory.b_t_point(0,0,0, "seismo")
-    print trajectory.bottom_turning_point.x
+    ## trajectory = Raypath("BT-point", 1, 0, 0)
+    ## print trajectory.bottom_turning_point.r
+    ## trajectory.b_t_point()
+
+
+    trajectory = Raypath("in-out", 2, 0, 0, 1, 0, 90.)
+    print "seismo, in:", trajectory.in_point.r, trajectory.in_point.theta, trajectory.in_point.phi
+    print "seismo, out:",trajectory.out_point.r, trajectory.out_point.theta, trajectory.out_point.phi
+    print "cart, in:",trajectory.in_point.x, trajectory.in_point.y, trajectory.in_point.z
+    print "cart, out:", trajectory.out_point.x, trajectory.out_point.y, trajectory.out_point.z
     trajectory.straigth_in_out(10)
-    print trajectory.points
     for i in range(10):
-        print trajectory.points[i].r, trajectory.points[i].theta, trajectory.points[i].phi
+        print "seismo", trajectory.points[i].r, trajectory.points[i].theta, trajectory.points[i].phi
+    for i in range(10):
+        print "cart", trajectory.points[i].x, trajectory.points[i].y, trajectory.points[i].z
+
+    print "==="
+    trajectory.b_t_point(1,0,0, "seismo")
+    trajectory.straigth_in_out_bt(10)
+    for i in range(len(trajectory.points)):
+        print "seismo", trajectory.points[i].r, trajectory.points[i].theta, trajectory.points[i].phi
+    for i in range(len(trajectory.points)):
+        print "cart", trajectory.points[i].x, trajectory.points[i].y, trajectory.points[i].z
