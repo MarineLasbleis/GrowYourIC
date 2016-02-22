@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# Time-stamp: <2016-02-19 22:45:38 marine>
+# Time-stamp: <2016-02-22 21:21:17 marine>
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 
 # Author : Marine Lasbleis
@@ -63,6 +63,7 @@ class Point:
     """
 
     def __init__(self, a, b, c, set_method):
+        assert(set_method=="cartesian" or set_method=="seismo")
         if set_method == "cartesian":
             self.x, self.y, self.z = float(a), float(b), float(c)
             self.r, self.theta, self.phi = from_cartesian_to_seismo(a, b, c)
