@@ -6,7 +6,7 @@ a given geodynamical model.
 
 Calculate raypath:
 - from real data set (data file has to be given)
-** from Lauren's data set : station, PKIKP-PKiKP travel time residual, zeta (angle from rotation axis), epicentral distance, station lat, station lon, event lat, event lon, event depth, inner core in lat, in lon, out lat, out lon, turn lat, turn lon, turn depth (in inner core), inner core travel time, PKIKP/PKiKP amplitude ratio
+ -- from Lauren's data set : station, PKIKP-PKiKP travel time residual, zeta (angle from rotation axis), epicentral distance, station lat, station lon, event lat, event lon, event depth, inner core in lat, in lon, out lat, out lon, turn lat, turn lon, turn depth (in inner core), inner core travel time, PKIKP/PKiKP amplitude ratio
 - for random sampling (surface and depth repartition can be choosed or
 set to default values)
 
