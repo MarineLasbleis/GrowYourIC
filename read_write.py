@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# Time-stamp: <2016-02-19 16:16:37 marine>
+# Time-stamp: <2016-03-08 07:40:24 marine>
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 
 # Author : Marine Lasbleis
@@ -39,6 +39,7 @@ def read_from_file(filename, columns, lines=-1):
 
 if __name__ == '__main__':
 
-    
+    data_points = read_from_file("results.dat", columns=[1, 14], lines=-1)
+    nlines, ncolumns = data_points.shape
 
-    print read_from_file("results.dat", columns=[10, 11, 12, 13], lines=[1,2,3])
+    plt.plot()

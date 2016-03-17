@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# Time-stamp: <2016-02-22 22:04:34 marine>
+# Time-stamp: <2016-02-23 09:44:14 marine>
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 # Author : Marine Lasbleis
 
@@ -40,8 +40,7 @@ class Point_evolution():
 
         velocity: tupple with 3 components (cartesian coordinates. x,y,z)
         """
-        pass #TODO : to write !!!
-
+        self.new.x = self.old.x + velocity*dt
 
 class Translation(Point_evolution):
 
@@ -51,6 +50,7 @@ class Translation(Point_evolution):
 
     def advection(self, velocity):
         """ advection of the point. """
+        self.old = self.new
         translation(self, velocity, dt)
 
     def analytical(self, velocity, time):
