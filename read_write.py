@@ -6,31 +6,27 @@
 
 
 import numpy as np
+import pandas as pd
 
 import positions
 
 
 
-def read_from_file(filename, columns, lines=-1):
+def read_from_file(filename, names=["station", "PKIKP-PKiKP travel time residual", "zeta", "epicentral distance", "station lat", "station lon", "event lat", "event lon", "event depth", "in lat", "in lon", "out lat", "out lon", "turn lat", "turn lon", "turn depth", "inner core travel time", "PKIKP/PKiKP amplitude ratio"], slices="all"):
     """ read seismic data repartition
 
     input parameters:
     - filename: name of the data file
-    - columns: indicates which columns are of interest in the data
-    - line: indicates which line will be output (default is -1, all lines are output)
+    - names: names of the columns for the data set
+    - slices: names of columns for the output.
     output:
-    - data : columns of the data indicated (number of columns: columns.size, number of lines: line.size)
+    - data : pandas DataFrame with all the datas. Columns name are indicated by the variable "names". 
     """
+    df = pd.read_table(filename, sep=' ', names=names, skiprows=0)
 
-    data = np.genfromtxt(filename)
-    if lines==-1:
-        data_ = data[:, columns]
-    elif np.size(lines)==1:
-        data_ = data[np.ix_([lines], columns)]
-    else:
-        data_ = data[np.ix_(lines, columns)]
-    data = data_
-    return data
+    if slices != "all":
+        df = df[slices]
+    return df
 
 
 
@@ -39,7 +35,8 @@ def read_from_file(filename, columns, lines=-1):
 
 if __name__ == '__main__':
 
-    data_points = read_from_file("results.dat", columns=[1, 14], lines=-1)
-    nlines, ncolumns = data_points.shape
+    data = read_from_file("results.dat", slices=["turn lat", "turn depth", "turn lon", "in lon"])
+    print data.info()
 
-    plt.plot()
+    data_subset = data[["turn lat", "turn depth", "turn lon"]]
+    print data_subset.info()

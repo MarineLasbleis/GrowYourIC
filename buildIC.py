@@ -27,7 +27,7 @@ def Translation_analytic_solution():
     cm = plt.cm.get_cmap('RdYlBu')
     
     #seismic data set (from Lauren's file)
-    data_points = read_write.read_from_file("results.dat", columns=[1, 13, 14, 15], lines=-1)
+    data_points = read_write.read_from_file("results.dat", slices=["PKIKP-PKiKP travel time residual", "turn lat", "turn lon", "turn depth"])
     nlines, ncolumns = data_points.shape
 
     #translate it in the correct format
@@ -37,17 +37,17 @@ def Translation_analytic_solution():
     print nlines, "points to write."
     for i in range(nlines):
         if i%100==0: #print every 100 values
-            print "Writing point ",  i, ". Coordinates: ", data_points[i, :]
+            print "Writing point ",  i, ". Coordinates: ", data_points.ix[i]
         # translate data in the correct format
         dataset.append(positions.Raypath("BT-point",
-                                         1221.-data_points[i,3],
-                                         data_points[i, 1],
-                                         data_points[i, 2]))
+                                         1221.-data_points.ix[i,"turn depth"],
+                                         data_points.ix[i, "turn lat"],
+                                         data_points.ix[i, "turn lon"]))
         # set up the geodynamical model
-        # because it's analytical solution, we don't need to define a grid
-        translation_dataset.append(geodynamic.Translation(positions.Point(1221.-data_points[i,3],
-                                                          data_points[i, 1],
-                                                          data_points[i, 2],
+        # because it's analytical solution, we don't need to define a grid. model is calulated exactly. 
+        translation_dataset.append(geodynamic.Translation(positions.Point(1221.-data_points.ix[i,"turn depth"],
+                                                          data_points.ix[i, "turn lat"],
+                                                          data_points.ix[i, "turn lon"],
                                                           "seismo")))
         translation_dataset[i].analytical(velocity_translation, age_IC)
 

@@ -32,7 +32,8 @@ if __name__ == '__main__':
 
     # columns=[9, 10, 11, 12] in, out
     # columns=[14, 15, 16] bottom turning point (16 is depth, no radius!)
-    data = read_write.read_from_file('results.dat', columns=[13, 14, 15], lines=-1)
+    data = read_write.read_from_file('results.dat', slices=["turn lat", "turn lon", "turn depth"])
+    data = data.as_matrix()
     nlines, ncolumns = data.shape
     fig =plt.figure()
     ax = fig.add_subplot(111)
