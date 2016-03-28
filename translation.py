@@ -48,7 +48,7 @@ def Translation_analytic_solution():
         translation_dataset.append(geodynamic.Translation(positions.Seismo_Point(1221.-data_points.ix[i,"turn depth"],
                                                           data_points.ix[i, "turn lat"],
                                                           data_points.ix[i, "turn lon"])))
-        translation_dataset[i].analytical(velocity_translation, age_IC)
+        translation_dataset[i].analytical(velocity_translation, positions.Seismo_Point(1, 0, 40))
 
 
         phi.append(translation_dataset[i].initial_position.phi)

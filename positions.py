@@ -190,7 +190,7 @@ class Raypath_BT(Raypath):
 
     def __init__(self, point, zeta):
         Raypath.__init__(self)
-        self.add_bt_point(point)
+        self.add_b_t_point(point)
         self.add_direction(zeta)
         
 
