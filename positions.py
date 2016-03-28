@@ -125,28 +125,29 @@ class Raypath:
     - in and out points (at the surface of IC, useful if coming from real data set)
     """
     
-    def __init__(self, set_method, *arg):
+    def __init__(self):
         self.points = None
         self.bottom_turning_point = None
+        self.direction = None
         self.in_point = None
         self.out_point = None
-        if set_method == "BT-point":
-            if len(arg) == 3:
-                arg = arg + ("seismo",) #by default, assuming seismo-like coordinates.
-            self.bottom_turning_point = Point(arg[0], arg[1], arg[2], arg[3])
-        elif set_method == "in-out": #assume seismo-like coordinate
-            self.in_point = Point(arg[0], arg[1], arg[2], "seismo")
-            self.out_point = Point(arg[3], arg[4], arg[5], "seismo")
+        
+            #self.bottom_turning_point = Point(arg[0], arg[1], arg[2], arg[3])
+        #elif set_method == "in-out": #assume seismo-like coordinate
+        #    self.in_point = Point(arg[0], arg[1], arg[2], "seismo")
+        #    self.out_point = Point(arg[3], arg[4], arg[5], "seismo")
 
-    def b_t_point(self, *arg):
+    def add_b_t_point(self, point):
         """ Bottom turning point of the trajectory """
-        if  self.bottom_turning_point == None:
-            assert(len(arg)==4), "coordinates need to be on the form a,b,c,type"
-            assert(arg[3]=="seismo" or arg[3]=="cartesian"), 'types of coordinates not well defined!'
-            self.bottom_turning_point = Point(arg[0], arg[1], arg[2], arg[3])
-        else:
-            print "Bottom point of raypath already calculated"
+        assert( self.bottom_turning_point == None)
+        self.bottom_turning_point = point
 
+    def add_direction(self, zeta):
+        self.direction = zeta
+
+    def add_in_out(self, point_in, point_out):
+        self.in_point = point_in
+        self.out_point = point_out
 
     def straigth_trajectory(self, Point1, Point2, N):
         """ Trajectory is a straigth line between Point1 and Point2, with N points.
@@ -160,7 +161,7 @@ class Raypath:
         _vector = [Point2.x-Point1.x, Point2.y-Point1.y, Point2.z-Point1.z]
         _length = np.sqrt(_vector[0]**2+_vector[1]**2+_vector[2]**2)
         for dx in np.linspace(0, 1, N):
-            _Points.append(Point(Point1.x+_vector[0]*dx, Point1.y+_vector[1]*dx, Point1.z+_vector[2]*dx, "cartesian"))
+            _Points.append(Cartesian_Point(Point1.x+_vector[0]*dx, Point1.y+_vector[1]*dx, Point1.z+_vector[2]*dx))
         return _Points, _length
         
     def straigth_in_out(self, N):
@@ -184,6 +185,20 @@ class Raypath:
             raise Exception("in, out or bottom turning points have not been defined!")
 
 
+class Raypath_BT(Raypath):
+    """ Raypath defined primarly by the bottom point """
+
+    def __init__(self, point, zeta):
+        Raypath.__init__(self)
+        self.add_bt_point(point)
+        self.add_direction(zeta)
+        
+
+class Raypath_inout(Raypath):
+    """ Raypath defined primarly by the in and out points """
+    def __init__(self, point_in, point_out):
+        Raypath.__init__(self)
+        self.add_in_out(point_in, point_out)
         
 if __name__ == '__main__':
 
@@ -201,8 +216,9 @@ if __name__ == '__main__':
     ## print trajectory.bottom_turning_point.r
     ## trajectory.b_t_point()
 
-
-    trajectory = Raypath("in-out", 2, 0, 0, 1, 0, 90.)
+    point_in = Seismo_Point(2, 0, 0)
+    point_out = Seismo_Point(1, 0, 90)
+    trajectory = Raypath_inout(point_in, point_out)
     print "seismo, in:", trajectory.in_point.r, trajectory.in_point.theta, trajectory.in_point.phi
     print "seismo, out:",trajectory.out_point.r, trajectory.out_point.theta, trajectory.out_point.phi
     print "cart, in:",trajectory.in_point.x, trajectory.in_point.y, trajectory.in_point.z
@@ -214,7 +230,7 @@ if __name__ == '__main__':
         print "cart", trajectory.points[i].x, trajectory.points[i].y, trajectory.points[i].z
 
     print "==="
-    trajectory.b_t_point(1,0,0, "seismo")
+    trajectory.add_b_t_point(Seismo_Point(1,0,0))
     trajectory.straigth_in_out_bt(10)
     for i in range(len(trajectory.points)):
         print "seismo", trajectory.points[i].r, trajectory.points[i].theta, trajectory.points[i].phi
