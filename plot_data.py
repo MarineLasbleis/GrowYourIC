@@ -51,7 +51,7 @@ if __name__ == '__main__':
     for i in range(nlines):
         if data[i,1]<0:
             print i, data[i, :]
-        dataset.append(positions.Raypath("BT-point", 1221-data[i,2], data[i, 0],  data[i, 1]))
+        dataset.append(positions.Raypath_BT(positions.Seismo_Point(1221-data[i,2], data[i, 0],  data[i, 1]), zeta=0.))
         x, y =m(dataset[i].bottom_turning_point.phi, dataset[i].bottom_turning_point.theta)
         m.scatter(x,y, zorder=10)
         #print i, dataset[i].bottom_turning_point.theta, dataset[i].bottom_turning_point.phi
