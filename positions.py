@@ -13,13 +13,13 @@ import sys # .float_info import epsilon # to use assert on floating point equiva
 def from_seismo_to_cartesian(r, theta, phi):
     """ Calculate the cartesian coordinates from spherical (w/ latitude) coordinates)
 
-    input: 
+    input:
     r : radius (km)
     theta : latitude (degree)
     phi : longitude (degree)
     output:
     x, y, z
-    
+
     """
     theta = (90-theta) * np.pi/180. # colatitude in rad
     phi = phi * np.pi/180.
@@ -62,29 +62,58 @@ class Point:
     Seismological coordinates: r, theta, phi (theta is the latitude)
     """
 
-    def __init__(self, a, b, c, set_method):
-        assert(set_method=="cartesian" or set_method=="seismo")
-        if set_method == "cartesian":
-            self.x, self.y, self.z = float(a), float(b), float(c)
-            self.r, self.theta, self.phi = from_cartesian_to_seismo(a, b, c)
-        elif set_method == "seismo":
-            self.r, self.theta, self.phi = float(a), float(b), float(c)
-            self.x, self.y, self.z = from_seismo_to_cartesian(a, b, c)
+    def __init__(self):
+               
+        self.x, self.y, self.z, self.r, self.theta, self.phi = None, None, None, None, None, None
+       # if set_method == "cartesian":
+       #     self.x, self.y, self.z = float(a), float(b), float(c)
+       #     self.r, self.theta, self.phi = from_cartesian_to_seismo(a, b, c)
+       # elif set_method == "seismo":
+       #     self.r, self.theta, self.phi = float(a), float(b), float(c)
+       #     self.x, self.y, self.z = from_seismo_to_cartesian(a, b, c)
         ## print "(r,t,p)", self.r, self.theta, self.phi
         ## print "depsilon, r, r'", abs(np.sqrt(self.x**2+self.y**2+self.z**2)-self.r), self.r, np.sqrt(self.x**2+self.y**2+self.z**2)
-        assert(abs(np.sqrt(self.x**2+self.y**2+self.z**2)-self.r)< 1e4*sys.float_info.epsilon)
+       # assert(abs(np.sqrt(self.x**2+self.y**2+self.z**2)-self.r)< 1e4*sys.float_info.epsilon)
 
-    def random_point(self, set_method="uniform"):#,type_="turningpoint", seismo="surface"):
+    def add_cartesian(self):
+        assert(self.r != None)
+        assert(self.phi != None)
+        assert(self.theta != None)
+        self.x, self.y, self.z = from_seismo_to_cartesian(self.r, self.theta, self.phi)
+
+    def add_seismo(self):
+        assert(self.x != None)
+        assert(self.y != None)
+        assert(self.z != None)
+        self.r, self.theta, self.phi = from_cartesian_to_seismo(self.x, self.y, self.z)
+
+    def create_random_point(self, set_method="uniform", rICB=1221.):#,type_="turningpoint", seismo="surface"):
         """ Create a random point (not raypath)
 
         type: type of the distribution. Default is uniform over the sphere of radius self.r
-        """
 
-        self.phi = np.random.uniform(-180., 180.)
-        self.theta = (np.arccos(2*np.random.uniform(0.,1.)-1)*180./np.pi)-90
-        self.x, self.y, self.z = from_seismo_to_cartesian(self.r, self.phi, self.theta)
+        """
+        r = rICB
+        phi = np.random.uniform(-180., 180.)
+        theta = (np.arccos(2*np.random.uniform(0.,1.)-1)*180./np.pi)-90
+        return r, theta, phi
+
 
         #TODO : set other methods of randomisation!
+
+class Seismo_Point(Point):
+
+    def __init__(self, a, b, c):
+        self.r, self.theta, self.phi = a, b, c
+        self.add_cartesian()
+
+
+class Cartesian_Point(Point):
+
+    def __init__(self, a, b, c):
+        self.x, self.y, self.z = a, b, c
+        self.add_seismo()
+
 
 
 

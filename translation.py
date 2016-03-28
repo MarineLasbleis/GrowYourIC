@@ -39,16 +39,15 @@ def Translation_analytic_solution():
         if i%100==0: #print every 100 values
             print "Writing point ",  i, ". Coordinates: ", data_points.ix[i]
         # translate data in the correct format
-        dataset.append(positions.Raypath("BT-point",
-                                         1221.-data_points.ix[i,"turn depth"],
-                                         data_points.ix[i, "turn lat"],
-                                         data_points.ix[i, "turn lon"]))
+        #dataset.append(positions.Raypath("BT-point",
+        #                                 1221.-data_points.ix[i,"turn depth"],
+        #                                 data_points.ix[i, "turn lat"],
+        #                                 data_points.ix[i, "turn lon"]))
         # set up the geodynamical model
         # because it's analytical solution, we don't need to define a grid. model is calulated exactly. 
-        translation_dataset.append(geodynamic.Translation(positions.Point(1221.-data_points.ix[i,"turn depth"],
+        translation_dataset.append(geodynamic.Translation(positions.Seismo_Point(1221.-data_points.ix[i,"turn depth"],
                                                           data_points.ix[i, "turn lat"],
-                                                          data_points.ix[i, "turn lon"],
-                                                          "seismo")))
+                                                          data_points.ix[i, "turn lon"])))
         translation_dataset[i].analytical(velocity_translation, age_IC)
 
 
@@ -56,13 +55,11 @@ def Translation_analytic_solution():
         theta.append(translation_dataset[i].initial_position.theta)
         age.append(translation_dataset[i].exact_solution)
 
-    
     x, y = m(phi, theta)
     m.scatter(x, y, c=age, zorder=10, cmap=plt.cm.RdYlGn)
     m.colorbar()
-    
     plt.show()
-    
+
     ## x, y = m(phi, theta)
     ## m.scatter(x, y, c=(data_points[:,0]-min(data_points[:,0]))*1, zorder=10, cmap=plt.cm.RdYlGn)
     ## m.colorbar()
