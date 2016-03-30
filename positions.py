@@ -101,14 +101,14 @@ class Point:
 
         #TODO : set other methods of randomisation!
 
-class Seismo_Point(Point):
+class SeismoPoint(Point):
 
     def __init__(self, a, b, c):
         self.r, self.theta, self.phi = a, b, c
         self.add_cartesian()
 
 
-class Cartesian_Point(Point):
+class CartesianPoint(Point):
 
     def __init__(self, a, b, c):
         self.x, self.y, self.z = a, b, c
@@ -216,8 +216,8 @@ if __name__ == '__main__':
     ## print trajectory.bottom_turning_point.r
     ## trajectory.b_t_point()
 
-    point_in = Seismo_Point(2, 0, 0)
-    point_out = Seismo_Point(1, 0, 90)
+    point_in = SeismoPoint(2, 0, 0)
+    point_out = SeismoPoint(1, 0, 90)
     trajectory = Raypath_inout(point_in, point_out)
     print "seismo, in:", trajectory.in_point.r, trajectory.in_point.theta, trajectory.in_point.phi
     print "seismo, out:",trajectory.out_point.r, trajectory.out_point.theta, trajectory.out_point.phi
@@ -230,7 +230,7 @@ if __name__ == '__main__':
         print "cart", trajectory.points[i].x, trajectory.points[i].y, trajectory.points[i].z
 
     print "==="
-    trajectory.add_b_t_point(Seismo_Point(1,0,0))
+    trajectory.add_b_t_point(SeismoPoint(1,0,0))
     trajectory.straigth_in_out_bt(10)
     for i in range(len(trajectory.points)):
         print "seismo", trajectory.points[i].r, trajectory.points[i].theta, trajectory.points[i].phi

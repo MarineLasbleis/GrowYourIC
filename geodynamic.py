@@ -16,6 +16,17 @@ import positions
 RICB = 1221.
 
 
+def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
+    x_0, y_0, z_0 = point.x, point.y, point.z
+    mean_direction = np.sqrt(direction.x**2+ direction.y**2+ direction.z**2)
+    a, b, c = direction.x/mean_direction, direction.y/mean_direction, direction.z/mean_direction
+
+    solution_1 = x_0*a+y_0*b+z_0*c + np.sqrt((x_0*a+y_0*b+z_0*c)**2-(x_0**2+y_0**2+z_0**2-RICB**2))
+    solution_2 = x_0*a+y_0*b+z_0*c - np.sqrt((x_0*a+y_0*b+z_0*c)**2-(x_0**2+y_0**2+z_0**2-RICB**    2))
+    ## TO DO : verify that we can remove solution_2 ? Is solution_1 always max?
+    return max(solution_1, solution_2)
+
+
 class Point_evolution():
     """ Geodynamical modelling of a flow. """
 
@@ -53,29 +64,19 @@ class Translation(Point_evolution):
         self.old = self.new
         translation(self, velocity, dt)
 
-    def analytical(self, velocity, direction=positions.Cartesian_Point(1,0,0)):
-        x_0, y_0, z_0 = self.initial_position.x, self.initial_position.y, self.initial_position.z
-        mean_direction = np.sqrt(direction.x**2+ direction.y**2+ direction.z**2)
-        a, b, c = direction.x/mean_direction, direction.y/mean_direction, direction.z/mean_direction
-
-        solution_1 = x_0*a+y_0*b+z_0*c + np.sqrt((x_0*a+y_0*b+z_0*c)**2-(x_0**2+y_0**2+z_0**2-RICB**2)) 
-        solution_2 = x_0*a+y_0*b+z_0*c - np.sqrt((x_0*a+y_0*b+z_0*c)**2-(x_0**2+y_0**2+z_0**2-RICB**    2))
-        ## TO DO : verify that we can remove solution_2 ? Is solution_1 always max?
-
-        # solution_1 = -(np.sqrt(RICB**2-self.initial_position.y**2-self.initial_position.z**2)-self.initial_position.x) / velocity
-        # solution_2 = -(-np.sqrt(RICB**2-self.initial_position.y**2-self.initial_position.z**2)-self.initial_position.x) / velocity
-        self.exact_solution = max(solution_1, solution_2)
-        print self.exact_solution
+    def analytical_singlepoint(self, velocity, direction=positions.CartesianPoint(1,0,0)):
+        self.exact_solution = exact_translation(self.initial_position, velocity, direction)
         assert(self.exact_solution>0)
 
-
+    def analytical_raypath(self, velocity, direction):
+        pass
 
 
 if __name__ == '__main__':
 
     
     
-    A = positions.Cartesian_Point(1200,0,0)
+    A = positions.CartesianPoint(1200,0,0)
     Point_evolution(A, 1)
     B = Translation(A,1)
     B.analytical(2000, 1)
