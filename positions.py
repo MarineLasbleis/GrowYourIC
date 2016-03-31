@@ -161,7 +161,7 @@ class Raypath:
         _vector = [Point2.x-Point1.x, Point2.y-Point1.y, Point2.z-Point1.z]
         _length = np.sqrt(_vector[0]**2+_vector[1]**2+_vector[2]**2)
         for dx in np.linspace(0, 1, N):
-            _Points.append(Cartesian_Point(Point1.x+_vector[0]*dx, Point1.y+_vector[1]*dx, Point1.z+_vector[2]*dx))
+            _Points.append(CartesianPoint(Point1.x+_vector[0]*dx, Point1.y+_vector[1]*dx, Point1.z+_vector[2]*dx))
         return _Points, _length
         
     def straigth_in_out(self, N):
