@@ -1,4 +1,4 @@
-#!/usr/local/bin.python
+#!/usr/local/bin/python
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 # Author : Marine Lasbleis
 
@@ -57,7 +57,7 @@ class SeismicData():
         # need to also assert that bottom_turning_point exist or can be calculated!
         r, theta, phi = np.empty([self.size, 1]), np.empty([self.size, 1]), np.empty([self.size, 1])
         for i, ray in enumerate(self.data_points):
-            r[i] = ray.in_point.tr
+            r[i] = ray.in_point.r
             theta[i] = ray.in_point.theta
             phi[i] = ray.in_point.phi
         return r, theta, phi
@@ -67,7 +67,7 @@ class SeismicData():
         # need to also assert that bottom_turning_point exist or can be calculated!
         r, theta, phi = np.empty([self.size, 1]), np.empty([self.size, 1]), np.empty([self.size, 1])
         for i, ray in enumerate(self.data_points):
-            r[i] = ray.out_point.tr
+            r[i] = ray.out_point.r
             theta[i] = ray.out_point.theta
             phi[i] = ray.out_point.phi
         return r, theta, phi
@@ -110,8 +110,14 @@ class SeismicData():
 
         x, y = m(phi, theta)
         m.scatter(x, y, c=self.translation, zorder=10, cmap=cm)
-        #in = ray.in_point
-        #out = ray.out_point
+        
+        # TO DO : make a function to plot great circles correctly!
+        #r1, theta1, phi1 = self.extract_in()
+        #r2, theta2, phi2 = self.extract_out()
+        #for i, t in enumerate(theta1):
+        #    z, w = m.gcpoints(phi1[i], theta1[i], phi2[i], theta2[i], 200)#
+        #    m.plot(z, w, zorder=5, c="black")
+        #    m.drawgreatcircle(phi1[i], theta1[i], phi2[i], theta2[i], zorder=5, c="black")
 
         #plt.show()
 
@@ -140,13 +146,6 @@ class SeismicFromFile(SeismicData):
             ray.add_in_out(in_Point, out_Point)
             self.data_points.append(ray)
 
-    #def translation_BT(self, velocity, direction):
-
-     #   self.translation = np.empty([self.size, 1])
-     #   for i, ray in np.enumerate(self.data_points):
-     #       print ray
-     #       self.translation[i] = geodynamic.exact_translation(ray.bottom_turning_point, velocity, direction)
-        
 
 
 class RandomData(SeismicData):
