@@ -65,8 +65,8 @@ class Model():
             self.time = t
             self.advect()
             self.grow()
-            self.add_points()
             self.check_inside()
+            self.add_points()
             self.Npoints = len(self.points)
             
 
@@ -105,15 +105,23 @@ class Model():
             z[i] = point.z
         return x, y, z 
 
-    def add_points(self, density):
+    def add_points(self, density_surface):
         """ add points where there are few of them and on the surface if ic is growing """
         # on the surface
+        S = 4. * np.pi * self.radius**2 # size of the surface
+        n = int(np.ceil(S*density_surface)) #number of points to add on the surface. 
+        for i in range(n):
+            u, v = np.random.uniform(0, 1), np.random.uniform(0, 1)
+            r = self.radius
+            theta = 90. - 180./np.pi*np.arccos(2*v-1) #here is the latitude
+            phi = 360. * u
+            self.points.append(positions.SeismoPoint(r, theta, phi))
+        self.Npoints = len(self.points)
+
 
     def fill_sphere(self, density):
         volume = 4./3. * np.pi *self.radius**3. #volume of the sphere
-        print "volume", volume
         n = int(math.ceil(density*volume))
-        print n
         if n == 1:
             self.points.append(positions.SeismoPoint(0.,0.,0.)) #central point
         else:
@@ -167,4 +175,18 @@ if __name__ == '__main__':
     print A.Npoints
     x, y, z = A.extract_xyz()
     plt.plot(np.sqrt(x**2+y**2+z**2), '.')
+    plt.show()
+
+    A.add_points(10.)
+
+    print A.Npoints
+
+    x, y, z = A.extract_xyz()
+    plt.plot(np.sqrt(x**2+y**2+z**2), '.')
+    plt.show()
+
+    r, t, p = A.extract_rtp()
+    plt.plot(np.cos(np.pi/2-t*np.pi/180.), '.')
+    plt.show()
+    plt.plot(p, '.')
     plt.show()
