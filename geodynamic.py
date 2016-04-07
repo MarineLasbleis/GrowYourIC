@@ -43,6 +43,7 @@ class Model():
     def __init__(self):
         """ Point is a positions.Point """
         self.points = []
+        self.proxy = []
         self.old = []
         self.new = [] 
         self.time = None
@@ -50,6 +51,7 @@ class Model():
         self.radius = None
         self.Npoints = None
         self.density = None
+        self.tmax, self.dt = None, None
 
     def initialisation(self, t0, R0, density):
         self.time = t0
@@ -60,16 +62,21 @@ class Model():
 
     def run(self, tmax, dt):
         t0 = self.time
+
+        print " ================="
+        print " ===== RUN ======="
+        print " ================="
+        print "from t=", t0, " to t=", tmax, ", with dt=", dt, "."
         for t in np.arange(t0, tmax, dt):
+            print "t = ", t, ". ", self.Npoints, " points."
             self.old = self.points
             self.time = t
             self.advect()
             self.grow()
             self.check_inside()
-            self.add_points()
+            #self.add_points(self.density_surface)
             self.Npoints = len(self.points)
-            
-
+            assert(self.Npoints == len(self.proxy))
 
     def advect(self):
         """ advection of the point. Need to be implemented in the derived classes """
@@ -84,10 +91,11 @@ class Model():
         # find points outside
         index_outside = [] #store the index of points to remove
         for i, point in enumerate(self.points):
-            if point.r > rICB:
+            if point.r > self.radius:
                 index_outside.append(i)
         # remove them (store?)
         self.points = np.delete(self.points, index_outside)
+        self.proxy = np.delete(self.proxy, index_outside)
 
     def extract_rtp(self):
         r, theta, phi = np.empty([self.Npoints,1]), np.empty([self.Npoints,1]), np.empty([self.Npoints,1])
@@ -105,7 +113,7 @@ class Model():
             z[i] = point.z
         return x, y, z 
 
-    def add_points(self, density_surface):
+    def add_points(self, density_surface, value=0.):
         """ add points where there are few of them and on the surface if ic is growing """
         # on the surface
         S = 4. * np.pi * self.radius**2 # size of the surface
@@ -115,29 +123,29 @@ class Model():
             r = self.radius
             theta = 90. - 180./np.pi*np.arccos(2*v-1) #here is the latitude
             phi = 360. * u
-            self.points.append(positions.SeismoPoint(r, theta, phi))
+            self.points = np.append(self.points, positions.SeismoPoint(r, theta, phi))
+            self.proxy = np.append(self.proxy, value)
         self.Npoints = len(self.points)
 
 
-    def fill_sphere(self, density):
+    def fill_sphere(self, density, initial_value=0.):
         volume = 4./3. * np.pi *self.radius**3. #volume of the sphere
         n = int(math.ceil(density*volume))
         if n == 1:
-            self.points.append(positions.SeismoPoint(0.,0.,0.)) #central point
+            self.points = np.append(self.points, positions.SeismoPoint(0.,0.,0.)) #central point
         else:
             # to get a uniform repartition, make it uniform in the (x, y, z) space, but with more points that needed, and then remove all the extra points. Check if at least one point is in the space, and if not add a point at the center. 
             n = int(math.ceil(density*volume*6./np.pi))
-            print n
             for i in range(n):
                 P = positions.CartesianPoint(self.radius*np.random.uniform(-1., 1.), self.radius*np.random.uniform(-1., 1.), self.radius*np.random.uniform(-1., 1.))
                 if P.r <= self.radius:
-                    self.points.append(P)
+                    self.points = np.append(self.points, P)
             self.Npoints = len(self.points)
-            print self.Npoints
             if self.Npoints <= 1:
-                self.points = np.array([positions.SeismoPoint(0.,0.,0.)])
+                self.points = [positions.SeismoPoint(0.,0.,0.)]
                 self.Npoints = 1
-                
+        self.proxy = initial_value* np.ones_like(self.points)                
+
 
     #def translation(self, velocity, dt):
     #    """ translation of the point.
@@ -152,10 +160,55 @@ class Translation(Model):
     ## def __init__(self, Point, time)
     ##     Point_evolution.__init__(self, Point, time)
 
-    def advect(self, velocity):
+
+    def initialisation(self, t0, R0, density):
+        Model.initialisation(self, t0, R0, density)
+        self.twoD_equatorial_plot()
+
+    def advect(self):
         """ advection of the point. """
-        self.old = self.new
-        translation(self, velocity, dt)
+
+        dx = self.translation(self.dt, self.vt, self.direction)
+        for i, point in enumerate(self.points): 
+            #self.points[i].move(dx)
+            self.points[i].move(dx)
+
+    def grow(self):
+        pass
+
+    def translation(self, dt, velocity, direction):
+        direction = direction / np.sqrt(direction[0]**2+direction[1]**2+direction[2]**2) #check if the direction has a size of 1
+        dx = np.array([velocity*direction[0], velocity*direction[1], velocity*direction[2]])*dt
+        return dx
+
+    def run(self, tmax, dt):
+        t0 = self.time
+        fig, ax = plt.subplots()
+        plt.axis('equal')
+        print " ================="
+        print " ===== RUN ======="
+        print " ================="
+        print "from t=", t0, " to t=", tmax, ", with dt=", dt, "."
+        for t in np.arange(t0, tmax, dt):
+            print "t = ", t, ". ", self.Npoints, " points."
+            self.old = self.points
+            self.time = t
+            self.advect()
+            self.check_inside()
+            self.Npoints = len(self.points)
+            assert(self.Npoints == len(self.proxy))
+            x, y, z = self.extract_xyz()
+            ax.plot(x, y, '.')
+
+    def twoD_equatorial_plot(self, *args):
+        if len(args) == 0: #initialisation of the plot
+            fig, ax = plt.subplots()
+        else:
+            print args, type(args)
+            fig, ax = args[0], args[1]
+            x, y, z =self.extract_xyz()
+            ax.plot(x, y)
+        return fig, ax
 
     def analytical_singlepoint(self, velocity, direction=positions.CartesianPoint(1,0,0)):
         self.exact_solution = exact_translation(self.initial_position, velocity, direction)
@@ -168,25 +221,39 @@ class Translation(Model):
 if __name__ == '__main__':
 
     
-    
+    print " test A " 
     A = Model()
     print A.Npoints
     A.initialisation(1., 10.,1.) 
-    print A.Npoints
-    x, y, z = A.extract_xyz()
-    plt.plot(np.sqrt(x**2+y**2+z**2), '.')
-    plt.show()
-
+    #plt.show()
     A.add_points(10.)
-
     print A.Npoints
-
-    x, y, z = A.extract_xyz()
-    plt.plot(np.sqrt(x**2+y**2+z**2), '.')
-    plt.show()
+    #plt.show()
 
     r, t, p = A.extract_rtp()
+    plt.plot(r/max(r), '.')
     plt.plot(np.cos(np.pi/2-t*np.pi/180.), '.')
-    plt.show()
-    plt.plot(p, '.')
+    #plt.show()
+    plt.plot(p/max(p), '.')
+
+    print "test B" 
+
+    fig, ax = plt.subplots(1, 2)
+    B = Translation()
+    print "init"
+    B.initialisation(0., 1221., 5e-6)
+    print "init complete. ", B.Npoints, " points."
+    B.tmax = 2.1 
+    B.dt = 0.1
+    B.vt =  1221.
+    B.density_surface = 0.0010
+    B.direction = np.array([1,0,0])
+    x, y, z = B.extract_xyz()
+    ax[0].plot(x, 'b.')
+    ax[1].plot(x, 'b.')
+    B.run(B.tmax, B.dt)
+    
+    x, y, z = B.extract_xyz()
+    ax[0].plot(x, 'r.')
+    print B.proxy
     plt.show()

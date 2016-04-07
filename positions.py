@@ -98,9 +98,11 @@ class Point:
         theta = (np.arccos(2*np.random.uniform(0.,1.)-1)*180./np.pi)-90
         return r, theta, phi
 
-    def move(self, dx)
+    def move(self, dx):
         """ move the point by dx (dx is a cartesian vector) """
-        self.x, self.y, self.z = dx[0], dx[1], dx[2]
+        self.x += dx[0]
+        self.y += dx[1]
+        self.z += dx[2]
         self.add_seismo()
 
         #TODO : set other methods of randomisation!
