@@ -144,13 +144,36 @@ class SeismicFromFile(SeismicData):
             in_Point = positions.SeismoPoint(RICB, row["in lat"], row["in lon"])
             out_Point = positions.SeismoPoint(RICB, row["out lat"], row["out lon"])
             ray.add_in_out(in_Point, out_Point)
-            self.data_points.append(ray)
+            self.data_points = np.append(self.data_points, ray)
+            #self.data_points.append(ray)
+        assert(self.size == len(self.data_points))
 
+class PerfectSamplingEquator(SeismicData):
+    
+    def __init__(self, N):
+        SeismicData.__init__(self)
+        self.rICB = 1221.
+        for x in np.linspace(-self.rICB, self.rICB, N):
+            for y in np.linspace(-self.rICB, self.rICB, N):
+                ray = positions.Raypath()
+                ray.add_b_t_point(positions.CartesianPoint(x, y, 0.))
+                if ray.bottom_turning_point.r <= self.rICB:
+                    self.data_points = np.append(self.data_points, ray)
+        self.size = len(self.data_points)
 
+    def plot(self):
+        fig, ax = plt.subplots()
+        ax.set_aspect('equal')
+        x = np.linspace(-self.rICB, self.rICB , 100)
+        ax.plot(x, np.sqrt(self.rICB**2-x**2), 'k')
+        ax.plot(x, -np.sqrt(self.rICB**2-x**2), 'k')
+        for i, ray in enumerate(self.data_points):
+            ax.scatter(ray.bottom_turning_point.x, ray.bottom_turning_point.y, c = ray.bottom_turning_point.z)
+        plt.show()
 
 class RandomData(SeismicData):
     pass
-
+    # TO DO !
 
 if __name__ == '__main__':
 

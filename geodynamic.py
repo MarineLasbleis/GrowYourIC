@@ -9,6 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt #for figures
 from mpl_toolkits.basemap import Basemap #to render maps
 import math
+from scipy.integrate import ode
+from scipy.optimize import fsolve
 
 #personal routines
 import positions
@@ -27,6 +29,45 @@ def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)
     ## TO DO : verify that we can remove solution_2 ? Is solution_1 always max?
     return max(solution_1, solution_2)
 
+def velocity(t, r, vt, omega):
+    """ velocity, in cartesian coordinates 
+    
+    r is a cartesian position [x, y, z]
+    vt is the translation velocity (numpy array (1,3))
+    rotation velocity is $\omega \vec{e}_z \times \vec{r}$.
+    """
+    return vt + np.array([-omega * r[1], omega * r[0], 0.] )
+
+def integration_trajectory(r0, t0, t1, vt, omega):
+    """ 
+    
+    r0: initial position
+    t0: initial time
+    t1: tmax of the integration
+    """
+
+    r = ode(velocity).set_integrator('zvode', method='bdf')
+    r.set_initial_value(r0, t0).set_f_params(vt, omega) # .set_f_params() if the function has any parameters
+    return np.real(r.integrate(r.t+(t1-t0)))
+
+def trajectory_r(r0, t0, t1, vt, omega):
+    trajectory = integration_trajectory(r0, t0, t1, vt, omega)
+    print "cart", trajectory[0], trajectory[1], trajectory[2]
+    r, t, p = positions.from_cartesian_to_seismo(trajectory[0], trajectory[1], trajectory[2])
+    print "seismo", r,t,p
+    return r
+
+def findIntersection(fun1,fun2,x0):
+     return fsolve(lambda x : fun1(x) - fun2(x),x0)
+
+def radius_ic(t):
+    return rICB
+
+def find_age(r0, t0, vt, omega):
+    return fsolve(lambda x : trajectory_r(r0, t0, x, vt, omega)-radius_ic(x), 0.)
+
+
+    
 
 def numberpoints_surface(r, density):
     """ return the number of points needed to cover the surface at radius 'r' with a density 'density'
@@ -93,6 +134,10 @@ class Model():
         for i, point in enumerate(self.points):
             if point.r > self.radius:
                 index_outside.append(i)
+
+
+
+
         # remove them (store?)
         self.points = np.delete(self.points, index_outside)
         self.proxy = np.delete(self.proxy, index_outside)
@@ -241,7 +286,7 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(1, 2)
     B = Translation()
     print "init"
-    B.initialisation(0., 1221., 5e-6)
+    B.initialisation(0., 1221., 1e-6)
     print "init complete. ", B.Npoints, " points."
     B.tmax = 2.1 
     B.dt = 0.1
@@ -256,4 +301,35 @@ if __name__ == '__main__':
     x, y, z = B.extract_xyz()
     ax[0].plot(x, 'r.')
     print B.proxy
+    #plt.show()
+
+
+    
+    r0, t0, t1, vt, omega = [.0,0.,0.], 0., 1., [1., 1., 1.], 0.
+    rICB = 1221.
+    print r0
+    print integration_trajectory(r0, t0, t1, vt, omega)
+
+    fig, ax = plt.subplots(1,2)
+    ax[0].set_aspect('equal')
+
+    point = 1221.*np.array([ -0.5, -0.5, 0.])
+    t0, tmax, N = -2., 2., 30.
+    vt = 1221.*np.array([1., 0.,     0. ])
+    omega = 0.
+
+    for t in np.linspace(t0, tmax, N):
+        pos = integration_trajectory(point, t0, t, vt, omega)
+        print "pos", pos
+        r = trajectory_r(point, t0, t, vt, omega)
+        ax[0].scatter(pos[0], pos[1])
+        ax[1].scatter(t, r)
+
+    solution = fsolve(lambda x : integration_trajectory(point, t0, x, vt, omega), -0.05)
+    print solution
+    solution = fsolve(lambda x : trajectory_r(point, t0, x, vt, omega)-rICB, -0.05)
+    print solution
+    x = np.linspace(-rICB, rICB , 100)
+    ax[0].plot(x, np.sqrt(rICB**2-x**2), 'k')
+    ax[0].plot(x, -np.sqrt(rICB**2-x**2), 'k')
     plt.show()
