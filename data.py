@@ -42,6 +42,29 @@ class SeismicData():
     def __getitem__(self, key):
         return self.data_points[key]
     
+    def extract_xyz(self, type_of_point):
+        assert self.size, 'data_points is probably empty' # TO DO : raise exceptions ins    tead of using assert
+        x, y, z = np.empty([self.size, 1]), np.empty([self.size, 1]), np.empty([self.size, 1])
+        for i, ray in enumerate(self.data_points):
+            point = getattr(ray, type_of_point)
+            x[i] = point.x
+            y[i] = point.y
+            z[i] = point.z
+        return x, y, z 
+
+    def extract_rtp(self, type_of_point):
+        """Extract the radius, theta (latitute), phi (longitude) for a serie of points 
+    
+        """
+        assert self.size, 'data_points is probably empty' # TO DO : raise exceptions ins    tead of using asse    rt
+        r, theta, phi = np.empty([self.size, 1]), np.empty([self.size, 1]), np.empty([self.size, 1])
+        for i, ray in enumerate(self.data_points):
+            point = getattr(ray, type_of_point)
+            r[i] = point.r
+            theta[i] = point.theta
+            phi[i] = point.phi
+        return r, theta, phi
+
     def extract_btpoints(self):
         assert self.size, 'data_points is probably empty' # TO DO : raise exceptions instead of using assert
         # need to also assert that bottom_turning_point exist or can be calculated!
@@ -107,7 +130,7 @@ class SeismicData():
         cm = plt.cm.get_cmap('RdYlBu')
         
         r, theta, phi = self.extract_btpoints()
-
+        r, theta, phi = self.extract_rtp("bottom_turning_point")
         x, y = m(phi, theta)
         m.scatter(x, y, c=self.translation, zorder=10, cmap=cm)
         
@@ -153,6 +176,7 @@ class PerfectSamplingEquator(SeismicData):
     def __init__(self, N):
         SeismicData.__init__(self)
         self.rICB = 1221.
+        self.N = N
         for x in np.linspace(-self.rICB, self.rICB, N):
             for y in np.linspace(-self.rICB, self.rICB, N):
                 ray = positions.Raypath()
@@ -161,14 +185,42 @@ class PerfectSamplingEquator(SeismicData):
                     self.data_points = np.append(self.data_points, ray)
         self.size = len(self.data_points)
 
-    def plot(self):
+    def plot_scatter(self):
+        fig, ax = plt.subplots()
+        x = np.linspace(-self.rICB, self.rICB , 100)
+        ax.plot(x, np.sqrt(self.rICB**2-x**2), 'k')
+        ax.plot(x, -np.sqrt(self.rICB**2-x**2), 'k')
+        if hasattr(self, "proxy"):
+            proxy = self.proxy
+        else :
+            proxy = 1.
+        x, y, z = self.extract_xyz("bottom_turning_point")
+        sc = ax.scatter(x, y, c=proxy)
+        plt.colorbar(sc)
+        plt.show()
+
+    def plot_contourf(self):
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
         x = np.linspace(-self.rICB, self.rICB , 100)
         ax.plot(x, np.sqrt(self.rICB**2-x**2), 'k')
         ax.plot(x, -np.sqrt(self.rICB**2-x**2), 'k')
-        for i, ray in enumerate(self.data_points):
-            ax.scatter(ray.bottom_turning_point.x, ray.bottom_turning_point.y, c = ray.bottom_turning_point.z)
+        if hasattr(self, "proxy"):
+            proxy = self.proxy
+        else :
+            proxy = 1.
+        x1 = np.linspace(-self.rICB, self.rICB , self.N)
+        y1 = np.linspace(-self.rICB, self.rICB , self.N)
+        X, Y = np.meshgrid(x1, y1)
+        Z = -1.*np.ones_like(X)
+        x, y, z = self.extract_xyz("bottom_turning_point")
+        for it, pro in enumerate(proxy):
+            ix = [i for i, j in enumerate(x1) if j == x[it]]
+            iy = [i for i, j in enumerate(y1) if j == y[it]]
+            Z[ix, iy] = pro
+        Z = np.ma.array(Z, mask = Z==-1)    
+        sc = ax.contourf(Y, X, Z, 100)
+        plt.colorbar(sc)
         plt.show()
 
 class RandomData(SeismicData):

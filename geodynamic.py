@@ -11,7 +11,6 @@ from mpl_toolkits.basemap import Basemap #to render maps
 import math
 from scipy.integrate import ode
 from scipy.optimize import fsolve
-from find_roots import *
 
 #personal routines
 import positions
@@ -36,6 +35,9 @@ class ModelGeodynamic():
     def __init__(self):
         self.rICB = 1221. #inner core radius in km.
 
+    def set_tauIC(self, tau):
+        self.tau_ic = tau
+
     def velocity(self, position, t):
         """ Velocity at the given position and given time. 
             
@@ -52,7 +54,6 @@ class ModelGeodynamic():
             return vt + np.array([-omega * r[1], omega * r[0], 0.] )
             """
         raise NotImplementedError("need to implement velocity() in derived class!")
-    
 
     def radius_ic(self, t):
         """ radius of the inner core with time. 
@@ -62,10 +63,10 @@ class ModelGeodynamic():
         raise NotImplementedError("need to implement velocity() in derived class!")
 
 
-    def find_age_beforex0(self, r0, t0, tau_ic, dx=1.):
+    def find_time_beforex0(self, r0, t0, tau_ic, dx=1.):
         """ find the first intersection between the trajectory and the radius of the IC
             
-            tau_ic is the age of inner core, and only ages of intersection smaller than x0 are output.
+            tau_ic is the age of inner core, and only times of intersection smaller than x0 are output.
             """
         solution = self.find_intersection(r0, t0, tau_ic)
         if tau_ic != 0:
@@ -122,8 +123,6 @@ class PureTranslation(ModelGeodynamic):
     def radius_ic(self, t):
         return self.rICB
 
-    def set_tauIC(self, tau):
-        self.tau_ic = tau
 
 
 if __name__ == '__main__':
@@ -140,6 +139,7 @@ if __name__ == '__main__':
     ax2[0].set_aspect('equal')
 
     point = 1221.*np.array([ 0.5, 0.5, 0.])
+    point = [-1092.47368421, -449.842105263, 0.0]
     print point
     print point[0], point[1]
     
@@ -169,6 +169,6 @@ if __name__ == '__main__':
     ax2[1].scatter(t0, np.sqrt(point[0]**2+point[1]**2+point[2]**2), c='r')
     
     print Model.find_intersection(point, t0, t0)
-    print Model.find_age_beforex0(point, t0, t0)
+    print Model.find_time_beforex0(point, t0, t0)
 
     plt.show()
