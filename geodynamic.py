@@ -105,7 +105,7 @@ class ModelGeodynamic():
         t1: tmax of the integration
             """
 
-        r = ode(self.velocity).set_integrator('zvode', method='adams')
+        r = ode(self.velocity).set_integrator('dopri5')
         r.set_initial_value(r0, t0) # .set_f_params() if the function has any parameters
         return np.real(r.integrate(r.t+(t1-t0)))
 

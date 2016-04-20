@@ -132,7 +132,7 @@ class SeismicData():
         r, theta, phi = self.extract_btpoints()
         r, theta, phi = self.extract_rtp("bottom_turning_point")
         x, y = m(phi, theta)
-        m.scatter(x, y, c=self.translation, zorder=10, cmap=cm)
+        m.scatter(x, y, c=self.proxy, zorder=10, cmap=cm)
         
         # TO DO : make a function to plot great circles correctly!
         #r1, theta1, phi1 = self.extract_in()
@@ -142,7 +142,7 @@ class SeismicData():
         #    m.plot(z, w, zorder=5, c="black")
         #    m.drawgreatcircle(phi1[i], theta1[i], phi2[i], theta2[i], zorder=5, c="black")
 
-        #plt.show()
+        plt.show()
 
 
 
