@@ -14,6 +14,7 @@ import data
 
 ## Choose a model in the list: 
     # geodynamic.PureTranslation(velocity_translation)
+    # geodynamic.TranslationRotation(velocity_translation, omega)
 
 
 ## Choose a data set:
@@ -23,39 +24,6 @@ import data
         # plot function is : 
 
 
-def evaluate_proxy(dataset, method):
-    """ evaluate the value of the proxy on all the points of the data set, using the choosen geodynamical method 
-    
-    dataset : a data.SeismicData object
-    method : a geodynamic.ModelGeodynamic object
-    """
-    # TO DO : choose evaluate on raypath or on BT point
-    time = np.empty_like(dataset.data_points)
-    for i, ray in enumerate(dataset.data_points):
-        if dataset.method == "bt_point":
-            point = ray.bottom_turning_point
-            time[i] = evaluate_singlepoint(point, method)[0]
-        elif dataset.method == "raypath":
-            N = dataset.NpointsRaypath
-            dataset.data_points[i].straigth_in_out(N)
-            raypath = ray.points
-            total_proxy = 0.
-            for j, point in enumerate(raypath):
-                _proxy = evaluate_singlepoint(point, method)[0]
-                total_proxy += _proxy
-            time[i] = total_proxy / float(N)    
-
-    return time
-
-def evaluate_singlepoint(point, method):
-    """ evaluate the proxy on a single data.Point instance, using the choosen method."""
-    x, y, z = point.x, point.y, point.z
-    time = method.find_time_beforex0([x, y, z], method.tau_ic, method.tau_ic)
-    return method.tau_ic-time
-
-
-
-
 
 
 
@@ -63,32 +31,42 @@ if __name__ == '__main__':
     
     rICB = 1221.
     age_ic = 1.e9 
-    velocity = 2. *rICB / 180e3 *np.array([0., 0., 1.])# translation velocity
-    
+    velocity = 2. *rICB / 180e3 *np.array([1., 0., 0.])# translation velocity
+    omega = 1.e-6 
+
+    # Non-dimensionalisation of the variables
+    velocity = velocity*age_ic
+    omega = omega*age_ic
 
     geodynModel = geodynamic.PureTranslation(velocity)
-    geodynModel.set_tauIC(age_ic)
+    #geodynModel = geodynamic.TranslationRotation(velocity, omega)
+    #geodynModel = geodynamic.PureGrowth()
+    geodynModel.set_tauIC(1.) # made dimensionless by using age_ic
+    geodynModel.set_exponent_growth(0.3)
 
 
     ##  perfect sampling equator
-    npoints = 10 #number of points in the x direction for the data set. 
+    npoints = 30 #number of points in the x direction for the data set. 
     data_set = data.PerfectSamplingEquator(npoints)
     data_set.method = "bt_point"
-    proxy = evaluate_proxy(data_set, geodynModel)
+    proxy = geodynamic.evaluate_proxy(data_set, geodynModel)
     data_set.proxy = proxy #evaluate_proxy(data_set, geodynModel)
-    data_set.plot_contourf()
+    data_set.plot_c_vec(geodynModel)
+    data_set.plot_scatter()
 
     ## real data set
     data_set2 = data.SeismicFromFile("results.dat")
     data_set2.method = "bt_point"
-    proxy2 = evaluate_proxy(data_set2, geodynModel)
+    proxy2 = geodynamic.evaluate_proxy(data_set2, geodynModel)
     data_set2.proxy = proxy2 #evaluate_proxy(data_set, geodynModel)
     data_set2.map_plot()
+    data_set2.phi_plot()
 
     ## real data set
     data_set3 = data.SeismicFromFile("results.dat")
     data_set3.method = "raypath"
-    data_set3.NpointsRaypath = 3 
-    proxy3 = evaluate_proxy(data_set3, geodynModel)
+    data_set3.NpointsRaypath = 20 
+    proxy3 = geodynamic.evaluate_proxy(data_set3, geodynModel)
     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
     data_set3.map_plot()
+    data_set3.phi_plot()

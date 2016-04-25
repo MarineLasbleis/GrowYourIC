@@ -145,6 +145,14 @@ class SeismicData():
         plt.show()
 
 
+    def phi_plot(self):
+        """ Plot proxy as function of longitude """
+
+        fig, ax = plt.subplots()
+        r, theta, phi = self.extract_rtp("bottom_turning_point")
+        ax.plot(phi, self.proxy, '.')
+
+        plt.show()
 
 
 class SeismicFromFile(SeismicData):
@@ -220,6 +228,45 @@ class PerfectSamplingEquator(SeismicData):
             Z[ix, iy] = pro
         Z = np.ma.array(Z, mask = Z==-1)    
         sc = ax.contourf(Y, X, Z, 100)
+        
+        plt.colorbar(sc)
+        plt.show()
+
+
+    def plot_c_vec(self, modelgeodyn):
+
+        fig, ax = plt.subplots()
+        ax.set_aspect('equal')
+        x = np.linspace(-self.rICB, self.rICB , 100)
+        ax.plot(x, np.sqrt(self.rICB**2-x**2), 'k')
+        ax.plot(x, -np.sqrt(self.rICB**2-x**2), 'k')
+        if hasattr(self, "proxy"):
+            proxy = self.proxy
+        else :
+            proxy = 1.
+        x1 = np.linspace(-self.rICB, self.rICB , self.N)
+        y1 = np.linspace(-self.rICB, self.rICB , self.N)
+        X, Y = np.meshgrid(x1, y1)
+        Z = -1.*np.ones_like(X)
+        x, y, z = self.extract_xyz("bottom_turning_point")
+        for it, pro in enumerate(proxy):
+            ix = [i for i, j in enumerate(x1) if j == x[it]]
+            iy = [i for i, j in enumerate(y1) if j == y[it]]
+            Z[ix, iy] = pro
+        mask_Z = Z==-1    
+        Z = np.ma.array(Z, mask = mask_Z)
+        sc = ax.contourf(Y, X, Z, 100)
+        
+        Vx, Vy = np.empty((self.N, self.N)), np.empty((self.N, self.N))
+        for ix, xi in enumerate(x1):
+            for iy, yi in enumerate(y1):
+                velocity = modelgeodyn.velocity(modelgeodyn.tau_ic, [X[ix, iy], Y[ix, iy], 0.])
+                Vx[ix, iy] = velocity[0]
+                Vy[ix, iy] = velocity[1]
+        Vx = np.ma.array(Vx, mask=mask_Z)
+        Vy = np.ma.array(Vy, mask=mask_Z)
+        ax.quiver(Y, X, Vx, Vy)
+
         plt.colorbar(sc)
         plt.show()
 
