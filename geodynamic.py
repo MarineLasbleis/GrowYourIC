@@ -54,11 +54,11 @@ def evaluate_singlepoint(point, method):
     time = method.find_time_beforex0([x, y, z], method.tau_ic, method.tau_ic)
     return method.tau_ic-time
 
-def trajectory_single_point(point, method, t0, t1, nt):
+def trajectory_single_point(point, method, t0, t1, num_t):
     """ return the trajectory of a point (a positions.Point instance) between the times t0 and t1, knowing that it was at the position.Point at t0, given nt times steps. 
     """
-    time = np.linspace(t0, t1, nt)
-    x, y, z = np.zeros(nt), np.zeros(nt). np.zeros(nt)
+    time = np.linspace(t0, t1, num_t)
+    x, y, z = np.zeros(num_t), np.zeros(num_t), np.zeros(num_t)
     x[0], y[0], z[0] = point.x, point.y, point.z
     for i, t in enumerate(time):
         point = method.integration_trajectory(t, [x[0], y[0], z[0]], t0)
@@ -181,6 +181,7 @@ class PureTranslation(ModelGeodynamic):
         ModelGeodynamic.__init__(self)
         self.name = "Translation"
         self.vt = vt # a np array (1,3)
+        assert (len(vt)==3), "The velocity need to be specified as [Vx, Vy, Vz]"
 
     def velocity(self, t, position):
         return self.vt
@@ -206,6 +207,26 @@ class TranslationRotation(ModelGeodynamic):
    
     def radius_ic(self, t):
         return self.rICB
+
+
+class PureRotation(ModelGeodynamic):
+
+    def __init__(self, omega):
+        ModelGeodynamic.__init__(self)
+        self.name = "Rotation"
+        self.omega = omega
+    
+    def velocity(self, t, r):
+        """ velocity at the point position
+
+        position is a np.array [x, y, z] 
+        """
+        
+        return np.array([-self.omega * r[1], self.omega * r[0], 0.] )
+   
+    def radius_ic(self, t):
+        return self.rICB
+
 
 
 class PureGrowth(ModelGeodynamic):
@@ -247,7 +268,41 @@ class TranslationGrowth(ModelGeodynamic):
 
 
 
+
 if __name__ == '__main__':
 
-    pass  
+    vt = [1.,0.,0.]
+    omega = np.pi 
+    Method = TranslationGrowth(vt)
+    Method = TranslationRotation(vt,omega)
+    Method.set_tauIC(1.)
+    Method.set_exponent_growth(0.5)
+    Method.set_rICB(1.)
 
+    point = positions.CartesianPoint(0.5, -0.5, 0.)
+    traj_x, traj_y, traj_z = trajectory_single_point(point, Method,  1., 0., 10 )
+    print traj_x, traj_y, traj_z
+    plt.plot(traj_x, traj_y, label=Method.name)
+
+    Method = PureTranslation(vt)
+    traj_x, traj_y, traj_z = trajectory_single_point(point, Method,  1., 0., 10 )
+    plt.plot(traj_x, traj_y, label=Method.name)
+
+    Method = PureGrowth()
+    traj_x, traj_y, traj_z = trajectory_single_point(point, Method,  1., 0., 10 )
+    plt.plot(traj_x, traj_y,'o-',  label=Method.name)
+
+
+    Method = PureRotation(omega)
+    traj_x, traj_y, traj_z = trajectory_single_point(point, Method,  1., 0., 10 )
+    plt.plot(traj_x, traj_y,'-',  label=Method.name)
+
+
+    phi = np.linspace(0, 2*np.pi)
+    x = np.cos(phi)
+    y = np.sin(phi)
+    plt.plot(x,y)
+
+    plt.axis('equal')
+    plt.legend()
+    plt.show()
