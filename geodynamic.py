@@ -25,6 +25,13 @@ def evaluate_proxy(dataset, method):
         method : a geodynamic.ModelGeodynamic object
         """
     # TO DO : choose evaluate on raypath or on BT point
+    print "==="
+    print "== Evaluate value of proxy for all points of the data set "
+    print "= Geodynamic model is ", method.name
+    print "= Data set is ", dataset.name
+    print "= Proxy is evaluate for ", dataset.method
+    print "= Number of points to examine: ", dataset.size 
+
     time = np.empty_like(dataset.data_points)
     for i, ray in enumerate(dataset.data_points):
         if dataset.method == "bt_point":
@@ -42,10 +49,23 @@ def evaluate_proxy(dataset, method):
     return time
 
 def evaluate_singlepoint(point, method):
-    """ evaluate the proxy on a single data.Point instance, using the choosen method."""
+    """ evaluate the proxy on a single positions.Point instance, using the choosen method."""
     x, y, z = point.x, point.y, point.z
     time = method.find_time_beforex0([x, y, z], method.tau_ic, method.tau_ic)
     return method.tau_ic-time
+
+def trajectory_single_point(point, method, t0, t1, nt):
+    """ return the trajectory of a point (a positions.Point instance) between the times t0 and t1, knowing that it was at the position.Point at t0, given nt times steps. 
+    """
+    time = np.linspace(t0, t1, nt)
+    x, y, z = np.zeros(nt), np.zeros(nt). np.zeros(nt)
+    x[0], y[0], z[0] = point.x, point.y, point.z
+    for i, t in enumerate(time):
+        point = method.integration_trajectory(t, [x[0], y[0], z[0]], t0)
+        x[i], y[i], z[i] = point[0], point[1], point[2]
+
+    return x, y, z 
+
 
 def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
     x_0, y_0, z_0 = point.x, point.y, point.z
@@ -68,6 +88,9 @@ class ModelGeodynamic():
 
     def set_exponent_growth(self, alpha):
         self.exponent_growth = alpha
+    
+    def set_rICB(self, RIC):
+        self.rICB = RIC#value by default is 1221, but can be changed if necessary. 
 
     def velocity(self, t, position):
         """ Velocity at the given position and given time. 
@@ -202,27 +225,29 @@ class PureGrowth(ModelGeodynamic):
         return self.rICB*(t/self.tau_ic)**self.exponent_growth
 
 
+
+class TranslationGrowth(ModelGeodynamic):
+
+    def __init__(self, vt):
+        ModelGeodynamic.__init__(self)
+        self.name = "Translation and Growth"
+        self.exponent_growth = None 
+        self.vt = vt # a np array (1,3)
+
+
+    def velocity(self, t, r):
+        """ velocity at the point position
+    
+        position is a np.array [x, y, z]
+        """
+        return self.vt 
+  
+    def radius_ic(self, t):
+        return self.rICB*(t/self.tau_ic)**self.exponent_growth
+
+
+
 if __name__ == '__main__':
 
-    
-    rICB = 1221.
-    vt = 1221.*np.array([1., 0.,     0. ])
-    t0 = 1.
-    Model = PureGrowth()
-    Model.set_tauIC(t0)
-    Model.set_exponent_growth(0.3)
+    pass  
 
-    point = positions.CartesianPoint(0.75*1221., 0., 0.)
-    print "age", evaluate_singlepoint(point, Model)
-    radius = np.linspace(0., 1221., 10)
-    age = np.zeros_like(radius)
-
-    for ip, r in enumerate(radius):
-        r0 = [r, 0., 0.]
-        point = positions.CartesianPoint(r, 0., 0.)
-        age[ip] = evaluate_singlepoint(point, Model)
-
-    print age
-    plt.plot(radius, age)
-    plt.plot(radius, t0-(radius/rICB)**(1./Model.exponent_growth))
-    plt.show()

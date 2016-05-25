@@ -142,7 +142,7 @@ class SeismicData():
         #    m.plot(z, w, zorder=5, c="black")
         #    m.drawgreatcircle(phi1[i], theta1[i], phi2[i], theta2[i], zorder=5, c="black")
 
-        plt.show()
+        #plt.show()
 
 
     def phi_plot(self):
@@ -152,7 +152,7 @@ class SeismicData():
         r, theta, phi = self.extract_rtp("bottom_turning_point")
         ax.plot(phi, self.proxy, '.')
 
-        plt.show()
+        #plt.show()
 
 
 class SeismicFromFile(SeismicData):
@@ -161,6 +161,7 @@ class SeismicFromFile(SeismicData):
         
         SeismicData.__init__(self)
 
+        self.name = "Data set from Lauren's file"
         #seismic data set (from Lauren's file)
         self.filename = filename
         self.slices = ["PKIKP-PKiKP travel time residual", "turn lat", "turn lon", "turn depth", "in lat", "in lon", "out lat", "out lon"]
@@ -185,6 +186,7 @@ class PerfectSamplingEquator(SeismicData):
         SeismicData.__init__(self)
         self.rICB = 1221.
         self.N = N
+        self.name = "Perfect sampling in the equatorial plane"
         for x in np.linspace(-self.rICB, self.rICB, N):
             for y in np.linspace(-self.rICB, self.rICB, N):
                 ray = positions.Raypath()
@@ -205,7 +207,7 @@ class PerfectSamplingEquator(SeismicData):
         x, y, z = self.extract_xyz("bottom_turning_point")
         sc = ax.scatter(x, y, c=proxy)
         plt.colorbar(sc)
-        plt.show()
+        #plt.show()
 
     def plot_contourf(self):
         fig, ax = plt.subplots()
@@ -230,7 +232,7 @@ class PerfectSamplingEquator(SeismicData):
         sc = ax.contourf(Y, X, Z, 100)
         
         plt.colorbar(sc)
-        plt.show()
+        #plt.show()
 
 
     def plot_c_vec(self, modelgeodyn):
@@ -268,7 +270,7 @@ class PerfectSamplingEquator(SeismicData):
         ax.quiver(Y, X, Vx, Vy)
 
         plt.colorbar(sc)
-        plt.show()
+        #plt.show()
 
 class RandomData(SeismicData):
     pass

@@ -23,24 +23,30 @@ import data
     # data.PerfectSamplingEquator(numbers_of_points)
         # plot function is : 
 
-
+## Choose a visualization tool:
+    # surface plot
+    # meridional section
+    # equatorial section
+    
+    
 
 
 
 if __name__ == '__main__':
     
     rICB = 1221.
-    age_ic = 1.e9 
+    age_ic = 1000e3 
     velocity = 2. *rICB / 180e3 *np.array([1., 0., 0.])# translation velocity
-    omega = 1.e-6 
+    omega = 1.e-7 
 
     # Non-dimensionalisation of the variables
     velocity = velocity*age_ic
     omega = omega*age_ic
 
-    geodynModel = geodynamic.PureTranslation(velocity)
+    #geodynModel = geodynamic.PureTranslation(velocity)
     #geodynModel = geodynamic.TranslationRotation(velocity, omega)
     #geodynModel = geodynamic.PureGrowth()
+    geodynModel = geodynamic.TranslationGrowth(velocity)
     geodynModel.set_tauIC(1.) # made dimensionless by using age_ic
     geodynModel.set_exponent_growth(0.3)
 
@@ -53,6 +59,8 @@ if __name__ == '__main__':
     data_set.proxy = proxy #evaluate_proxy(data_set, geodynModel)
     data_set.plot_c_vec(geodynModel)
     data_set.plot_scatter()
+
+    plt.show()
 
     ## real data set
     data_set2 = data.SeismicFromFile("results.dat")
@@ -70,3 +78,5 @@ if __name__ == '__main__':
     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
     data_set3.map_plot()
     data_set3.phi_plot()
+
+    plt.show()
