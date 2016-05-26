@@ -54,18 +54,18 @@ def evaluate_singlepoint(point, method):
     time = method.find_time_beforex0([x, y, z], method.tau_ic, method.tau_ic)
     return method.tau_ic-time
 
-def trajectory_single_point(point, method, t0, t1, num_t):
-    """ return the trajectory of a point (a positions.Point instance) between the times t0 and t1, knowing that it was at the position.Point at t0, given nt times steps. 
-    """
-    time = np.linspace(t0, t1, num_t)
-    x, y, z = np.zeros(num_t), np.zeros(num_t), np.zeros(num_t)
-    x[0], y[0], z[0] = point.x, point.y, point.z
-    for i, t in enumerate(time):
-        point = method.integration_trajectory(t, [x[0], y[0], z[0]], t0)
-        x[i], y[i], z[i] = point[0], point[1], point[2]
-
-    return x, y, z 
-
+#def trajectory_single_point(point, method, t0, t1, num_t):
+#    """ return the trajectory of a point (a positions.Point instance) between the times t0 and t1, knowing that it was at the position.Point at t0, given nt times steps. 
+#    """
+#    time = np.linspace(t0, t1, num_t)
+#    x, y, z = np.zeros(num_t), np.zeros(num_t), np.zeros(num_t)
+#    x[0], y[0], z[0] = point.x, point.y, point.z
+#    for i, t in enumerate(time):
+#        point = method.integration_trajectory(t, [x[0], y[0], z[0]], t0)
+#        x[i], y[i], z[i] = point[0], point[1], point[2]
+#
+#    return x, y, z 
+#
 
 def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
     x_0, y_0, z_0 = point.x, point.y, point.z
@@ -169,10 +169,49 @@ class ModelGeodynamic():
         t0: initial time
         t1: tmax of the integration
             """
-
         r = ode(self.velocity).set_integrator('dopri5')
         r.set_initial_value(r0, t0) # .set_f_params() if the function has any parameters
         return np.real(r.integrate(r.t+(t1-t0)))
+
+    def trajectory_single_point(self, point, t0, t1, num_t):
+        """ return the trajectory of a point (a positions.Point instance) between the times t0 and t1, knowing that it was at the position.Point at t0, given nt times steps. 
+        """
+        time = np.linspace(t0, t1, num_t)
+        x, y, z = np.zeros(num_t), np.zeros(num_t), np.zeros(num_t)
+        x[0], y[0], z[0] = point.x, point.y, point.z
+        for i, t in enumerate(time):
+            point = self.integration_trajectory(t, [x[0], y[0], z[0]], t0)
+            x[i], y[i], z[i] = point[0], point[1], point[2]
+    
+        return x, y, z 
+    
+
+
+    def plot_equatorial(self, t0, t1, Nt = 200,  N=40):
+        
+        
+
+        # Plot the inner core boundary
+        phi = np.linspace(0., 2*np.pi, N)
+        x, y = self.rICB*np.cos(phi), self.rICB*np.sin(phi)
+        plt.plot(x, y, 'b')
+
+        for i, phi in enumerate(phi):
+            trajx, trajy, trajz = self.trajectory_single_point(positions.CartesianPoint(x[i], y[i], 0.), t0, t1, Nt)
+            trajectory_r = np.sqrt(trajx**2. + trajy**2 + trajz**2)
+            mx = np.ma.masked_array(trajx, mask = trajectory_r >= self.rICB)
+            my = np.ma.masked_array(trajy, mask = trajectory_r >= self.rICB)
+            plt.plot(mx, my)
+            plt.plot(mx[::10], my[::10], '+b')
+            velocity = self.velocity(self.tau_ic, [trajx, trajy, trajz])
+            plt.quiver(mx[::10], my[::10], np.ma.masked_array(velocity[0], mask = trajectory_r >= self.rICB)[::10], np.ma.masked_array(velocity[1], mask = trajectory_r >= self.rICB)[::10], units='width')
+            
+
+
+        plt.axis("equal")
+        plt.xlim([-1,1])
+        plt.ylim([-1,1])
+        plt.show()
 
 
 class PureTranslation(ModelGeodynamic):
@@ -271,34 +310,58 @@ class TranslationGrowth(ModelGeodynamic):
 
 if __name__ == '__main__':
 
-    vt = [1.,0.,0.]
-    omega = np.pi 
-    Method = TranslationGrowth(vt)
-    Method = TranslationRotation(vt,omega)
-    Method.set_tauIC(1.)
-    Method.set_exponent_growth(0.5)
-    Method.set_rICB(1.)
+    vt = [2.,0.,0.]
+    omega = 0.5*np.pi 
 
-    point = positions.CartesianPoint(0.5, -0.5, 0.)
-    traj_x, traj_y, traj_z = trajectory_single_point(point, Method,  1., 0., 10 )
-    print traj_x, traj_y, traj_z
-    plt.plot(traj_x, traj_y, label=Method.name)
+    points = [positions.CartesianPoint(-0.2, 0.85, 0.)]
+    N = 20
 
-    Method = PureTranslation(vt)
-    traj_x, traj_y, traj_z = trajectory_single_point(point, Method,  1., 0., 10 )
-    plt.plot(traj_x, traj_y, label=Method.name)
-
-    Method = PureGrowth()
-    traj_x, traj_y, traj_z = trajectory_single_point(point, Method,  1., 0., 10 )
-    plt.plot(traj_x, traj_y,'o-',  label=Method.name)
+    for point in points:
 
 
-    Method = PureRotation(omega)
-    traj_x, traj_y, traj_z = trajectory_single_point(point, Method,  1., 0., 10 )
-    plt.plot(traj_x, traj_y,'-',  label=Method.name)
+        Method = TranslationRotation(vt,omega)
+        Method.set_tauIC(1.)
+        Method.set_exponent_growth(0.5)
+        Method.set_rICB(1.)
+        traj_x, traj_y, traj_z = Method.trajectory_single_point(point,  1., 0., N )
+        plt.plot(traj_x, traj_y, label=Method.name)
+
+        time = Method.find_intersection([point.x, point.y, point.z], 1., 0.)
+        pos = Method.integration_trajectory(time, [point.x, point.y, point.z], 1.)
+        plt.plot(pos[0], pos[1], 'bo')
+    
+        Method = PureTranslation(vt)
+        Method.set_tauIC(1.)
+        Method.set_exponent_growth(0.5)
+        Method.set_rICB(1.)
+ 
+        traj_x, traj_y, traj_z = Method.trajectory_single_point(point, 1., 0., N )
+        plt.plot(traj_x, traj_y, label=Method.name)
+        time = Method.find_intersection([point.x, point.y, point.z], 1., 0.)
+        pos = Method.integration_trajectory(time, [point.x, point.y, point.z], 1.)
+        plt.plot(pos[0], pos[1], 'bo')
+
+        Method = PureGrowth()
+        Method.set_tauIC(1.)
+        Method.set_exponent_growth(0.5)
+        Method.set_rICB(1.)
+        traj_x, traj_y, traj_z = Method.trajectory_single_point(point,  1., 0., N )
+        plt.plot(traj_x, traj_y,'o-',  label=Method.name)
+        time = Method.find_intersection([point.x, point.y, point.z], 1., 3.)
+        pos = Method.integration_trajectory(time, [point.x, point.y, point.z], 1.)
+        plt.plot(pos[0], pos[1], 'bo')
 
 
-    phi = np.linspace(0, 2*np.pi)
+
+        Method = PureRotation(omega)
+        Method.set_tauIC(1.)
+        Method.set_exponent_growth(0.5)
+        Method.set_rICB(1.)
+        traj_x, traj_y, traj_z = Method.trajectory_single_point(point,  1., 0., N )
+        plt.plot(traj_x, traj_y,'-',  label=Method.name)
+
+
+    phi = np.linspace(0, 2*np.pi, 50)
     x = np.cos(phi)
     y = np.sin(phi)
     plt.plot(x,y)
@@ -306,3 +369,33 @@ if __name__ == '__main__':
     plt.axis('equal')
     plt.legend()
     plt.show()
+
+    positions_x = np.linspace(-1., 1., 10)
+    positions_y = np.linspace(-1., 1, 10)
+    points = []
+    for x in positions_x:
+        for y in positions_y:
+            points.append(positions.CartesianPoint(x, y, 0.)) 
+    
+    N = 20
+
+    for point in points:
+
+
+        Method = TranslationRotation(vt,omega)
+        Method.set_tauIC(1.)
+        Method.set_exponent_growth(0.5)
+        Method.set_rICB(1.)
+        traj_x, traj_y, traj_z = Method.trajectory_single_point(point,  1., 0., N )
+        plt.plot(traj_x, traj_y, label=Method.name)
+
+
+
+    phi = np.linspace(0, 2*np.pi, 50)
+    x = np.cos(phi)
+    y = np.sin(phi)
+    plt.plot(x,y)
+
+    plt.axis('equal')
+    plt.show()
+
