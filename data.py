@@ -14,7 +14,6 @@ import positions
 import geodynamic
 import plot_data
 
-RICB = 1221.
 
 def read_from_file(filename, names=["station", "PKIKP-PKiKP travel time residual", "zeta", "epicentral distance", "station lat", "stat    ion lon", "event lat", "event lon", "event depth", "in lat", "in lon", "out lat", "out lon", "turn lat", "turn lon", "turn depth", "in    ner core travel time", "PKIKP/PKiKP amplitude ratio"], slices="all"):
     """ read seismic data repartition
@@ -157,7 +156,7 @@ class SeismicData():
 
 class SeismicFromFile(SeismicData):
 
-    def __init__(self, filename="results.dat"):
+    def __init__(self, filename="results.dat", RICB=1221.):
         
         SeismicData.__init__(self)
 
@@ -182,9 +181,9 @@ class SeismicFromFile(SeismicData):
 
 class PerfectSamplingEquator(SeismicData):
     
-    def __init__(self, N):
+    def __init__(self, N, rICB = 1221.):
         SeismicData.__init__(self)
-        self.rICB = 1221.
+        self.rICB = rICB
         self.N = N
         self.name = "Perfect sampling in the equatorial plane"
         for x in np.linspace(-self.rICB, self.rICB, N):
@@ -267,8 +266,8 @@ class PerfectSamplingEquator(SeismicData):
                 Vy[ix, iy] = velocity[1]
         Vx = np.ma.array(Vx, mask=mask_Z)
         Vy = np.ma.array(Vy, mask=mask_Z)
-        ax.quiver(Y, X, Vx, Vy)
-
+        #ax.quiver(X, Y, Vx, Vy)
+        ax.streamplot(X,Y,Vx,Vy, color='black', arrowstyle = '->')
         plt.colorbar(sc)
         #plt.show()
 
