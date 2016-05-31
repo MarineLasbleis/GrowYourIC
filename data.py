@@ -131,7 +131,8 @@ class SeismicData():
         r, theta, phi = self.extract_btpoints()
         r, theta, phi = self.extract_rtp("bottom_turning_point")
         x, y = m(phi, theta)
-        m.scatter(x, y, c=self.proxy, zorder=10, cmap=cm)
+        proxy = np.array([self.proxy]).T.astype(float)
+        m.scatter(x, y, c=proxy, zorder=10, cmap=cm)
         
         # TO DO : make a function to plot great circles correctly!
         #r1, theta1, phi1 = self.extract_in()
@@ -182,9 +183,9 @@ class SeismicFromFile(SeismicData):
 
         for i, row in self.data.iterrows():
             ray = positions.Raypath()
-            ray.add_b_t_point(positions.SeismoPoint(RICB-row["turn depth"], row["turn lat"], row["turn lon"]))
-            in_Point = positions.SeismoPoint(RICB, row["in lat"], row["in lon"])
-            out_Point = positions.SeismoPoint(RICB, row["out lat"], row["out lon"])
+            ray.add_b_t_point(positions.SeismoPoint(1.-row["turn depth"]/RICB, row["turn lat"], row["turn lon"]))
+            in_Point = positions.SeismoPoint(1., row["in lat"], row["in lon"])
+            out_Point = positions.SeismoPoint(1., row["out lat"], row["out lon"])
             ray.add_in_out(in_Point, out_Point)
             self.data_points = np.append(self.data_points, ray)
             #self.data_points.append(ray)

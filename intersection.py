@@ -49,7 +49,7 @@ def zero_brentq(f, *args, **kwargs):
     if b>a: b,a = a,b
 
     iterations = 0
-    while np.sign(f(a, *args)) == np.sign(f(b, *args)) and iterations <= 10 :
+    while np.sign(f(a, *args)) == np.sign(f(b, *args)) and iterations <= 10 and a!=b:
         if iterations == 0:
             print "Please choose other values for the interval so that the function changes sign between the two borns."
             a, b = choose_interval_on_graph(f, a, b, *args)
@@ -60,8 +60,11 @@ def zero_brentq(f, *args, **kwargs):
         else:
             a, b = choose_interval_on_graph(f, a-(b-a), b+(b-a), *args)
         iterations += 1    
-
-    return brentq(f, a, b, args = args)
+    if a==b: 
+        solution = 0.
+    else: 
+        solution = brentq(f, a, b, args = args)
+    return solution
 
 def choose_interval_on_graph(f, a, b, *args):
     """ allow the user to click on graph to choose an interval."""
@@ -72,12 +75,15 @@ def choose_interval_on_graph(f, a, b, *args):
     x_val = np.linspace(a, b, 100)
     f_val = np.zeros_like(x_val)
     for i, x in enumerate(x_val): f_val[i] = f(x, *args)
-    ax.plot(x_val, f_val) 
-    ax.plot(x_val, x_val*0.)
+    ax.plot(x_val, f_val, label='function') 
+    ax.plot(x_val, x_val*0., label='zero')
     ax.set_title("Please click on two points to define the interval.")
     cid = fig.canvas.mpl_connect('button_press_event', onclick_two)
+    cid2 = fig.canvas.mpl_connect('key_press_event', onkey)
+    plt.legend()
     plt.show()
     fig.canvas.mpl_disconnect(cid)
+    fig.canvas.mpl_disconnect(cid2)
     return coords[0], coords[1] 
 
 
@@ -111,8 +117,8 @@ def choose_interval_on_graph(f, a, b, *args):
 
 def onclick(event):
     global position_x
-    print('button=%d, xdata=%f, ydata=%f' %
-          (event.button, event.xdata, event.ydata))
+    # print('button=%d, xdata=%f, ydata=%f' %
+    #       (event.button, event.xdata, event.ydata))
     position_x = event.xdata
     plt.close()
 
@@ -125,6 +131,10 @@ def onclick_two(event):
     if len(coords)==2:
         plt.close()
 
+def onkey(event):
+    global coords
+    coords = [0., 0.]
+    plt.close()
 
 if __name__ == "__main__":
 

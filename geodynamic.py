@@ -43,10 +43,10 @@ def evaluate_proxy(dataset, method):
             raypath = ray.points
             total_proxy = 0.
             for j, point in enumerate(raypath):
-                _proxy = proxy_singlepoint(point)[0]
+                _proxy = method.proxy_singlepoint(point)
                 total_proxy += _proxy
             time[i] = total_proxy / float(N)
-    return time
+    return time 
 
 # def evaluate_singlepoint(point, method):
 #     """ evaluate the proxy on a single positions.Point instance, using the choosen method."""
@@ -82,6 +82,11 @@ class ModelGeodynamic():
     
     def __init__(self):
         self.rICB = 1221. #inner core radius in km.
+
+    def set_parameters(self, dict_param):
+        """ add any parameter of the form {'param':value} as self.param = value """
+        for k, v in dict_param.items():
+            setattr(self, k, v)
 
     def set_tauIC(self, tau):
         self.tau_ic = tau

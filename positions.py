@@ -87,6 +87,10 @@ class Point:
         assert(self.z != None)
         self.r, self.theta, self.phi = from_cartesian_to_seismo(self.x, self.y, self.z)
 
+    def dimensionless(self, lengthscale):
+        self.r = self.r/lengthscale
+        self.x, self.y, self.z = self.x/lengthscale, self.y/lengthscale, self.z/lengthscale  
+
     def create_random_point(self, set_method="uniform", rICB=1221.):#,type_="turningpoint", seismo="surface"):
         """ Create a random point (not raypath)
 
@@ -98,14 +102,14 @@ class Point:
         theta = (np.arccos(2*np.random.uniform(0.,1.)-1)*180./np.pi)-90
         return r, theta, phi
 
-    def move(self, dx):
-        """ move the point by dx (dx is a cartesian vector) """
-        self.x += dx[0]
-        self.y += dx[1]
-        self.z += dx[2]
-        self.add_seismo()
-
-        #TODO : set other methods of randomisation!
+#       def move(self, dx):
+#           """ move the point by dx (dx is a cartesian vector) """
+#           self.x += dx[0]
+#           self.y += dx[1]
+#           self.z += dx[2]
+#           self.add_seismo()
+#   
+#           #TODO : set other methods of randomisation!
 
 class SeismoPoint(Point):
 
@@ -172,10 +176,10 @@ class Raypath:
         
     def straigth_in_out(self, N):
         """ Trajectory is a straigth line between in and out points, with N points. """
-        if not (self.in_point == None or self.out_point == None):
+        try:
             self.points = []
             self.points, self.length = self.straigth_trajectory(self.in_point, self.out_point, N)
-        else:
+        except(NameError, AttributeError):
             raise Exception("in and out points have not been defined!")
         
     def straigth_in_out_bt(self, N):
@@ -186,7 +190,6 @@ class Raypath:
             self.points = []
             self.length = length1+length2
             self.points = points1 + points2[1:]
-            
         else:
             raise Exception("in, out or bottom turning points have not been defined!")
 
@@ -198,14 +201,16 @@ class Raypath_BT(Raypath):
         Raypath.__init__(self)
         self.add_b_t_point(point)
         self.add_direction(zeta)
-        
+
 
 class Raypath_inout(Raypath):
     """ Raypath defined primarly by the in and out points """
     def __init__(self, point_in, point_out):
         Raypath.__init__(self)
         self.add_in_out(point_in, point_out)
-        
+
+
+
 if __name__ == '__main__':
 
 
