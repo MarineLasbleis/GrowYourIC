@@ -153,6 +153,17 @@ class SeismicData():
 
         #plt.show()
 
+    def adimension(self, scale):
+        """ coordinates of points in the data set are made dimensionless using the value of scale """
+
+        if self.size == None :
+            raise IndexError("The data set is empty!")
+        elif self.size <= 0:
+            raise IndexError("The data set is empty!")
+        else:
+            for i, ray in self.data_points:
+                self.data_points[i].adim(scale)
+
 
 class SeismicFromFile(SeismicData):
 
@@ -200,13 +211,14 @@ class PerfectSamplingEquator(SeismicData):
         ax.plot(x, np.sqrt(self.rICB**2-x**2), 'k')
         ax.plot(x, -np.sqrt(self.rICB**2-x**2), 'k')
         if hasattr(self, "proxy"):
-            proxy = self.proxy
+            proxy = np.array([self.proxy]).T.astype(float)
         else :
             proxy = 1.
         x, y, z = self.extract_xyz("bottom_turning_point")
         sc = ax.scatter(x, y, c=proxy)
+        plt.axis("equal")
         plt.colorbar(sc)
-        #plt.show()
+        plt.show()
 
     def plot_contourf(self):
         fig, ax = plt.subplots()

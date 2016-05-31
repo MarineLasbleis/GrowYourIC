@@ -14,7 +14,7 @@ from scipy.optimize import fsolve
 
 #personal routines
 import positions
-
+import intersection 
 
 RICB = 1221.
 
@@ -36,24 +36,24 @@ def evaluate_proxy(dataset, method):
     for i, ray in enumerate(dataset.data_points):
         if dataset.method == "bt_point":
             point = ray.bottom_turning_point
-            time[i] = evaluate_singlepoint(point, method)[0]
+            time[i] = method.proxy_singlepoint(point)
         elif dataset.method == "raypath":
             N = dataset.NpointsRaypath
             dataset.data_points[i].straigth_in_out(N)
             raypath = ray.points
             total_proxy = 0.
             for j, point in enumerate(raypath):
-                _proxy = evaluate_singlepoint(point, method)[0]
+                _proxy = proxy_singlepoint(point)[0]
                 total_proxy += _proxy
             time[i] = total_proxy / float(N)
     return time
 
-def evaluate_singlepoint(point, method):
-    """ evaluate the proxy on a single positions.Point instance, using the choosen method."""
-    x, y, z = point.x, point.y, point.z
-    time = method.find_time_beforex0([x, y, z], method.tau_ic, method.tau_ic)
-    return method.tau_ic-time
-
+# def evaluate_singlepoint(point, method):
+#     """ evaluate the proxy on a single positions.Point instance, using the choosen method."""
+#     x, y, z = point.x, point.y, point.z
+#     time = method.find_time_beforex0([x, y, z], method.tau_ic, method.tau_ic)#method.tau_ic)
+#     return method.tau_ic-time
+# 
 #def trajectory_single_point(point, method, t0, t1, num_t):
 #    """ return the trajectory of a point (a positions.Point instance) between the times t0 and t1, knowing that it was at the position.Point at t0, given nt times steps. 
 #    """
@@ -92,6 +92,22 @@ class ModelGeodynamic():
     def set_rICB(self, RIC):
         self.rICB = RIC#value by default is 1221, but can be changed if necessary. 
 
+    def set_vt(self, vt):
+        while True:
+            try:
+                assert(len(vt)==3)
+            except AssertionError:
+                print "Translation velocity needs to have 3 components. Please enter the 3 cartesians components of the velocity: "
+                vt = map(float, raw_input("Translation velocity: ").split())
+                continue #come back to check if valid answer
+            else:
+                break #no error raise!
+        self.vt = vt
+
+    def set_rotation(self, omega):
+        self.omega = omega
+
+
     def velocity(self, t, position):
         """ Velocity at the given position and given time. 
             
@@ -117,41 +133,24 @@ class ModelGeodynamic():
         raise NotImplementedError("need to implement velocity() in derived class!")
 
 
-    def find_time_beforex0(self, r0, t0, tau_ic, dx=1.):
-        """ find the first intersection between the trajectory and the radius of the IC
-            
-            tau_ic is the age of inner core, and only times of intersection smaller than x0 are output.
-            """
-        solution = self.find_intersection(r0, t0, 0.) #tau_ic)
-        if tau_ic != 0:
-            dx = max(tau_ic/300., min(dx, tau_ic/20.))
-            # just to check if the dx has been chosen OK. Assuming tau_ic is the age of the IC, dx should be about tau_ic/50. It should not be bigger than tau_ic/50 or smaller than x0/300. (rule of thumb)
-        N =0
-        while solution > tau_ic  and N <= 300:
-            N += 1
-            solution = self.find_intersection(r0, t0, tau_ic-N*dx)
-            if N == 300:
-                print "No intersection found."
-        return solution
+    def find_time_beforex0(self, point, t0, t1):
+        """ find the intersection between the trajectory and the radius of the IC
+        if needed, can be re defined in derived class!
 
-    def find_intersection(self, r0, t0, x0, test=False):
-        """ intersection between the trajectory and the radius, using fsolve method of scipy.optimize
-        
-        return the time corresponding to the intersection.
-        x0 is the value used for starting the search (fsolve gives only one root)
+        point : [x, y, z]
         """
-        if test:    
-            time = np.linspace(0., self.tau_ic, 20)
-            trajectory = np.zeros_like(time)
-            radius = np.zeros_like(time)
-            for i, t in enumerate(time):
-                trajectory[i] = self.trajectory_r(t, r0, t0)
-                radius[i] = self.radius_ic(t)
-            solution = fsolve(lambda x : self.trajectory_r(x, r0, t0)-self.radius_ic(x), x0)     
-            plt.plot(time, trajectory, time, radius)
-            plt.scatter(solution, self.radius_ic(solution))
-            plt.show()
-        return fsolve(lambda x : self.trajectory_r(x, r0, t0)-self.radius_ic(x), x0)
+        return intersection.zero_brentq(self.distance_to_radius, point, t0, a=0., b=t1)
+
+
+    def proxy_singlepoint(self, point):
+        """ evaluate the proxy on a single positions.Point instance."""
+        ## TODO proxy here is age only. Please change this if needed.
+        x, y, z = point.x, point.y, point.z
+        time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic)#method.tau_ic)
+        return self.tau_ic-time
+
+    def distance_to_radius(self, t, r0, t0):
+        return self.trajectory_r(t, r0, t0)-self.radius_ic(t)
 
     def trajectory_r(self, t, r0, t0):
         """ for a point at position r0 at time t0, return the radial component of the position of the point at time t.
@@ -182,20 +181,13 @@ class ModelGeodynamic():
         for i, t in enumerate(time):
             point = self.integration_trajectory(t, [x[0], y[0], z[0]], t0)
             x[i], y[i], z[i] = point[0], point[1], point[2]
-    
         return x, y, z 
     
-
-
     def plot_equatorial(self, t0, t1, Nt = 200,  N=40):
-        
-        
-
         # Plot the inner core boundary
         phi = np.linspace(0., 2*np.pi, N)
         x, y = self.rICB*np.cos(phi), self.rICB*np.sin(phi)
         plt.plot(x, y, 'b')
-
         for i, phi in enumerate(phi):
             trajx, trajy, trajz = self.trajectory_single_point(positions.CartesianPoint(x[i], y[i], 0.), t0, t1, Nt)
             trajectory_r = np.sqrt(trajx**2. + trajy**2 + trajz**2)
@@ -205,55 +197,91 @@ class ModelGeodynamic():
             plt.plot(mx[::10], my[::10], '+b')
             velocity = self.velocity(self.tau_ic, [trajx, trajy, trajz])
             plt.quiver(mx[::10], my[::10], np.ma.masked_array(velocity[0], mask = trajectory_r >= self.rICB)[::10], np.ma.masked_array(velocity[1], mask = trajectory_r >= self.rICB)[::10], units='width')
-            
-
-
         plt.axis("equal")
         plt.xlim([-1,1])
         plt.ylim([-1,1])
         plt.show()
 
+    def translation_velocity(self):
+        try:
+            self.vt
+            assert(len(self.vt)==3)
+            return self.vt
+        except (NameError, AttributeError):
+            print "translation velocity has not been given. Please enter the three components of the velocity: (be careful, it has to be dimensionless)"
+            value = map(float, raw_input("Translation velocity: ").split())
+            self.set_vt(value)
+
+    def rotation_velocity(self, r):
+        try:
+            self.omega
+        except (NameError, AttributeError):
+            print "Rotation velocity has not been defined. Please enter the value for omega: "
+            value = float(input("Rotation rate: "))
+            self.set_rotation(value)
+        return np.array([-self.omega * r[1], self.omega * r[0], 0.] )    
+
+    def growth_ic(self, t):
+        try:
+            self.rICB
+        except (AttributeError, NameError):
+            print "The value of rICB has not been provided. Please enter it now: "
+            value = float(input("rICB: "))
+            self.set_rICB(value)
+        try:
+            assert(self.tau_ic != None)
+        except (AttributeError, NameError, AssertionError):
+            print "The value of tau_ic has not been provided. Please enter it now: "
+            value = float(input("tau_ic: "))
+            self.set_tauIC(value)
+        try:
+            assert(self.exponent_growth != None)
+        except (AttributeError, NameError, AssertionError):
+            print "The value of exponent_growth has not been provided. Please enter it now: "
+            value = float(input("exponent growth: "))
+            self.set_exponent_growth(value)
+        return self.rICB*(t/self.tau_ic)**self.exponent_growth
 
 class PureTranslation(ModelGeodynamic):
     
-    def __init__(self, vt):
+    def __init__(self):
         ModelGeodynamic.__init__(self)
         self.name = "Translation"
-        self.vt = vt # a np array (1,3)
-        assert (len(vt)==3), "The velocity need to be specified as [Vx, Vy, Vz]"
 
     def velocity(self, t, position):
-        return self.vt
+      #  position = np.array(position)
+      #  if position.ndim == 1: 
+      #      ncols= 1
+      #  else: 
+      #      nlines, ncols = position.shape
+      #  return np.repeat([self.vt], ncols, axis=0)
+        return self.translation_velocity() 
 
     def radius_ic(self, t):
         return self.rICB
 
+
 class TranslationRotation(ModelGeodynamic):
 
-    def __init__(self, vt, omega):
+    def __init__(self):
         ModelGeodynamic.__init__(self)
         self.name = "TranslationRotation"
-        self.vt = vt # a np array (1,3)
-        self.omega = omega
     
     def velocity(self, t, r):
         """ velocity at the point position
 
         position is a np.array [x, y, z] 
         """
-        
-        return self.vt + np.array([-self.omega * r[1], self.omega * r[0], 0.] )
+        return self.translation_velocity() + self.rotation_velocity(r)
    
     def radius_ic(self, t):
         return self.rICB
 
-
 class PureRotation(ModelGeodynamic):
 
-    def __init__(self, omega):
+    def __init__(self):
         ModelGeodynamic.__init__(self)
         self.name = "Rotation"
-        self.omega = omega
     
     def velocity(self, t, r):
         """ velocity at the point position
@@ -261,7 +289,7 @@ class PureRotation(ModelGeodynamic):
         position is a np.array [x, y, z] 
         """
         
-        return np.array([-self.omega * r[1], self.omega * r[0], 0.] )
+        return self.rotation_velocity() 
    
     def radius_ic(self, t):
         return self.rICB
@@ -269,10 +297,10 @@ class PureRotation(ModelGeodynamic):
 
 
 class PureGrowth(ModelGeodynamic):
+
     def __init__(self):
         ModelGeodynamic.__init__(self)
         self.name = "PureGrowth"
-        self.exponent_growth = None 
     
     def velocity(self, t, r):
         """ velocity at the point position
@@ -282,17 +310,32 @@ class PureGrowth(ModelGeodynamic):
         return np.array([0.,0.,0.]) 
   
     def radius_ic(self, t):
-        return self.rICB*(t/self.tau_ic)**self.exponent_growth
+        return self.growth_ic(t) 
 
 
 
 class TranslationGrowth(ModelGeodynamic):
 
-    def __init__(self, vt):
+    def __init__(self):
         ModelGeodynamic.__init__(self)
         self.name = "Translation and Growth"
-        self.exponent_growth = None 
-        self.vt = vt # a np array (1,3)
+
+    def velocity(self, t, r):
+        """ velocity at the point position
+    
+        position is a np.array [x, y, z]
+        """
+        return self.translation_velocity() 
+  
+    def radius_ic(self, t):
+        return self.growth_ic(t)
+
+
+class TranslationGrowthRotation(ModelGeodynamic):
+
+    def __init__(self):
+        ModelGeodynamic.__init__(self)
+        self.name = "Translation, Rotation and Growth"
 
 
     def velocity(self, t, r):
@@ -300,10 +343,11 @@ class TranslationGrowth(ModelGeodynamic):
     
         position is a np.array [x, y, z]
         """
-        return self.vt 
+        return self.translation_velocity()+ self.rotation_velocity(r)
   
     def radius_ic(self, t):
-        return self.rICB*(t/self.tau_ic)**self.exponent_growth
+        return self.growth_ic(t)
+
 
 
 
@@ -313,7 +357,7 @@ if __name__ == '__main__':
     vt = [2.,0.,0.]
     omega = 0.5*np.pi 
 
-    points = [positions.CartesianPoint(-0.2, 0.85, 0.)]
+    points = [positions.CartesianPoint(-0.2, -0.85, 0.)]
     N = 20
 
     for point in points:

@@ -17,6 +17,7 @@ import data
     # geodynamic.TranslationRotation(velocity_translation, omega)
 
 
+
 ## Choose a data set:
     # data.SeismicFromFile(filename)
         # plot function is : 
@@ -29,33 +30,48 @@ import data
     # equatorial section
     
     
-
+## TODO : adim ray in positions.py
 
 
 if __name__ == '__main__':
     
+    # rICB = 1221.   #km
+    # age_ic = 1.e9  # years
+    # velocity = rICB/90e6*2. *np.array([1., 0., 0.])# translation velocity. km/years
+    # omega = 0.00001* 2.*np.pi #rad/years
+
+    # # Non-dimensionalisation of the variables
+    # velocity = velocity*age_ic/rICB
+    # omega = omega*age_ic
     rICB = 1.
-    age_ic = 1. 
-    velocity = 2. *np.array([1., 0., 0.])# translation velocity
-    omega = 0.2* 2.*np.pi 
+    age_ic = 1.
 
-    # Non-dimensionalisation of the variables
-    velocity = velocity*age_ic
-    omega = omega*age_ic
+    velocity = [1, 0., 0.]
+    omega = -0.5*np.pi # over write rotation rate. Rotation rates has to be in ]-np.pi, np.pi[
 
-    #geodynModel = geodynamic.PureTranslation(velocity)
-    geodynModel = geodynamic.TranslationRotation(velocity, omega)
-    #geodynModel = geodynamic.PureGrowth()
-    #geodynModel = geodynamic.TranslationGrowth(velocity)
-    geodynModel.set_tauIC(1.) # made dimensionless by using age_ic
+    print "velocity: ", velocity
+    print "omega: ", omega, "en radians"
+    print "age", age_ic, ", rICB: ", rICB
+
+
+
+    geodynModel = geodynamic.PureTranslation()
+    geodynModel = geodynamic.TranslationRotation()
+    geodynModel = geodynamic.PureGrowth()
+    geodynModel = geodynamic.TranslationGrowth()
+    #geodynModel = geodynamic.TranslationGrowthRotation()
+    geodynModel.set_vt(velocity)
+    geodynModel.set_tauIC(age_ic) # made dimensionless by using age_ic
     geodynModel.set_exponent_growth(0.3)
     geodynModel.set_rICB(rICB)
+    geodynModel.set_rotation(omega)
     
-    geodynModel.plot_equatorial(-1, 1)
+    # geodynModel.plot_equatorial(-1, 1)
 
     ##  perfect sampling equator
-    npoints = 30 #number of points in the x direction for the data set. 
+    npoints = 50 #number of points in the x direction for the data set. 
     data_set = data.PerfectSamplingEquator(npoints, rICB = 1.)
+    #this data set is already dimensionless!
     data_set.method = "bt_point"
     proxy = geodynamic.evaluate_proxy(data_set, geodynModel)
     data_set.proxy = proxy #evaluate_proxy(data_set, geodynModel)

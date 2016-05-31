@@ -29,7 +29,7 @@ def zero_fsolve(f, x0, *args):
 def zero_newton():
     pass #TODO
 
-def zero_brentq(f, **kwargs):
+def zero_brentq(f, *args, **kwargs):
     """
 
     two possibilities: 
@@ -44,34 +44,35 @@ def zero_brentq(f, **kwargs):
         a = kwargs["a"]
         b = kwargs["b"]
     else: 
-        a, b = choose_interval_on_graph(f, 0, 2) 
+        a, b = choose_interval_on_graph(f, 0, 2, *args) 
     
     if b>a: b,a = a,b
 
     iterations = 0
-    while np.sign(f(a)) == np.sign(f(b)) and iterations <= 10 :
+    while np.sign(f(a, *args)) == np.sign(f(b, *args)) and iterations <= 10 :
         if iterations == 0:
             print "Please choose other values for the interval so that the function changes sign between the two borns."
-            a, b = choose_interval_on_graph(f, a, b)
+            a, b = choose_interval_on_graph(f, a, b, *args)
         elif iterations == 10:
             print "To solve this, you need to choose the interval such as the function changes sign. You have a last chance to find one: please type the two values of the interval."
             a = float(input("Enter first value: "))
             b = float(input("Enter second value: "))
         else:
-            a, b = choose_interval_on_graph(f, a-(b-a), b+(b-a))
+            a, b = choose_interval_on_graph(f, a-(b-a), b+(b-a), *args)
         iterations += 1    
 
-      
-    return brentq(f, a, b)
+    return brentq(f, a, b, args = args)
 
-def choose_interval_on_graph(f, a, b):
+def choose_interval_on_graph(f, a, b, *args):
     """ allow the user to click on graph to choose an interval."""
     global coords
     coords = []
     fig = plt.figure()
     ax = fig.add_subplot(111)
     x_val = np.linspace(a, b, 100)
-    ax.plot(x_val, f(x_val))
+    f_val = np.zeros_like(x_val)
+    for i, x in enumerate(x_val): f_val[i] = f(x, *args)
+    ax.plot(x_val, f_val) 
     ax.plot(x_val, x_val*0.)
     ax.set_title("Please click on two points to define the interval.")
     cid = fig.canvas.mpl_connect('button_press_event', onclick_two)
@@ -81,32 +82,32 @@ def choose_interval_on_graph(f, a, b):
 
 
 
-
-def intersection(h, g, x0, *args, **kwargs):
-    """ find the intersection of function h and g, starting looking at x0"""
-    if kwargs:
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        print "enter kwargs"
-        print kwargs
-        if ("min" in kwargs) and ("max" in kwargs):
-            x_val = np.linspace(kwargs["min"], kwargs["max"], 100)
-            ax.plot(x_val, h(x_val, *args))
-            ax.plot(x_val, g(x_val))
-            func = lambda x : h(x, *args) - g(x)
-            ax.plot(x_val, func(x_val) )
-            cid = fig.canvas.mpl_connect('button_press_event', onclick)
-            plt.show()
-            fig.canvas.mpl_disconnect(cid)
-            print position_x
-            solution = fsolve(func, position_x) 
-            print solution
-            # TODO use the brentq formulat to obtain the roots!
-        else: print "problem. Please give values for min and max"
-            #do a figure check (plot the figure of both curves + ask the person to select where he wants to do the search)
-    else: solution = zero_brentq(function_diff, a=5)#, b=3) 
-    # fsolve(lambda x : h(x, *args) - g(x), x0)
-    return  solution 
+# 
+# def intersection(h, g, x0, *args, **kwargs):
+#     """ find the intersection of function h and g, starting looking at x0"""
+#     if kwargs:
+#         fig = plt.figure()
+#         ax = fig.add_subplot(111)
+#         print "enter kwargs"
+#         print kwargs
+#         if ("min" in kwargs) and ("max" in kwargs):
+#             x_val = np.linspace(kwargs["min"], kwargs["max"], 100)
+#             ax.plot(x_val, h(x_val, *args))
+#             ax.plot(x_val, g(x_val))
+#             func = lambda x : h(x, *args) - g(x)
+#             ax.plot(x_val, func(x_val) )
+#             cid = fig.canvas.mpl_connect('button_press_event', onclick)
+#             plt.show()
+#             fig.canvas.mpl_disconnect(cid)
+#             print position_x
+#             solution = fsolve(func, position_x) 
+#             print solution
+#             # TODO use the brentq formulat to obtain the roots!
+#         else: print "problem. Please give values for min and max"
+#             #do a figure check (plot the figure of both curves + ask the person to select where he wants to do the search)
+#     else: solution = zero_brentq(function_diff, a=5)#, b=3) 
+#     # fsolve(lambda x : h(x, *args) - g(x), x0)
+#     return  solution 
 
 def onclick(event):
     global position_x
