@@ -119,9 +119,9 @@ class SeismicData():
             #total_translation /= N #TO DO : add the weigth by the distance (each points may be at different distances from each others?)
             self.translation[i] = total_translation /float(N)
 
-    def map_plot(self):
+    def map_plot(self, geodyn_model=''):
         """ plot data on a map."""
-        #need to check which data exist, if raypath, BT point, in-out point, etc. 
+        # need to check which data exist, if raypath, BT point, in-out point, etc. 
         # and it should plot as much data as possible (only BT if only exist, but raypath also)
         # should also ask for which data set you want to plot (or plot all of them? dt from data, and results if they exist?)
 
@@ -132,7 +132,7 @@ class SeismicData():
         r, theta, phi = self.extract_rtp("bottom_turning_point")
         x, y = m(phi, theta)
         proxy = np.array([self.proxy]).T.astype(float)
-        m.scatter(x, y, c=proxy, zorder=10, cmap=cm)
+        sc = m.scatter(x, y, c=proxy, zorder=10, cmap=cm)
         
         # TO DO : make a function to plot great circles correctly!
         #r1, theta1, phi1 = self.extract_in()
@@ -141,17 +141,22 @@ class SeismicData():
         #    z, w = m.gcpoints(phi1[i], theta1[i], phi2[i], theta2[i], 200)#
         #    m.plot(z, w, zorder=5, c="black")
         #    m.drawgreatcircle(phi1[i], theta1[i], phi2[i], theta2[i], zorder=5, c="black")
-
+        title = "Dataset: {},\n geodynamic model: {}".format(self.name, geodyn_model)
+        plt.title(title)
+        plt.colorbar(sc)
         #plt.show()
 
 
-    def phi_plot(self):
+    def phi_plot(self, geodyn_model=''):
         """ Plot proxy as function of longitude """
 
         fig, ax = plt.subplots()
         r, theta, phi = self.extract_rtp("bottom_turning_point")
         ax.plot(phi, self.proxy, '.')
-
+        title = "Dataset: {},\n geodynamic model: {}".format(self.name, geodyn_model)
+        plt.title(title)
+        plt.xlabel("longitude of bottom turning point")
+        plt.ylabel("proxy")
         #plt.show()
 
     def adimension(self, scale):
@@ -282,11 +287,28 @@ class PerfectSamplingEquator(SeismicData):
         #ax.quiver(X, Y, Vx, Vy)
         ax.streamplot(X,Y,Vx,Vy, color='black', arrowstyle = '->')
         plt.colorbar(sc)
+        title = "Geodynamical model: {}".format(modelgeodyn.name)
+        plt.title(title)
+        plt.axis("off")
         #plt.show()
 
 class RandomData(SeismicData):
-    pass
-    # TO DO !
+
+    def __init__(self, N, rICB = 1.):
+        SeismicData.__init__(self)
+        self.rICB = rICB
+        self.N = N
+        self.name = "Random repartition of data, between 0 and 100km depth"
+        self.random_method = "uniform"
+        self.depth = [0., 100./1221.]
+        
+        for i in range(N):
+            ray = positions.Raypath()
+            ray.add_b_t_point(positions.RandomPoint(self.random_method, self.depth, rICB))
+            self.data_points = np.append(self.data_points, ray)
+        self.size = len(self.data_points)    
+
+
 
 if __name__ == '__main__':
 

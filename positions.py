@@ -91,24 +91,15 @@ class Point:
         self.r = self.r/lengthscale
         self.x, self.y, self.z = self.x/lengthscale, self.y/lengthscale, self.z/lengthscale  
 
-    def create_random_point(self, set_method="uniform", rICB=1221.):#,type_="turningpoint", seismo="surface"):
+    def random_point(self, set_method="uniform", depth = [0., 1.], rICB=1.):#,type_="turningpoint", seismo="surface"):
         """ Create a random point (not raypath)
 
         type: type of the distribution. Default is uniform over the sphere of radius self.r
-
         """
-        r = rICB
+        r = rICB - np.random.uniform(depth[0], depth[1])
         phi = np.random.uniform(-180., 180.)
         theta = (np.arccos(2*np.random.uniform(0.,1.)-1)*180./np.pi)-90
         return r, theta, phi
-
-#       def move(self, dx):
-#           """ move the point by dx (dx is a cartesian vector) """
-#           self.x += dx[0]
-#           self.y += dx[1]
-#           self.z += dx[2]
-#           self.add_seismo()
-#   
 #           #TODO : set other methods of randomisation!
 
 class SeismoPoint(Point):
@@ -124,8 +115,11 @@ class CartesianPoint(Point):
         self.x, self.y, self.z = a, b, c
         self.add_seismo()
 
+class RandomPoint(Point):
 
-
+    def __init__(self, method, depth, rIC=1.):
+        self.r, self.theta, self.phi = self.random_point(method, depth, rIC)
+        self.add_cartesian()
 
 class Raypath:
     """ Raypath inside Inner Core.

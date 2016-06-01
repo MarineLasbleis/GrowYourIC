@@ -48,24 +48,7 @@ def evaluate_proxy(dataset, method):
             time[i] = total_proxy / float(N)
     return time 
 
-# def evaluate_singlepoint(point, method):
-#     """ evaluate the proxy on a single positions.Point instance, using the choosen method."""
-#     x, y, z = point.x, point.y, point.z
-#     time = method.find_time_beforex0([x, y, z], method.tau_ic, method.tau_ic)#method.tau_ic)
-#     return method.tau_ic-time
-# 
-#def trajectory_single_point(point, method, t0, t1, num_t):
-#    """ return the trajectory of a point (a positions.Point instance) between the times t0 and t1, knowing that it was at the position.Point at t0, given nt times steps. 
-#    """
-#    time = np.linspace(t0, t1, num_t)
-#    x, y, z = np.zeros(num_t), np.zeros(num_t), np.zeros(num_t)
-#    x[0], y[0], z[0] = point.x, point.y, point.z
-#    for i, t in enumerate(time):
-#        point = method.integration_trajectory(t, [x[0], y[0], z[0]], t0)
-#        x[i], y[i], z[i] = point[0], point[1], point[2]
-#
-#    return x, y, z 
-#
+
 
 def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
     x_0, y_0, z_0 = point.x, point.y, point.z
@@ -150,8 +133,13 @@ class ModelGeodynamic():
     def proxy_singlepoint(self, point):
         """ evaluate the proxy on a single positions.Point instance."""
         ## TODO proxy here is age only. Please change this if needed.
-        x, y, z = point.x, point.y, point.z
-        time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic)#method.tau_ic)
+        if point.r< self.rICB:
+            x, y, z = point.x, point.y, point.z
+            time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic)
+        else:
+            x, y, z = point.x, point.y, point.z
+            time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic*1.01)
+        
         return self.tau_ic-time
 
     def distance_to_radius(self, t, r0, t0):
@@ -205,7 +193,7 @@ class ModelGeodynamic():
         plt.axis("equal")
         plt.xlim([-1,1])
         plt.ylim([-1,1])
-        plt.show()
+        #plt.show()
 
     def translation_velocity(self):
         try:
@@ -264,6 +252,8 @@ class PureTranslation(ModelGeodynamic):
 
     def radius_ic(self, t):
         return self.rICB
+    
+
 
 
 class TranslationRotation(ModelGeodynamic):

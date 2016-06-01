@@ -69,6 +69,7 @@ def zero_brentq(f, *args, **kwargs):
 def choose_interval_on_graph(f, a, b, *args):
     """ allow the user to click on graph to choose an interval."""
     global coords
+    print args
     coords = []
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -86,35 +87,6 @@ def choose_interval_on_graph(f, a, b, *args):
     fig.canvas.mpl_disconnect(cid2)
     return coords[0], coords[1] 
 
-
-
-# 
-# def intersection(h, g, x0, *args, **kwargs):
-#     """ find the intersection of function h and g, starting looking at x0"""
-#     if kwargs:
-#         fig = plt.figure()
-#         ax = fig.add_subplot(111)
-#         print "enter kwargs"
-#         print kwargs
-#         if ("min" in kwargs) and ("max" in kwargs):
-#             x_val = np.linspace(kwargs["min"], kwargs["max"], 100)
-#             ax.plot(x_val, h(x_val, *args))
-#             ax.plot(x_val, g(x_val))
-#             func = lambda x : h(x, *args) - g(x)
-#             ax.plot(x_val, func(x_val) )
-#             cid = fig.canvas.mpl_connect('button_press_event', onclick)
-#             plt.show()
-#             fig.canvas.mpl_disconnect(cid)
-#             print position_x
-#             solution = fsolve(func, position_x) 
-#             print solution
-#             # TODO use the brentq formulat to obtain the roots!
-#         else: print "problem. Please give values for min and max"
-#             #do a figure check (plot the figure of both curves + ask the person to select where he wants to do the search)
-#     else: solution = zero_brentq(function_diff, a=5)#, b=3) 
-#     # fsolve(lambda x : h(x, *args) - g(x), x0)
-#     return  solution 
-
 def onclick(event):
     global position_x
     # print('button=%d, xdata=%f, ydata=%f' %
@@ -124,8 +96,8 @@ def onclick(event):
 
 def onclick_two(event):
     global coords
-    print('button=%d, xdata=%f, ydata=%f' %
-          (event.button, event.xdata, event.ydata))
+    #print('button=%d, xdata=%f, ydata=%f' %
+    #      (event.button, event.xdata, event.ydata))
     ix = event.xdata
     coords.append(ix)
     if len(coords)==2:

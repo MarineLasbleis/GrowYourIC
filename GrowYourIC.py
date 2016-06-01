@@ -46,8 +46,8 @@ if __name__ == '__main__':
     rICB = 1.
     age_ic = 1.
 
-    velocity = [4, 0., 0.]
-    omega = -0.5*np.pi # over write rotation rate. Rotation rates has to be in ]-np.pi, np.pi[
+    velocity = [0.5, 0., 0.]
+    omega = -0.9*np.pi # over write rotation rate. Rotation rates has to be in ]-np.pi, np.pi[
 
     print "velocity: ", velocity
     print "omega: ", omega, "en radians"
@@ -58,8 +58,8 @@ if __name__ == '__main__':
     geodynModel = geodynamic.PureTranslation()
     geodynModel = geodynamic.TranslationRotation()
 #     geodynModel = geodynamic.PureGrowth()
-#     geodynModel = geodynamic.TranslationGrowth()
-#     geodynModel = geodynamic.TranslationGrowthRotation()
+    geodynModel = geodynamic.TranslationGrowth()
+#    geodynModel = geodynamic.TranslationGrowthRotation()
     parameters = { 'rICB': rICB, 
                   'tau_ic':age_ic,
                   'vt': velocity,
@@ -85,23 +85,32 @@ if __name__ == '__main__':
     data_set.plot_c_vec(geodynModel)
     data_set.plot_scatter()
 #
-    plt.show()
+    #plt.show()
+
+    # random data set
+    data_set_random = data.RandomData(3000)
+    data_set_random.method = "bt_point"
+    proxy_random = geodynamic.evaluate_proxy(data_set_random, geodynModel)
+    data_set_random.proxy = proxy_random
+    data_set_random.map_plot(geodynModel.name)
+    data_set_random.phi_plot(geodynModel.name)
+    #plt.show()
 #
     ## real data set
     data_set2 = data.SeismicFromFile("results.dat")
     data_set2.method = "bt_point"
     proxy2 = geodynamic.evaluate_proxy(data_set2, geodynModel)
     data_set2.proxy = proxy2 #evaluate_proxy(data_set, geodynModel)
-    data_set2.map_plot()
-    data_set2.phi_plot()
-    plt.show()
+    data_set2.map_plot(geodynModel.name)
+    data_set2.phi_plot(geodynModel.name)
+    #plt.show()
     ## real data set
     data_set3 = data.SeismicFromFile("results.dat")
     data_set3.method = "raypath"
     data_set3.NpointsRaypath = 20 
     proxy3 = geodynamic.evaluate_proxy(data_set3, geodynModel)
     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
-    data_set3.map_plot()
-    data_set3.phi_plot()
+    data_set3.map_plot(geodynModel.name)
+    data_set3.phi_plot(geodynModel.name)
 #
     plt.show()
