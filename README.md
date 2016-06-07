@@ -9,8 +9,10 @@ Calculate raypath:
  -- from Lauren's data set : station, PKIKP-PKiKP travel time residual, zeta (angle from rotation axis), epicentral distance, station lat, station lon, event lat, event lon, event depth, inner core in lat, in lon, out lat, out lon, turn lat, turn lon, turn depth (in inner core), inner core travel time, PKIKP/PKiKP amplitude ratio
 - for random sampling (surface and depth repartition can be choosed or
 set to default values)
+- for perfect sampling (either only in the equatorial plane, or in the total volume)
+- TO DO: perfect sampling but with Poisson-disc sampling (see Mitchell’s Best-Candidate)
 
-Geodynamical model:
+Geodynamical models:
 - Translation (Monnereau et al. 2010, Alboussiere at al. 2010, Geballe
 et al. 2013, Deguen et al. 2014) (return age or growth rate of material)
 - Translation - growth - super rotation (return age or growth rate of material)
@@ -37,6 +39,33 @@ P-waves travel time residuals (as done in Geballe 2013)
 
 
 
+files:
+- positions.py
+	Point()
+		SeismoPoint(Point)
+		CartesianPoint(Point)
+		RandomPoint(Point)
+	Raypath()
+		Raypath_BT(Raypath)
+		Raypath_inout(Raypath)
+- geodynamic.py
+	ModelGeodynamic()
+		PureTranslation(ModelGeodynamic)
+		TranslationRotation(ModelGeodynamic)
+		PureRotation(ModelGeodynamic)
+		PureGrowth(ModelGeodynamic)
+		TranslationGrowth(ModelGeodynamic)
+		TranslationGrowthRotation(ModelGeodynamic)
+- data.py
+	SeismicData()
+		SeismicFromFile(SeismicData)
+		PerfectSamplingEquator(SeismicData)
+		RandomData(SeismicData)
+- intersection.py
 
 
 
+ TO DO:
+
+- add other proxies and way to compute proxies. Now, only age is rendered. (geodynamic.py)
+- add other intersections methods. Only brentq is used. see intersection.py. Also, adding a way to remember the choice of the user could be a good idea (for the values of the limits of the brentq) For example, first plot the trajectory_r compared to radius for N (10? 100?) samples, and allow the user to input the [x0, x1] he want to use for the run. 

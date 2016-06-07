@@ -54,7 +54,7 @@ def from_cartesian_to_seismo(x, y, z):
 
 
 
-class Point:
+class Point():
     """ Position of a point in the Earth.
 
     can be computed in cartesian coordinates or in "seismological" coordinates.
@@ -121,7 +121,7 @@ class RandomPoint(Point):
         self.r, self.theta, self.phi = self.random_point(method, depth, rIC)
         self.add_cartesian()
 
-class Raypath:
+class Raypath():
     """ Raypath inside Inner Core.
 
     raypath are defined either by:
