@@ -30,23 +30,27 @@ def zero_newton():
     pass #TODO
 
 def zero_brentq(f, *args, **kwargs):
-    """
-
+    """ Find the zero of the function f, using the brentq method.
+    
     two possibilities: 
         - either the interval a,b is already set (and we just have to check the signs of f(a) and f(b).
         - or it is not, and a figure pops up to define the interval. 
 
         the program can also learn the value of the interval from other already calculated values. But need to be a little bit more careful (need to check the closests points, try to use this value, etc.)
 
+    *args are used by the function f, while **kwargs are input for the intervals.
     """
     if 'a' in kwargs and 'b' in kwargs:
         # simple one: the interval [a,b] is known
         a = kwargs["a"]
         b = kwargs["b"]
     else: 
-        a, b = choose_interval_on_graph(f, 0, 2, *args) 
-    
+        a, b = 0., 1. #choose_interval_on_graph(f, 0, 2, *args) 
     if b>a: b,a = a,b
+
+    ## add an "interval" variable, that will be an output (save all the different intervals that have been previously used). 
+    ## first check if any of the intervals proposed would be valid. If yes, then use it. 
+
 
     iterations = 0
     while np.sign(f(a, *args)) == np.sign(f(b, *args)) and iterations <= 10 and a!=b:
@@ -65,6 +69,7 @@ def zero_brentq(f, *args, **kwargs):
     else: 
         solution = brentq(f, a, b, args = args)
     return solution
+
 
 def choose_interval_on_graph(f, a, b, *args):
     """ allow the user to click on graph to choose an interval."""

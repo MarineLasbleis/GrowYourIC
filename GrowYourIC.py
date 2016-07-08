@@ -30,8 +30,8 @@ import data
     # equatorial section
     
     
-## TODO : adim ray in positions.py
-
+## TODO : change the figure to choose the values
+## TODO : change the way it chooses the interval (remember the last choice and try it)
 
 if __name__ == '__main__':
     
@@ -67,12 +67,6 @@ if __name__ == '__main__':
                   'omega': omega }
 
     geodynModel.set_parameters(parameters)
-#     geodynModel.set_vt(velocity)
-#     geodynModel.set_tauIC(age_ic) # made dimensionless by using age_ic
-#     geodynModel.set_exponent_growth(0.3)
-#     geodynModel.set_rICB(rICB)
-#     geodynModel.set_rotation(omega)
-#     
     # geodynModel.plot_equatorial(-1, 1)
 
     ##  perfect sampling equator
@@ -84,7 +78,6 @@ if __name__ == '__main__':
     data_set.proxy = proxy #evaluate_proxy(data_set, geodynModel)
     data_set.plot_c_vec(geodynModel)
     data_set.plot_scatter()
-#
     #plt.show()
 
     # random data set
