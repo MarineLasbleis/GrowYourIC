@@ -46,30 +46,70 @@ def zero_brentq(f, *args, **kwargs):
         b = kwargs["b"]
     else: 
         a, b = 0., 1. #choose_interval_on_graph(f, 0, 2, *args) 
-    if b>a: b,a = a,b
 
     ## add an "interval" variable, that will be an output (save all the different intervals that have been previously used). 
     ## first check if any of the intervals proposed would be valid. If yes, then use it. 
 
 
-    iterations = 0
-    while np.sign(f(a, *args)) == np.sign(f(b, *args)) and iterations <= 10 and a!=b:
-        if iterations == 0:
-            print "Please choose other values for the interval so that the function changes sign between the two borns."
-            a, b = choose_interval_on_graph(f, a, b, *args)
-        elif iterations == 10:
-            print "To solve this, you need to choose the interval such as the function changes sign. You have a last chance to find one: please type the two values of the interval."
-            a = float(input("Enter first value: "))
-            b = float(input("Enter second value: "))
-        else:
-            a, b = choose_interval_on_graph(f, a-(b-a), b+(b-a), *args)
-        iterations += 1    
+#     iterations = 0
+#     while np.sign(f(a, *args)) == np.sign(f(b, *args)) and iterations <= 10 and a!=b:
+#         if iterations == 0:
+#             print "Please choose other values for the interval so that the function changes sign between the two borns."
+#             a, b = choose_interval_on_graph(f, a, b, *args)
+#         elif iterations == 10:
+#             print "To solve this, you need to choose the interval such as the function changes sign. You have a last chance to find one: please type the two values of the interval."
+#             a = float(input("Enter first value: "))
+#             b = float(input("Enter second value: "))
+#         else:
+#             a, b = choose_interval_on_graph(f, a-(b-a), b+(b-a), *args)
+#         iterations += 1    
+
+    a, b = interval(f, a, b, *args)
+    
     if a==b: 
         solution = 0.
     else: 
         solution = brentq(f, a, b, args = args)
     return solution
 
+def check_validity_interval(f, a, b, *args):
+    """ Return True if the function change sign between point a and b.
+    
+    *args are additionnal arguments needed by the function f.
+    Brentq method work only if the function change sign at least one in the choosen interval. """
+    return np.sign(f(a, *args)) != np.sign(f(b, *args))
+
+def interval(f, a, b, *args, **kwargs):
+    """ Return a correct interval to use the brentq method. 
+    
+    *args are additionnal parameters used by the function. **kwargs are parameters for this particular function ( #TODO : add different way to define the new interval, either by hand or automatic) 
+    Brentq method work only if the function change sign at least one in the choosen  interval. """
+    #a,b given to the function are the first guesses.
+    if a>b: a, b = b, a
+    if check_validity_interval(f, a, b, *args):
+        return a, b
+    elif check_validity_interval(f, b/2., b*1.001, *args):
+        return b/2., b*1.001
+    elif check_validity_interval(f, 3.*b/4., b*1.01, *args):
+        return 3.*b/4., b*1.01
+    elif check_validity_interval(f, b*0.9, b*1.01, *args):
+        return b*0.9, b*1.01
+    elif check_validity_interval(f, b*0.9, b*1.01, *args):
+        return b*0.98, b*1.01
+    else: 
+        print "now we have a problem"
+        iterations = 0
+        while not check_validity_interval(f, a, b, *args) and iterations <=10:
+            if iterations == 0:
+                a, b = choose_interval_on_graph(f, a, b, *args)
+            elif iterations == 10:
+                print "To solve this, you need to choose the interval such as the funct    ion changes sign. You have a last chance to find one: please type the two values of     the interval."
+                a = float(input("Enter first value: "))
+                b = float(input("Enter second value: "))
+            else:
+                a, b = choose_interval_on_graph(f, a-(b-a), b+(b-a), *args)
+            iterations +=1
+        return a, b
 
 def choose_interval_on_graph(f, a, b, *args):
     """ allow the user to click on graph to choose an interval."""
