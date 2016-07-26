@@ -27,9 +27,9 @@ def evaluate_proxy(dataset, method):
     # TO DO : choose evaluate on raypath or on BT point
     print "==="
     print "== Evaluate value of proxy for all points of the data set "
-    print "= Geodynamic model is ", method.name
-    print "= Data set is ", dataset.name
-    print "= Proxy is evaluate for ", dataset.method
+    print "= Geodynamic model is", method.name
+    print "= Data set is", dataset.name
+    print "= Proxy is evaluated for", dataset.method
     print "= Number of points to examine: ", dataset.size 
 
     time = np.empty_like(dataset.data_points)
