@@ -95,30 +95,30 @@ class ModelGeodynamic():
         for k, v in dict_param.items():
             setattr(self, k, v)
 
-    def set_tauIC(self, tau):
-        self.tau_ic = tau
-
-    def set_exponent_growth(self, alpha):
-        self.exponent_growth = alpha
-    
-    def set_rICB(self, RIC):
-        self.rICB = RIC#value by default is 1221, but can be changed if necessary. 
-
-    def set_vt(self, vt):
-        while True:
-            try:
-                assert(len(vt)==3)
-            except AssertionError:
-                print "Translation velocity needs to have 3 components. Please enter the 3 cartesians components of the velocity: "
-                vt = map(float, raw_input("Translation velocity: ").split())
-                continue #come back to check if valid answer
-            else:
-                break #no error raise!
-        self.vt = vt
-
-    def set_rotation(self, omega):
-        self.omega = omega
-
+#     def set_tauIC(self, tau):
+#         self.tau_ic = tau
+# 
+#     def set_exponent_growth(self, alpha):
+#         self.exponent_growth = alpha
+#     
+#     def set_rICB(self, RIC):
+#         self.rICB = RIC#value by default is 1221, but can be changed if necessary. 
+# 
+#     def set_vt(self, vt):
+#         while True:
+#             try:
+#                 assert(len(vt)==3)
+#             except AssertionError:
+#                 print "Translation velocity needs to have 3 components. Please enter the 3 cartesians components of the velocity: "
+#                 vt = map(float, raw_input("Translation velocity: ").split())
+#                 continue #come back to check if valid answer
+#             else:
+#                 break #no error raise!
+#         self.vt = vt
+# 
+#     def set_rotation(self, omega):
+#         self.omega = omega
+# 
 
     def velocity(self, t, position):
         """ Velocity at the given position and given time. 
