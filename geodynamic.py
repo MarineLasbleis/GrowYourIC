@@ -230,11 +230,11 @@ class ModelGeodynamic():
         try:
             self.vt
             assert(len(self.vt)==3)
-            return self.vt
         except (NameError, AttributeError):
             print "translation velocity has not been given. Please enter the three components of the velocity: (be careful, it has to be dimensionless)"
             value = map(float, raw_input("Translation velocity: ").split())
             self.set_vt(value)
+        return self.vt
 
     def rotation_velocity(self, r):
         try:
