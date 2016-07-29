@@ -89,11 +89,14 @@ def interval(f, a, b, *args, **kwargs):
     if check_validity_interval(f, a, b, *args):
         return a, b
     elif check_validity_interval(f, b/2., b*1.001, *args):
+        print "b/2"
         return b/2., b*1.001
     elif check_validity_interval(f, 3.*b/4., b*1.01, *args):
+        print "3b/4"
         return 3.*b/4., b*1.01
-    elif check_validity_interval(f, b*0.9, b*1.01, *args):
-        return b*0.9, b*1.01
+    elif check_validity_interval(f, b*0.9, b*1.1, *args):
+        print "0.9b" 
+        return b*0.9, b*1.1
     elif check_validity_interval(f, b*0.9, b*1.01, *args):
         return b*0.98, b*1.01
     else: 

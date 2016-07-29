@@ -166,7 +166,7 @@ class Raypath():
         _length = np.sqrt(_vector[0]**2+_vector[1]**2+_vector[2]**2)
         for dx in np.linspace(0, 1, N):
             _Points.append(CartesianPoint(Point1.x+_vector[0]*dx, Point1.y+_vector[1]*dx, Point1.z+_vector[2]*dx))
-        return _Points, _length
+        return _Points[1:-1], _length
         
     def straigth_in_out(self, N):
         """ Trajectory is a straigth line between in and out points, with N points. """

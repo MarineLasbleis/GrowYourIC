@@ -224,7 +224,7 @@ class PerfectSamplingEquator(SeismicData):
         sc = ax.scatter(x, y, c=proxy)
         plt.axis("equal")
         plt.colorbar(sc)
-        plt.show()
+        #plt.show()
 
     def plot_contourf(self):
         fig, ax = plt.subplots()

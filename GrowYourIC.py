@@ -37,6 +37,10 @@ import data
     
 ## TODO : change the figure to choose the values : that's difficult, because the function took the function f which is already the difference between the two functions (and not both functions)
 ## TODO : change the way it chooses the interval (remember the last choice and try it) : I added a way to try different intervals. But need improvements.
+## TODO : see if we can add models of proxy (artificial mapping of proxy in the IC)
+## TODO : proxy = growth rate at the cristallization time?
+## TODO : proxy = position at the ICB at cristallisation time? (longitude?)
+## TODO : variable growth rate (square root of time)
 
 if __name__ == '__main__':
     
@@ -55,7 +59,7 @@ if __name__ == '__main__':
     rICB = 1.
     age_ic = 1.
     velocity = [0.5, 0., 0.]
-    omega = -0.9*np.pi # over write rotation rate. Rotation rates has to be in ]-np.pi, np.pi[
+    omega = -0.5*np.pi # over write rotation rate. Rotation rates has to be in ]-np.pi, np.pi[
 
     print "velocity: ", velocity
     print "omega: ", omega, "en radians"
@@ -72,22 +76,23 @@ if __name__ == '__main__':
                   'tau_ic':age_ic,
                   'vt': velocity,
                   'exponent_growth': 0.3,
-                  'omega': omega }
+                  'omega': omega, 
+                  'proxy_type': 'phi'}
 
     geodynModel.set_parameters(parameters)
 
     ##  perfect sampling equator
-    npoints = 50 #number of points in the x direction for the data set. 
+    npoints = 20 #number of points in the x direction for the data set. 
     data_set = data.PerfectSamplingEquator(npoints, rICB = 1.)
     data_set.method = "bt_point"
     proxy = geodynamic.evaluate_proxy(data_set, geodynModel)
     data_set.proxy = proxy #evaluate_proxy(data_set, geodynModel)
     data_set.plot_c_vec(geodynModel)
-    data_set.plot_scatter()
+    #data_set.plot_scatter()
     #plt.show()
 
     # random data set
-    data_set_random = data.RandomData(3000)
+    data_set_random = data.RandomData(300)
     data_set_random.method = "bt_point"
     proxy_random = geodynamic.evaluate_proxy(data_set_random, geodynModel)
     data_set_random.proxy = proxy_random
@@ -104,7 +109,7 @@ if __name__ == '__main__':
     data_set2.phi_plot(geodynModel.name)
     #plt.show()
 # 
-#     ## real data set, average over raypath
+# #     ## real data set, average over raypath
 #     data_set3 = data.SeismicFromFile("results.dat")
 #     data_set3.method = "raypath"
 #     data_set3.NpointsRaypath = 20 
@@ -112,5 +117,5 @@ if __name__ == '__main__':
 #     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
 #     data_set3.map_plot(geodynModel.name)
 #     data_set3.phi_plot(geodynModel.name)
-# #
+# # #
     plt.show()

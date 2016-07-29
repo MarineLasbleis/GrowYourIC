@@ -24,30 +24,54 @@ def evaluate_proxy(dataset, method):
         dataset : a data.SeismicData object
         method : a geodynamic.ModelGeodynamic object
         """
-    # TO DO : choose evaluate on raypath or on BT point
     print "==="
     print "== Evaluate value of proxy for all points of the data set "
     print "= Geodynamic model is", method.name
+    print "= Proxy is", method.proxy_type
     print "= Data set is", dataset.name
     print "= Proxy is evaluated for", dataset.method
+    if dataset.method == "raypath": 
+        print "=== Raypath is", dataset.NpointsRaypath , " number of points"
     print "= Number of points to examine: ", dataset.size 
 
-    time = np.empty_like(dataset.data_points)
+    proxy = np.empty_like(dataset.data_points)
     for i, ray in enumerate(dataset.data_points):
+        if i%100==0: print "Computing Ray number", i
         if dataset.method == "bt_point":
             point = ray.bottom_turning_point
-            time[i] = method.proxy_singlepoint(point)
+            proxy[i] = method.proxy_singlepoint(point)[method.proxy_type]
         elif dataset.method == "raypath":
+            # the raypath is given with constant intervals between points. 
+            # the average is directly sum()/number of points. 
+            # ATTENTION: here we compute the average of the proxy
+            # but if we want to compute the velocity of Pwaves,
+            # we may want to compute the velocity for each point 
+            # and average over the inverse of the velocities. 
             N = dataset.NpointsRaypath
-            dataset.data_points[i].straigth_in_out(N)
+            dataset.data_points[i].straigth_in_out(N+2)
             raypath = ray.points
-            total_proxy = 0.
-            for j, point in enumerate(raypath):
-                _proxy = method.proxy_singlepoint(point)
-                total_proxy += _proxy
-            time[i] = total_proxy / float(N)
-    return time 
+            #total_proxy = 0.
+            #for j, point in enumerate(raypath):
+            #    _proxy = method.proxy_singlepoint(point)
+            #    total_proxy += _proxy
+            #time[i] = total_proxy / float(N)
+            proxy[i] = average_proxy(raypath, method)
+    return proxy
 
+def average_proxy(ray, method):
+    """ method to average proxy over the raypath.
+
+    Simple method is direct average of the proxy: \sum proxy(r) / \sum dr.
+    Other methods could be: 1/(\sum 1/proxy) (better for computing \delta t)
+    """
+    total_proxy = 0.
+    for j, point in enumerate(ray):
+        _proxy = method.proxy_singlepoint(point)[method.proxy_type]
+        total_proxy += _proxy
+    N = len(ray)
+    proxy = total_proxy / float(N)
+    
+    return proxy
 
 
 def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
@@ -132,15 +156,21 @@ class ModelGeodynamic():
 
     def proxy_singlepoint(self, point):
         """ evaluate the proxy on a single positions.Point instance."""
-        ## TODO proxy here is age only. Please change this if needed.
+        ## TODO proxy here is age-position only. Please change this if needed.
+        proxy = {} #empty dictionnary
         if point.r< self.rICB:
             x, y, z = point.x, point.y, point.z
             time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic)
         else:
             x, y, z = point.x, point.y, point.z
             time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic*1.01)
-        
-        return self.tau_ic-time
+        proxy["age"] = self.tau_ic-time
+        # add a if?
+        point = self.integration_trajectory(time, [x,y,z], self.tau_ic)
+        proxy["position"] = positions.CartesianPoint(point[0], point[1], point[2])
+        proxy["phi"] = proxy["position"].phi
+        proxy["theta"] = proxy["position"].theta
+        return proxy
 
     def distance_to_radius(self, t, r0, t0):
         return self.trajectory_r(t, r0, t0)-self.radius_ic(t)
@@ -156,7 +186,8 @@ class ModelGeodynamic():
 
     def integration_trajectory(self, t1, r0, t0):
         """ integration of the equation dr(t)/dt = v(r,t)
-    
+        
+        return the position of the point at the time t1.
         r0: initial position
         t0: initial time
         t1: tmax of the integration
