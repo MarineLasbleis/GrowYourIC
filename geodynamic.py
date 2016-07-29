@@ -142,7 +142,7 @@ class ModelGeodynamic():
             
             Need to be implemented in derived classes.
             """
-        raise NotImplementedError("need to implement velocity() in derived class!")
+        raise NotImplementedError("need to implement radius_ic() in derived class!")
 
 
     def find_time_beforex0(self, point, t0, t1):
@@ -264,6 +264,30 @@ class ModelGeodynamic():
             print "The value of exponent_growth has not been provided. Please enter it now: "
             value = float(input("exponent growth: "))
             self.set_exponent_growth(value)
+        if self.exponent_growth == 0.:
+            return 0.
+        else:
+            return self.exponent_growth*self.rICB*(t/self.tau_ic)**(self.exponent_growth-1)
+
+    def radius_ic(self, t):
+        try:
+            self.rICB
+        except (AttributeError, NameError):
+            print "The value of rICB has not been provided. Please enter it now: "
+            value = float(input("rICB: "))
+            self.set_rICB(value)
+        try:
+            assert(self.tau_ic != None)
+        except (AttributeError, NameError, AssertionError):
+            print "The value of tau_ic has not been provided. Please enter it now: "
+            value = float(input("tau_ic: "))
+            self.set_tauIC(value)
+        try:
+            assert(self.exponent_growth != None)
+        except (AttributeError, NameError, AssertionError):
+            print "The value of exponent_growth has not been provided. Please enter it now: "
+            value = float(input("exponent growth: "))
+            self.set_exponent_growth(value)
         return self.rICB*(t/self.tau_ic)**self.exponent_growth
 
 class PureTranslation(ModelGeodynamic):
@@ -317,10 +341,6 @@ class PureRotation(ModelGeodynamic):
         
         return self.rotation_velocity() 
    
-    def radius_ic(self, t):
-        return self.rICB
-
-
 
 class PureGrowth(ModelGeodynamic):
 
@@ -335,9 +355,6 @@ class PureGrowth(ModelGeodynamic):
         """
         return np.array([0.,0.,0.]) 
   
-    def radius_ic(self, t):
-        return self.growth_ic(t) 
-
 
 
 class TranslationGrowth(ModelGeodynamic):
@@ -370,12 +387,6 @@ class TranslationGrowthRotation(ModelGeodynamic):
         position is a np.array [x, y, z]
         """
         return self.translation_velocity()+ self.rotation_velocity(r)
-  
-    def radius_ic(self, t):
-        return self.growth_ic(t)
-
-
-
 
 
 if __name__ == '__main__':
