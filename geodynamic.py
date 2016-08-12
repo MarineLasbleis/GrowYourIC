@@ -436,16 +436,16 @@ class TranslationGrowthRotation(ModelGeodynamic):
         """
         return self.translation_velocity()+ self.rotation_velocity(r)
 
-    def verification():
+    def verification(self):
         try:
-            rICB
-            tau_ic
-            vt
-            exponent_growth
-            omega
-            proxy_type
+            self.rICB
+            self.tau_ic
+            self.vt
+            self.exponent_growth
+            self.omega
+            self.proxy_type
         except NameError:
-            raise NameError
+            raise NameError, "At least one parameter is missing, please verify. Translation, Growth and Translation require: rICB, tau_ic, vt, exponent_growth, omega, proxy_type."
 
 if __name__ == '__main__':
 
