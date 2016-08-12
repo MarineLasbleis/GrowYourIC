@@ -421,6 +421,17 @@ class TranslationGrowth(ModelGeodynamic):
     def radius_ic(self, t):
         return self.growth_ic(t)
 
+    def verification():
+        try:
+            self.rICB
+            self.tau_ic
+            self.proxy_type
+            self.exponent_growth
+            self.vt
+        except NameError:
+            raise NameError, "please verify the number of parameters. TranslationGrowth requires: rICB, tau_ic, exponent_growth, vt and proxy_type."
+
+
 
 class TranslationGrowthRotation(ModelGeodynamic):
 
