@@ -19,6 +19,13 @@ import data
     #geodynamic.TranslationGrowth()
     #geodynamic.TranslationGrowthRotation()
 
+## Choose a proxy type:
+    # age
+    # position (! will give a Point instance)
+    # phi
+    # theta
+    # growth rate
+
 ## set the parameters for the model : geodynModel.set_parameters(parameters)
 
 ## Choose a data set:
@@ -41,6 +48,7 @@ import data
 ## TODO : proxy = growth rate at the cristallization time?
 ## TODO : proxy = position at the ICB at cristallisation time? (longitude?)
 ## TODO : variable growth rate (square root of time)
+## TODO : effective_growth_rate : verify the function! 
 
 if __name__ == '__main__':
     

@@ -140,7 +140,6 @@ class ModelGeodynamic():
 
     def proxy_singlepoint(self, point):
         """ evaluate the proxy on a single positions.Point instance."""
-        ## TODO proxy here is age-position only. Please change this if needed.
         proxy = {} #empty dictionnary
         if point.r< self.rICB:
             x, y, z = point.x, point.y, point.z
