@@ -16,7 +16,6 @@ from scipy.optimize import fsolve
 import positions
 import intersection 
 
-RICB = 1221.
 
 def evaluate_proxy(dataset, method):
     """ evaluate the value of the proxy on all the points of the data set, using the choosen geodynamical method
@@ -33,6 +32,8 @@ def evaluate_proxy(dataset, method):
     if dataset.method == "raypath": 
         print "=== Raypath is", dataset.NpointsRaypath , " number of points"
     print "= Number of points to examine: ", dataset.size 
+
+    method.verification()
 
     proxy = np.empty_like(dataset.data_points)
     for i, ray in enumerate(dataset.data_points):
@@ -75,6 +76,8 @@ def average_proxy(ray, method):
 
 
 def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
+    # TODO : is this function used anywhere??
+    RICB = 1221.
     x_0, y_0, z_0 = point.x, point.y, point.z
     mean_direction = np.sqrt(direction.x**2+ direction.y**2+ direction.z**2)
     a, b, c = direction.x/mean_direction, direction.y/mean_direction, direction.z/mean_direction
@@ -95,30 +98,11 @@ class ModelGeodynamic():
         for k, v in dict_param.items():
             setattr(self, k, v)
 
-#     def set_tauIC(self, tau):
-#         self.tau_ic = tau
-# 
-#     def set_exponent_growth(self, alpha):
-#         self.exponent_growth = alpha
-#     
-#     def set_rICB(self, RIC):
-#         self.rICB = RIC#value by default is 1221, but can be changed if necessary. 
-# 
-#     def set_vt(self, vt):
-#         while True:
-#             try:
-#                 assert(len(vt)==3)
-#             except AssertionError:
-#                 print "Translation velocity needs to have 3 components. Please enter the 3 cartesians components of the velocity: "
-#                 vt = map(float, raw_input("Translation velocity: ").split())
-#                 continue #come back to check if valid answer
-#             else:
-#                 break #no error raise!
-#         self.vt = vt
-# 
-#     def set_rotation(self, omega):
-#         self.omega = omega
-# 
+    def verification(self):
+        """ verify if the geodynamical model verify some very simple assumptions (ex: non zero radius, translation velocity fast enough if case without growth, etc.) 
+        this method has to be implemented in derived class.
+        By default, no verification is done."""
+        print "No verification has been implemented for this geodynamical model. If needed, please implement them in the class."
 
     def velocity(self, t, position):
         """ Velocity at the given position and given time. 
@@ -170,6 +154,7 @@ class ModelGeodynamic():
         proxy["position"] = positions.CartesianPoint(point[0], point[1], point[2])
         proxy["phi"] = proxy["position"].phi
         proxy["theta"] = proxy["position"].theta
+        proxy["growth rate"] = self.effective_growth_rate(time, point)
         return proxy
 
     def distance_to_radius(self, t, r0, t0):
@@ -264,10 +249,14 @@ class ModelGeodynamic():
             print "The value of exponent_growth has not been provided. Please enter it now: "
             value = float(input("exponent growth: "))
             self.set_exponent_growth(value)
+        
         if self.exponent_growth == 0.:
             return 0.
         else:
-            return self.exponent_growth*self.rICB*(t/self.tau_ic)**(self.exponent_growth-1)
+            if t <=0. :
+                return 0.
+            else:
+                return self.exponent_growth*self.rICB*(t/self.tau_ic)**(self.exponent_growth-1.)
 
     def radius_ic(self, t):
         try:
@@ -290,6 +279,18 @@ class ModelGeodynamic():
             self.set_exponent_growth(value)
         return self.rICB*(t/self.tau_ic)**self.exponent_growth
 
+    def effective_growth_rate(self, t, r):
+        """ Effective growth rate at the point r.
+
+        v_{g_eff} = || v_growth + v_geodynamic ||
+        v_geodynamic is already in cartesian coordinates.
+        v_growth = ||v_growth|| * vec{e}_r (the unit vector for the radial direction)
+        r is the position, described as x,y,z
+        This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
+        """
+        point = positions.CartesianPoint(r[0], r[1], r[2])
+        return self.growth_ic(t)*point.er()+self.velocity(t, r)
+
 class PureTranslation(ModelGeodynamic):
     
     def __init__(self):
@@ -308,6 +309,18 @@ class PureTranslation(ModelGeodynamic):
     def radius_ic(self, t):
         return self.rICB
     
+    def verification(self):
+        """ For pure translation, velocity has to be > 2*ricb/t_ic """
+        v = np.sqrt(self.vt[0]**2+self.vt[1]**2+self.vt[2]**2)
+        if v<= 2.* self.rICB/self.tau_ic :
+            raise ValueError, "For pure translation, velocity has to be > 2*ricb/t_ic."
+        try:
+            self.rICB
+            self.tau_ic
+            self.vt
+            self.proxy_type
+        except NameError:
+            raise NameError, "please verify the number of parameters.PureTranslationreqires: rICB, rau_ic, vt and proxy_type."
 
 
 
@@ -327,6 +340,22 @@ class TranslationRotation(ModelGeodynamic):
     def radius_ic(self, t):
         return self.rICB
 
+    def verification(self):
+        """ For translation, velocity has to be (at least) > 2*ricb/t_ic. Please note that with rotation, it may need an even higher velocity. """
+        v = np.sqrt(self.vt[0]**2+self.vt[1]**2+self.vt[2]**2)
+        if v<= 2.* self.rICB/self.tau_ic :
+            raise ValueError, "For translation, velocity has to be (at least) > 2*ricb/t_ic."
+        try:
+            self.rICB
+            self.tau_ic
+            self.vt
+            self.proxy_type
+            self.omega
+        except NameError:
+            raise NameError, "please verify the number of parameters. TranslationRotation requires: rICB, tau_ic, vt, omega and proxy_type."
+
+
+
 class PureRotation(ModelGeodynamic):
 
     def __init__(self):
@@ -340,7 +369,19 @@ class PureRotation(ModelGeodynamic):
         """
         
         return self.rotation_velocity() 
-   
+
+    def verification(self):
+        """ pure rotation cannot give age values because the streamlines do not cross the inner core boundary."""
+        if proxy_type == 'age':
+            raise ValueError, "pure rotation cannot give age values because the streamlines do not cross the     inner core boundary." 
+        try:
+            self.rICB
+            self.tau_ic
+            self.proxy_type
+            self.omega
+        except NameError:
+            raise NameError, "please verify the number of parameters. PureRotation requires: rICB, tau_ic, omega and proxy_type."
+
 
 class PureGrowth(ModelGeodynamic):
 
@@ -355,6 +396,14 @@ class PureGrowth(ModelGeodynamic):
         """
         return np.array([0.,0.,0.]) 
   
+    def verification():
+        try:
+            self.rICB
+            self.tau_ic
+            self.proxy_type
+            self.exponent_growth
+        except NameError:
+            raise NameError, "please verify the number of parameters. PureGrowth requires: rICB, tau_ic, exponent_growth and proxy_type."
 
 
 class TranslationGrowth(ModelGeodynamic):
@@ -388,6 +437,16 @@ class TranslationGrowthRotation(ModelGeodynamic):
         """
         return self.translation_velocity()+ self.rotation_velocity(r)
 
+    def verification():
+        try:
+            rICB
+            tau_ic
+            vt
+            exponent_growth
+            omega
+            proxy_type
+        except NameError:
+            raise NameError
 
 if __name__ == '__main__':
 

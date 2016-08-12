@@ -91,10 +91,24 @@ class Point():
         self.r = self.r/lengthscale
         self.x, self.y, self.z = self.x/lengthscale, self.y/lengthscale, self.z/lengthscale  
 
+    def er(self):
+        """ return the cartesian coordinnates of \vec{e}_r.
+        """
+        try:
+            assert(self.r!=None)
+            assert(self.phi!=None)
+            assert(self.theta!=None)
+        except (AttributeError, NameError, AssertionError):
+            self.add_seismo()
+        phi = self.phi/180.*np.pi
+        theta = 90. - self.theta*np.pi/180.
+        return np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])
+
     def random_point(self, set_method="uniform", depth = [0., 1.], rICB=1.):#,type_="turningpoint", seismo="surface"):
         """ Create a random point (not raypath)
 
         type: type of the distribution. Default is uniform over the sphere of radius self.r
+RICB = 1221.
         """
         r = rICB - np.random.uniform(depth[0], depth[1])
         phi = np.random.uniform(-180., 180.)

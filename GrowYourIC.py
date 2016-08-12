@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     rICB = 1.
     age_ic = 1.
-    velocity = [0.5, 0., 0.]
+    velocity = [3., 0., 0.]
     omega = -0.5*np.pi # over write rotation rate. Rotation rates has to be in ]-np.pi, np.pi[
 
     print "velocity: ", velocity
@@ -67,17 +67,17 @@ if __name__ == '__main__':
 
 
 
-#    geodynModel = geodynamic.PureTranslation()
+    geodynModel = geodynamic.PureTranslation()
 #    geodynModel = geodynamic.TranslationRotation()
-#     geodynModel = geodynamic.PureGrowth()
+#    geodynModel = geodynamic.PureGrowth()
 #    geodynModel = geodynamic.TranslationGrowth()
-    geodynModel = geodynamic.TranslationGrowthRotation()
+#    geodynModel = geodynamic.TranslationGrowthRotation()
     parameters = { 'rICB': rICB, 
                   'tau_ic':age_ic,
                   'vt': velocity,
                   'exponent_growth': 0.3,
                   'omega': omega, 
-                  'proxy_type': 'phi'}
+                  'proxy_type': 'age'}
 
     geodynModel.set_parameters(parameters)
 
