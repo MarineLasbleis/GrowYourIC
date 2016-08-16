@@ -156,13 +156,15 @@ class ModelGeodynamic():
         else: #in case a point is choosen artificially outside the IC, time bigger than tau_ic is allowed. This should in general not be used. 
             x, y, z = point.x, point.y, point.z
             time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic*1.01)
-        proxy["age"] = self.tau_ic-time
+        if self.proxy_type == "age": proxy["age"] = self.tau_ic-time
         # add a if? it would be faster if not calculated if not needed. 
-        point = self.integration_trajectory(time, [x,y,z], self.tau_ic)
-        proxy["position"] = positions.CartesianPoint(point[0], point[1], point[2])
-        proxy["phi"] = proxy["position"].phi
-        proxy["theta"] = proxy["position"].theta
-        proxy["growth rate"] = self.effective_growth_rate(time, point)
+        if self.proxy_type == "theta" or self.proxy_type == "phi":
+            point = self.integration_trajectory(time, [x,y,z], self.tau_ic)
+            proxy["position"] = positions.CartesianPoint(point[0], point[1], point[2])
+            proxy["phi"] = proxy["position"].phi
+            proxy["theta"] = proxy["position"].theta
+        if self.proxy_type == "growth rate": 
+            proxy["growth rate"] = self.effective_growth_rate(time, point)
         return proxy
 
     def distance_to_radius(self, t, r0, t0):
@@ -365,8 +367,8 @@ class PureGrowth(ModelGeodynamic):
     def radius_ic(self, t):
         return self.rICB*(t/self.tau_ic)**self.exponent_growth
 
-    def effective_growth_rate(self, t, r):
-        """ Effective growth rate at the point r.
+    def effective_growth_rate(self, t, point):
+        """ Effective growth rate at the point point (Point instance).
 
         v_{g_eff} = || v_growth + v_geodynamic ||
         v_geodynamic is already in cartesian coordinates.
@@ -374,7 +376,7 @@ class PureGrowth(ModelGeodynamic):
         r is the position, described as x,y,z
         This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
         """
-        point = positions.CartesianPoint(r[0], r[1], r[2])
+        r = np.array([point.x, point.y, point.z])
         velocity = self.growth_ic(t)*point.er()+self.velocity(t, r)
         return np.sqrt(velocity[0]**2+velocity[1]**2+velocity[2]**2)
 
@@ -418,7 +420,7 @@ class TranslationGrowth(ModelGeodynamic):
     def radius_ic(self, t):
         return self.rICB*(t/self.tau_ic)**self.exponent_growth
 
-    def effective_growth_rate(self, t, r):
+    def effective_growth_rate(self, t, point):
         """ Effective growth rate at the point r.
 
         v_{g_eff} = || v_growth + v_geodynamic ||
@@ -427,7 +429,7 @@ class TranslationGrowth(ModelGeodynamic):
         r is the position, described as x,y,z
         This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
         """
-        point = positions.CartesianPoint(r[0], r[1], r[2])
+        r = np.array([point.x, point.y, point.z])
         velocity = self.growth_ic(t)*point.er()+self.velocity(t, r)
         return np.sqrt(velocity[0]**2+velocity[1]**2+velocity[2]**2)
 
@@ -470,7 +472,7 @@ class TranslationGrowthRotation(ModelGeodynamic):
     def radius_ic(self, t):
         return self.rICB*(t/self.tau_ic)**self.exponent_growth
 
-    def effective_growth_rate(self, t, r):
+    def effective_growth_rate(self, t, point):
         """ Effective growth rate at the point r.
 
         v_{g_eff} = || v_growth + v_geodynamic ||
@@ -479,7 +481,7 @@ class TranslationGrowthRotation(ModelGeodynamic):
         r is the position, described as x,y,z
         This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
         """
-        point = positions.CartesianPoint(r[0], r[1], r[2])
+        r = np.array([point.x, point.y, point.z])
         velocity = self.growth_ic(t)*point.er()+self.velocity(t, r)
         return np.sqrt(velocity[0]**2+velocity[1]**2+velocity[2]**2)
 
