@@ -8,7 +8,7 @@ from mpl_toolkits.basemap import Basemap #to render maps
 import math
 
 import positions
-import geodynamic
+import geodynamic, geodyn_static
 import plot_data
 import data
 
@@ -18,6 +18,7 @@ import data
     #geodynamic.PureGrowth()
     #geodynamic.TranslationGrowth()
     #geodynamic.TranslationGrowthRotation()
+    #geodyn_static.Hemispheres()
 
 ## Choose a proxy type:
     # age
@@ -75,11 +76,13 @@ if __name__ == '__main__':
 
 
 
-    geodynModel = geodynamic.PureTranslation()
+#    geodynModel = geodynamic.PureTranslation()
 #    geodynModel = geodynamic.TranslationRotation()
-#    geodynModel = geodynamic.PureGrowth()
-#    geodynModel = geodynamic.TranslationGrowth()
+    geodynModel = geodynamic.PureGrowth()
+    geodynModel = geodynamic.TranslationGrowth()
 #    geodynModel = geodynamic.TranslationGrowthRotation()
+#    geodynModel = geodyn_static.Hemispheres()
+
     parameters = { 'rICB': rICB, 
                   'tau_ic':age_ic,
                   'vt': velocity,
@@ -117,13 +120,13 @@ if __name__ == '__main__':
     data_set2.phi_plot(geodynModel.name)
     #plt.show()
 # 
-# #     ## real data set, average over raypath
-#     data_set3 = data.SeismicFromFile("results.dat")
-#     data_set3.method = "raypath"
-#     data_set3.NpointsRaypath = 20 
-#     proxy3 = geodynamic.evaluate_proxy(data_set3, geodynModel)
-#     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
-#     data_set3.map_plot(geodynModel.name)
-#     data_set3.phi_plot(geodynModel.name)
-# # #
+ #     ## real data set, average over raypath
+    data_set3 = data.SeismicFromFile("results.dat")
+    data_set3.method = "raypath"
+    data_set3.NpointsRaypath = 20 
+    proxy3 = geodynamic.evaluate_proxy(data_set3, geodynModel)
+    data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
+    data_set3.map_plot(geodynModel.name)
+    data_set3.phi_plot(geodynModel.name)
+# #
     plt.show()

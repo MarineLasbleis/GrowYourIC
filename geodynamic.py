@@ -1,5 +1,4 @@
 #!/usr/local/bin/python
-# Time-stamp: <2016-02-23 09:44:14 marine>
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 # Author : Marine Lasbleis
 
@@ -91,7 +90,7 @@ def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)
 class ModelGeodynamic():
     
     def __init__(self):
-        self.rICB = 1221. #inner core radius in km.
+        pass
 
     def set_parameters(self, dict_param):
         """ add any parameter of the form {'param':value} as self.param = value """
@@ -128,6 +127,16 @@ class ModelGeodynamic():
             """
         raise NotImplementedError("need to implement radius_ic() in derived class!")
 
+    def growth_ic(self, t):
+        """ growth rate of the inner core with time. 
+            
+            Need to be implemented in derived classes.
+            """
+        raise NotImplementedError("need to implement growth_ic() in derived class!")
+
+    def effective_growth_rate(self, t, r):
+        raise NotImplementedError("Need to implement effective_growth_rate() in derived class to be able to use it!")
+
 
     def find_time_beforex0(self, point, t0, t1):
         """ find the intersection between the trajectory and the radius of the IC
@@ -144,11 +153,11 @@ class ModelGeodynamic():
         if point.r< self.rICB:
             x, y, z = point.x, point.y, point.z
             time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic)
-        else:
+        else: #in case a point is choosen artificially outside the IC, time bigger than tau_ic is allowed. This should in general not be used. 
             x, y, z = point.x, point.y, point.z
             time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic*1.01)
         proxy["age"] = self.tau_ic-time
-        # add a if?
+        # add a if? it would be faster if not calculated if not needed. 
         point = self.integration_trajectory(time, [x,y,z], self.tau_ic)
         proxy["position"] = positions.CartesianPoint(point[0], point[1], point[2])
         proxy["phi"] = proxy["position"].phi
@@ -229,66 +238,6 @@ class ModelGeodynamic():
             self.set_rotation(value)
         return np.array([-self.omega * r[1], self.omega * r[0], 0.] )    
 
-    def growth_ic(self, t):
-        try:
-            self.rICB
-        except (AttributeError, NameError):
-            print "The value of rICB has not been provided. Please enter it now: "
-            value = float(input("rICB: "))
-            self.set_rICB(value)
-        try:
-            assert(self.tau_ic != None)
-        except (AttributeError, NameError, AssertionError):
-            print "The value of tau_ic has not been provided. Please enter it now: "
-            value = float(input("tau_ic: "))
-            self.set_tauIC(value)
-        try:
-            assert(self.exponent_growth != None)
-        except (AttributeError, NameError, AssertionError):
-            print "The value of exponent_growth has not been provided. Please enter it now: "
-            value = float(input("exponent growth: "))
-            self.set_exponent_growth(value)
-        
-        if self.exponent_growth == 0.:
-            return 0.
-        else:
-            if t <=0. :
-                return 0.
-            else:
-                return self.exponent_growth*self.rICB*(t/self.tau_ic)**(self.exponent_growth-1.)
-
-    def radius_ic(self, t):
-        try:
-            self.rICB
-        except (AttributeError, NameError):
-            print "The value of rICB has not been provided. Please enter it now: "
-            value = float(input("rICB: "))
-            self.set_rICB(value)
-        try:
-            assert(self.tau_ic != None)
-        except (AttributeError, NameError, AssertionError):
-            print "The value of tau_ic has not been provided. Please enter it now: "
-            value = float(input("tau_ic: "))
-            self.set_tauIC(value)
-        try:
-            assert(self.exponent_growth != None)
-        except (AttributeError, NameError, AssertionError):
-            print "The value of exponent_growth has not been provided. Please enter it now: "
-            value = float(input("exponent growth: "))
-            self.set_exponent_growth(value)
-        return self.rICB*(t/self.tau_ic)**self.exponent_growth
-
-    def effective_growth_rate(self, t, r):
-        """ Effective growth rate at the point r.
-
-        v_{g_eff} = || v_growth + v_geodynamic ||
-        v_geodynamic is already in cartesian coordinates.
-        v_growth = ||v_growth|| * vec{e}_r (the unit vector for the radial direction)
-        r is the position, described as x,y,z
-        This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
-        """
-        point = positions.CartesianPoint(r[0], r[1], r[2])
-        return self.growth_ic(t)*point.er()+self.velocity(t, r)
 
 class PureTranslation(ModelGeodynamic):
     
@@ -395,7 +344,7 @@ class PureGrowth(ModelGeodynamic):
         """
         return np.array([0.,0.,0.]) 
   
-    def verification():
+    def verification(self):
         try:
             self.rICB
             self.tau_ic
@@ -403,6 +352,32 @@ class PureGrowth(ModelGeodynamic):
             self.exponent_growth
         except NameError:
             raise NameError, "please verify the number of parameters. PureGrowth requires: rICB, tau_ic, exponent_growth and proxy_type."
+
+    def growth_ic(self, t):
+        if self.exponent_growth == 0.:
+            return 0.
+        else:
+            if t <=0. :
+                return 0.
+            else:
+                return self.exponent_growth*self.rICB*(t/self.tau_ic)**(self.exponent_growth-1.)
+
+    def radius_ic(self, t):
+        return self.rICB*(t/self.tau_ic)**self.exponent_growth
+
+    def effective_growth_rate(self, t, r):
+        """ Effective growth rate at the point r.
+
+        v_{g_eff} = || v_growth + v_geodynamic ||
+        v_geodynamic is already in cartesian coordinates.
+        v_growth = ||v_growth|| * vec{e}_r (the unit vector for the radial direction)
+        r is the position, described as x,y,z
+        This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
+        """
+        point = positions.CartesianPoint(r[0], r[1], r[2])
+        velocity = self.growth_ic(t)*point.er()+self.velocity(t, r)
+        return np.sqrt(velocity[0]**2+velocity[1]**2+velocity[2]**2)
+
 
 
 class TranslationGrowth(ModelGeodynamic):
@@ -421,7 +396,7 @@ class TranslationGrowth(ModelGeodynamic):
     def radius_ic(self, t):
         return self.growth_ic(t)
 
-    def verification():
+    def verification(self):
         try:
             self.rICB
             self.tau_ic
@@ -430,6 +405,31 @@ class TranslationGrowth(ModelGeodynamic):
             self.vt
         except NameError:
             raise NameError, "please verify the number of parameters. TranslationGrowth requires: rICB, tau_ic, exponent_growth, vt and proxy_type."
+
+    def growth_ic(self, t):
+        if self.exponent_growth == 0.:
+            return 0.
+        else:
+            if t <=0. :
+                return 0.
+            else:
+                return self.exponent_growth*self.rICB*(t/self.tau_ic)**(self.exponent_growth-1.)
+
+    def radius_ic(self, t):
+        return self.rICB*(t/self.tau_ic)**self.exponent_growth
+
+    def effective_growth_rate(self, t, r):
+        """ Effective growth rate at the point r.
+
+        v_{g_eff} = || v_growth + v_geodynamic ||
+        v_geodynamic is already in cartesian coordinates.
+        v_growth = ||v_growth|| * vec{e}_r (the unit vector for the radial direction)
+        r is the position, described as x,y,z
+        This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
+        """
+        point = positions.CartesianPoint(r[0], r[1], r[2])
+        velocity = self.growth_ic(t)*point.er()+self.velocity(t, r)
+        return np.sqrt(velocity[0]**2+velocity[1]**2+velocity[2]**2)
 
 
 
@@ -457,6 +457,32 @@ class TranslationGrowthRotation(ModelGeodynamic):
             self.proxy_type
         except NameError:
             raise NameError, "At least one parameter is missing, please verify. Translation, Growth and Translation require: rICB, tau_ic, vt, exponent_growth, omega, proxy_type."
+
+    def growth_ic(self, t):
+        if self.exponent_growth == 0.:
+            return 0.
+        else:
+            if t <=0. :
+                return 0.
+            else:
+                return self.exponent_growth*self.rICB*(t/self.tau_ic)**(self.exponent_growth-1.)
+
+    def radius_ic(self, t):
+        return self.rICB*(t/self.tau_ic)**self.exponent_growth
+
+    def effective_growth_rate(self, t, r):
+        """ Effective growth rate at the point r.
+
+        v_{g_eff} = || v_growth + v_geodynamic ||
+        v_geodynamic is already in cartesian coordinates.
+        v_growth = ||v_growth|| * vec{e}_r (the unit vector for the radial direction)
+        r is the position, described as x,y,z
+        This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
+        """
+        point = positions.CartesianPoint(r[0], r[1], r[2])
+        velocity = self.growth_ic(t)*point.er()+self.velocity(t, r)
+        return np.sqrt(velocity[0]**2+velocity[1]**2+velocity[2]**2)
+
 
 if __name__ == '__main__':
 
