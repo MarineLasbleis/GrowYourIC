@@ -12,67 +12,10 @@ from scipy.integrate import ode
 from scipy.optimize import fsolve
 
 #personal routines
-import ../positions
-import ../intersection 
-import ../model as *
+import positions
+import intersection 
+import geodyn 
 
-# def evaluate_proxy(dataset, method):
-#     """ evaluate the value of the proxy on all the points of the data set, using the choosen geodynamical method
-#         
-#         dataset : a data.SeismicData object
-#         method : a geodynamic.ModelGeodynamic object
-#         """
-#     print "==="
-#     print "== Evaluate value of proxy for all points of the data set "
-#     print "= Geodynamic model is", method.name
-#     print "= Proxy is", method.proxy_type
-#     print "= Data set is", dataset.name
-#     print "= Proxy is evaluated for", dataset.method
-#     if dataset.method == "raypath": 
-#         print "=== Raypath is", dataset.NpointsRaypath , " number of points"
-#     print "= Number of points to examine: ", dataset.size 
-# 
-#     method.verification()
-# 
-#     proxy = np.empty_like(dataset.data_points)
-#     for i, ray in enumerate(dataset.data_points):
-#         if i%100==0: print "Computing Ray number", i
-#         if dataset.method == "bt_point":
-#             point = ray.bottom_turning_point
-#             proxy[i] = method.proxy_singlepoint(point)[method.proxy_type]
-#         elif dataset.method == "raypath":
-#             # the raypath is given with constant intervals between points. 
-#             # the average is directly sum()/number of points. 
-#             # ATTENTION: here we compute the average of the proxy
-#             # but if we want to compute the velocity of Pwaves,
-#             # we may want to compute the velocity for each point 
-#             # and average over the inverse of the velocities. 
-#             N = dataset.NpointsRaypath
-#             dataset.data_points[i].straigth_in_out(N+2)
-#             raypath = ray.points
-#             #total_proxy = 0.
-#             #for j, point in enumerate(raypath):
-#             #    _proxy = method.proxy_singlepoint(point)
-#             #    total_proxy += _proxy
-#             #time[i] = total_proxy / float(N)
-#             proxy[i] = average_proxy(raypath, method)
-#     return proxy
-
-# def average_proxy(ray, method):
-#     """ method to average proxy over the raypath.
-# 
-#     Simple method is direct average of the proxy: \sum proxy(r) / \sum dr.
-#     Other methods could be: 1/(\sum 1/proxy) (better for computing \delta t)
-#     """
-#     total_proxy = 0.
-#     for j, point in enumerate(ray):
-#         _proxy = method.proxy_singlepoint(point)[method.proxy_type]
-#         total_proxy += _proxy
-#     N = len(ray)
-#     proxy = total_proxy / float(N)
-#     
-#     return proxy
-# 
 
 # def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
 #     # TODO : is this function used anywhere??
@@ -87,7 +30,7 @@ import ../model as *
 #     return max(solution_1, solution_2)
 
 
-class ModelRTG(Model):
+class ModelTRG(geodyn.Model):
     
     def __init__(self):
         pass
@@ -241,10 +184,9 @@ class ModelRTG(Model):
         return np.array([-self.omega * r[1], self.omega * r[0], 0.] )    
 
 
-class PureTranslation(ModelGeodynamic):
+class PureTranslation(ModelTRG):
     
     def __init__(self):
-        ModelGeodynamic.__init__(self)
         self.name = "Translation"
 
     def velocity(self, t, position):
@@ -274,10 +216,9 @@ class PureTranslation(ModelGeodynamic):
 
 
 
-class TranslationRotation(ModelGeodynamic):
+class TranslationRotation(ModelTRG):
 
     def __init__(self):
-        ModelGeodynamic.__init__(self)
         self.name = "TranslationRotation"
     
     def velocity(self, t, r):
@@ -306,10 +247,9 @@ class TranslationRotation(ModelGeodynamic):
 
 
 
-class PureRotation(ModelGeodynamic):
+class PureRotation(ModelTRG):
 
     def __init__(self):
-        ModelGeodynamic.__init__(self)
         self.name = "Rotation"
     
     def velocity(self, t, r):
@@ -333,10 +273,9 @@ class PureRotation(ModelGeodynamic):
             raise NameError, "please verify the number of parameters. PureRotation requires: rICB, tau_ic, omega and proxy_type."
 
 
-class PureGrowth(ModelGeodynamic):
+class PureGrowth(ModelTRG):
 
     def __init__(self):
-        ModelGeodynamic.__init__(self)
         self.name = "PureGrowth"
     
     def velocity(self, t, r):
@@ -382,10 +321,9 @@ class PureGrowth(ModelGeodynamic):
 
 
 
-class TranslationGrowth(ModelGeodynamic):
+class TranslationGrowth(ModelTRG):
 
     def __init__(self):
-        ModelGeodynamic.__init__(self)
         self.name = "Translation and Growth"
 
     def velocity(self, t, r):
@@ -435,10 +373,9 @@ class TranslationGrowth(ModelGeodynamic):
 
 
 
-class TranslationGrowthRotation(ModelGeodynamic):
+class TranslationGrowthRotation(ModelTRG):
 
     def __init__(self):
-        ModelGeodynamic.__init__(self)
         self.name = "Translation, Rotation and Growth"
 
 

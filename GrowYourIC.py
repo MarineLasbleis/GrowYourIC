@@ -8,16 +8,16 @@ from mpl_toolkits.basemap import Basemap #to render maps
 import math
 
 import positions
-import geodynamic, geodyn_static
+import geodyn, geodyn_trg, geodyn_static
 import plot_data
 import data
 
 ## Choose a model in the list: 
-    #geodynamic.PureTranslation()
-    #geodynamic.TranslationRotation()
-    #geodynamic.PureGrowth()
-    #geodynamic.TranslationGrowth()
-    #geodynamic.TranslationGrowthRotation()
+    #geodyn_trg.PureTranslation()
+    #geodyn_trg.TranslationRotation()
+    #geodyn_trg.PureGrowth()
+    #geodyn_trg.TranslationGrowth()
+    #geodyn_trg.TranslationGrowthRotation()
     #geodyn_static.Hemispheres()
 
 ## Choose a proxy type:
@@ -76,11 +76,11 @@ if __name__ == '__main__':
 
 
 
-    geodynModel = geodynamic.PureTranslation()
-#    geodynModel = geodynamic.TranslationRotation()
-#    geodynModel = geodynamic.PureGrowth()
-#    geodynModel = geodynamic.TranslationGrowth()
-#    geodynModel = geodynamic.TranslationGrowthRotation()
+    geodynModel = geodyn_trg.PureTranslation()
+#    geodynModel = geodyn_trg.TranslationRotation()
+#    geodynModel = geodyn_trg.PureGrowth()
+#    geodynModel = geodyn_trg.TranslationGrowth()
+#    geodynModel = geodyn_trg.TranslationGrowthRotation()
 #    geodynModel = geodyn_static.Hemispheres()
 
     parameters = { 'rICB': rICB, 
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     npoints = 20 #number of points in the x direction for the data set. 
     data_set = data.PerfectSamplingEquator(npoints, rICB = 1.)
     data_set.method = "bt_point"
-    proxy = geodynamic.evaluate_proxy(data_set, geodynModel)
+    proxy = geodyn.evaluate_proxy(data_set, geodynModel)
     data_set.proxy = proxy #evaluate_proxy(data_set, geodynModel)
     data_set.plot_c_vec(geodynModel)
     #data_set.plot_scatter()
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     # random data set
     data_set_random = data.RandomData(300)
     data_set_random.method = "bt_point"
-    proxy_random = geodynamic.evaluate_proxy(data_set_random, geodynModel)
+    proxy_random = geodyn.evaluate_proxy(data_set_random, geodynModel)
     data_set_random.proxy = proxy_random
     data_set_random.map_plot(geodynModel.name)
     data_set_random.phi_plot(geodynModel.name)
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     ## real data set
     data_set2 = data.SeismicFromFile("results.dat")
     data_set2.method = "bt_point"
-    proxy2 = geodynamic.evaluate_proxy(data_set2, geodynModel)
+    proxy2 = geodyn.evaluate_proxy(data_set2, geodynModel)
     data_set2.proxy = proxy2 #evaluate_proxy(data_set, geodynModel)
     data_set2.map_plot(geodynModel.name)
     data_set2.phi_plot(geodynModel.name)
@@ -124,7 +124,7 @@ if __name__ == '__main__':
 #     data_set3 = data.SeismicFromFile("results.dat")
 #     data_set3.method = "raypath"
 #     data_set3.NpointsRaypath = 20 
-#     proxy3 = geodynamic.evaluate_proxy(data_set3, geodynModel)
+#     proxy3 = geodyn.evaluate_proxy(data_set3, geodynModel)
 #     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
 #     data_set3.map_plot(geodynModel.name)
 #     data_set3.phi_plot(geodynModel.name)

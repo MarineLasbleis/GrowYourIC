@@ -11,7 +11,7 @@ import pandas as pd
 
 # personal routines
 import positions
-import geodynamic
+# import geodynamic
 import plot_data
 
 
@@ -94,31 +94,31 @@ class SeismicData():
             phi[i] = ray.out_point.phi
         return r, theta, phi
 
-    def translation_BT(self, velocity, direction):
-        assert self.size, 'data_points is probably empty' # TO DO : raise exceptions instead of using assert
-        # need to also assert that bottom_turning_point exist or can be calculated!
-        self.translation = np.empty([self.size, 1])
-        for i, ray in enumerate(self.data_points):
-            self.translation[i] = geodynamic.exact_translation(ray.bottom_turning_point, velocity, direction)
-    
-    def translation_raypath(self, velocity, direction, N=10):
-        """ 
-        N : number of points in the trajectory
-        """
-        # need to check in raypath exist. In case it does not, need to apply one of the method for raypath
-        self.translation = np.zeros([self.size, 1])
-        for i, ray in enumerate(self.data_points):
-            #assuming raypath does not exist, so need to be calculated (but would be faster if it checks before and do not run this if it's not needed)
-            self.data_points[i].straigth_in_out(N)
-            raypath = ray.points #raypath is a np array, each elements being one point.
-            total_translation = 0. 
-            for j, points in enumerate(raypath):
-                _translation = geodynamic.exact_translation(points, velocity, direction)
-                total_translation += _translation
-
-            #total_translation /= N #TO DO : add the weigth by the distance (each points may be at different distances from each others?)
-            self.translation[i] = total_translation /float(N)
-
+##     def translation_BT(self, velocity, direction):
+##         assert self.size, 'data_points is probably empty' # TO DO : raise exceptions instead of using assert
+##         # need to also assert that bottom_turning_point exist or can be calculated!
+##         self.translation = np.empty([self.size, 1])
+##         for i, ray in enumerate(self.data_points):
+##             self.translation[i] = geodynamic.exact_translation(ray.bottom_turning_point, velocity, direction)
+##     
+##     def translation_raypath(self, velocity, direction, N=10):
+##         """ 
+##         N : number of points in the trajectory
+##         """
+##         # need to check in raypath exist. In case it does not, need to apply one of the method for raypath
+##         self.translation = np.zeros([self.size, 1])
+##         for i, ray in enumerate(self.data_points):
+##             #assuming raypath does not exist, so need to be calculated (but would be faster if it checks before and do not run this if it's not needed)
+##             self.data_points[i].straigth_in_out(N)
+##             raypath = ray.points #raypath is a np array, each elements being one point.
+##             total_translation = 0. 
+##             for j, points in enumerate(raypath):
+##                 _translation = geodynamic.exact_translation(points, velocity, direction)
+##                 total_translation += _translation
+## 
+##             #total_translation /= N #TO DO : add the weigth by the distance (each points may be at different distances from each others?)
+##             self.translation[i] = total_translation /float(N)
+## 
     def map_plot(self, geodyn_model=''):
         """ plot data on a map."""
         # need to check which data exist, if raypath, BT point, in-out point, etc. 

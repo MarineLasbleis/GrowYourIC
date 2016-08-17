@@ -37,7 +37,7 @@ def evaluate_proxy(dataset, method):
     """ evaluate the value of the proxy on all the points of the data set, using the choosen geodynamical method
         
         dataset : a data.SeismicData object
-        method : a geodynamic.ModelGeodynamic object
+        method : a geodyn.Model  object
         """
     print "==="
     print "== Evaluate value of proxy for all points of the data set "

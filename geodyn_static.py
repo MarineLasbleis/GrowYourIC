@@ -14,16 +14,15 @@ from scipy.optimize import fsolve
 #personal routines
 import positions
 import intersection 
-import geodynamic
+import geodyn
 
 
-class Hemispheres(geodynamic.ModelGeodynamic):
+class Hemispheres(geodyn.Model):
     """ Static hemispheres: 
         
         proxy is just defines as -1 in the western hemisphere and +1 in the eastern one."""
 
     def __init__(self):
-        geodynamic.ModelGeodynamic.__init__(self)
         self.name= "Static hemispheres"
 
     def proxy_singlepoint(self, point):
