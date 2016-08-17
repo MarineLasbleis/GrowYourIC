@@ -76,10 +76,10 @@ if __name__ == '__main__':
 
 
 
-#    geodynModel = geodynamic.PureTranslation()
+    geodynModel = geodynamic.PureTranslation()
 #    geodynModel = geodynamic.TranslationRotation()
-    geodynModel = geodynamic.PureGrowth()
-    geodynModel = geodynamic.TranslationGrowth()
+#    geodynModel = geodynamic.PureGrowth()
+#    geodynModel = geodynamic.TranslationGrowth()
 #    geodynModel = geodynamic.TranslationGrowthRotation()
 #    geodynModel = geodyn_static.Hemispheres()
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
                   'vt': velocity,
                   'exponent_growth': 0.3,
                   'omega': omega, 
-                  'proxy_type': 'age'}
+                  'proxy_type': "growth rate"}
 
     geodynModel.set_parameters(parameters)
 
@@ -120,13 +120,13 @@ if __name__ == '__main__':
     data_set2.phi_plot(geodynModel.name)
     #plt.show()
 # 
- #     ## real data set, average over raypath
-    data_set3 = data.SeismicFromFile("results.dat")
-    data_set3.method = "raypath"
-    data_set3.NpointsRaypath = 20 
-    proxy3 = geodynamic.evaluate_proxy(data_set3, geodynModel)
-    data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
-    data_set3.map_plot(geodynModel.name)
-    data_set3.phi_plot(geodynModel.name)
-# #
+#  #     ## real data set, average over raypath
+#     data_set3 = data.SeismicFromFile("results.dat")
+#     data_set3.method = "raypath"
+#     data_set3.NpointsRaypath = 20 
+#     proxy3 = geodynamic.evaluate_proxy(data_set3, geodynModel)
+#     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
+#     data_set3.map_plot(geodynModel.name)
+#     data_set3.phi_plot(geodynModel.name)
+# # #
     plt.show()

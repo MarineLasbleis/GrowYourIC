@@ -12,82 +12,82 @@ from scipy.integrate import ode
 from scipy.optimize import fsolve
 
 #personal routines
-import positions
-import intersection 
+import ../positions
+import ../intersection 
+import ../model as *
+
+# def evaluate_proxy(dataset, method):
+#     """ evaluate the value of the proxy on all the points of the data set, using the choosen geodynamical method
+#         
+#         dataset : a data.SeismicData object
+#         method : a geodynamic.ModelGeodynamic object
+#         """
+#     print "==="
+#     print "== Evaluate value of proxy for all points of the data set "
+#     print "= Geodynamic model is", method.name
+#     print "= Proxy is", method.proxy_type
+#     print "= Data set is", dataset.name
+#     print "= Proxy is evaluated for", dataset.method
+#     if dataset.method == "raypath": 
+#         print "=== Raypath is", dataset.NpointsRaypath , " number of points"
+#     print "= Number of points to examine: ", dataset.size 
+# 
+#     method.verification()
+# 
+#     proxy = np.empty_like(dataset.data_points)
+#     for i, ray in enumerate(dataset.data_points):
+#         if i%100==0: print "Computing Ray number", i
+#         if dataset.method == "bt_point":
+#             point = ray.bottom_turning_point
+#             proxy[i] = method.proxy_singlepoint(point)[method.proxy_type]
+#         elif dataset.method == "raypath":
+#             # the raypath is given with constant intervals between points. 
+#             # the average is directly sum()/number of points. 
+#             # ATTENTION: here we compute the average of the proxy
+#             # but if we want to compute the velocity of Pwaves,
+#             # we may want to compute the velocity for each point 
+#             # and average over the inverse of the velocities. 
+#             N = dataset.NpointsRaypath
+#             dataset.data_points[i].straigth_in_out(N+2)
+#             raypath = ray.points
+#             #total_proxy = 0.
+#             #for j, point in enumerate(raypath):
+#             #    _proxy = method.proxy_singlepoint(point)
+#             #    total_proxy += _proxy
+#             #time[i] = total_proxy / float(N)
+#             proxy[i] = average_proxy(raypath, method)
+#     return proxy
+
+# def average_proxy(ray, method):
+#     """ method to average proxy over the raypath.
+# 
+#     Simple method is direct average of the proxy: \sum proxy(r) / \sum dr.
+#     Other methods could be: 1/(\sum 1/proxy) (better for computing \delta t)
+#     """
+#     total_proxy = 0.
+#     for j, point in enumerate(ray):
+#         _proxy = method.proxy_singlepoint(point)[method.proxy_type]
+#         total_proxy += _proxy
+#     N = len(ray)
+#     proxy = total_proxy / float(N)
+#     
+#     return proxy
+# 
+
+# def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
+#     # TODO : is this function used anywhere??
+#     RICB = 1221.
+#     x_0, y_0, z_0 = point.x, point.y, point.z
+#     mean_direction = np.sqrt(direction.x**2+ direction.y**2+ direction.z**2)
+#     a, b, c = direction.x/mean_direction, direction.y/mean_direction, direction.z/mean_direction
+# 
+#     solution_1 = x_0*a+y_0*b+z_0*c + np.sqrt((x_0*a+y_0*b+z_0*c)**2-(x_0**2+y_0**2+z_0**2-RICB**2))
+#     solution_2 = x_0*a+y_0*b+z_0*c - np.sqrt((x_0*a+y_0*b+z_0*c)**2-(x_0**2+y_0**2+z_0**2-RICB**    2))
+#     ## TO DO : verify that we can remove solution_2 ? Is solution_1 always max?
+#     return max(solution_1, solution_2)
 
 
-def evaluate_proxy(dataset, method):
-    """ evaluate the value of the proxy on all the points of the data set, using the choosen geodynamical method
-        
-        dataset : a data.SeismicData object
-        method : a geodynamic.ModelGeodynamic object
-        """
-    print "==="
-    print "== Evaluate value of proxy for all points of the data set "
-    print "= Geodynamic model is", method.name
-    print "= Proxy is", method.proxy_type
-    print "= Data set is", dataset.name
-    print "= Proxy is evaluated for", dataset.method
-    if dataset.method == "raypath": 
-        print "=== Raypath is", dataset.NpointsRaypath , " number of points"
-    print "= Number of points to examine: ", dataset.size 
-
-    method.verification()
-
-    proxy = np.empty_like(dataset.data_points)
-    for i, ray in enumerate(dataset.data_points):
-        if i%100==0: print "Computing Ray number", i
-        if dataset.method == "bt_point":
-            point = ray.bottom_turning_point
-            proxy[i] = method.proxy_singlepoint(point)[method.proxy_type]
-        elif dataset.method == "raypath":
-            # the raypath is given with constant intervals between points. 
-            # the average is directly sum()/number of points. 
-            # ATTENTION: here we compute the average of the proxy
-            # but if we want to compute the velocity of Pwaves,
-            # we may want to compute the velocity for each point 
-            # and average over the inverse of the velocities. 
-            N = dataset.NpointsRaypath
-            dataset.data_points[i].straigth_in_out(N+2)
-            raypath = ray.points
-            #total_proxy = 0.
-            #for j, point in enumerate(raypath):
-            #    _proxy = method.proxy_singlepoint(point)
-            #    total_proxy += _proxy
-            #time[i] = total_proxy / float(N)
-            proxy[i] = average_proxy(raypath, method)
-    return proxy
-
-def average_proxy(ray, method):
-    """ method to average proxy over the raypath.
-
-    Simple method is direct average of the proxy: \sum proxy(r) / \sum dr.
-    Other methods could be: 1/(\sum 1/proxy) (better for computing \delta t)
-    """
-    total_proxy = 0.
-    for j, point in enumerate(ray):
-        _proxy = method.proxy_singlepoint(point)[method.proxy_type]
-        total_proxy += _proxy
-    N = len(ray)
-    proxy = total_proxy / float(N)
-    
-    return proxy
-
-
-def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
-    # TODO : is this function used anywhere??
-    RICB = 1221.
-    x_0, y_0, z_0 = point.x, point.y, point.z
-    mean_direction = np.sqrt(direction.x**2+ direction.y**2+ direction.z**2)
-    a, b, c = direction.x/mean_direction, direction.y/mean_direction, direction.z/mean_direction
-
-    solution_1 = x_0*a+y_0*b+z_0*c + np.sqrt((x_0*a+y_0*b+z_0*c)**2-(x_0**2+y_0**2+z_0**2-RICB**2))
-    solution_2 = x_0*a+y_0*b+z_0*c - np.sqrt((x_0*a+y_0*b+z_0*c)**2-(x_0**2+y_0**2+z_0**2-RICB**    2))
-    ## TO DO : verify that we can remove solution_2 ? Is solution_1 always max?
-    return max(solution_1, solution_2)
-
-
-class ModelGeodynamic():
+class ModelRTG(Model):
     
     def __init__(self):
         pass
