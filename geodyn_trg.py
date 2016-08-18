@@ -77,9 +77,18 @@ class ModelTRG(geodyn.Model):
             """
         raise NotImplementedError("need to implement growth_ic() in derived class!")
 
-    def effective_growth_rate(self, t, r):
-        raise NotImplementedError("Need to implement effective_growth_rate() in derived class to be able to use it!")
+    def effective_growth_rate(self, t, point):
+        """ Effective growth rate at the point r.
 
+        v_{g_eff} = || v_growth + v_geodynamic ||
+        v_geodynamic is already in cartesian coordinates.
+        v_growth = ||v_growth|| * vec{e}_r (the unit vector for the radial direction)
+        r is the position, described as x,y,z
+        This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
+        """
+        r = np.array([point.x, point.y, point.z])
+        vitesse = self.growth_ic(t)*point.er()+self.velocity(t, r)
+        return np.sqrt(vitesse[0]**2+vitesse[1]**2+vitesse[2]**2)
 
     def find_time_beforex0(self, point, t0, t1):
         """ find the intersection between the trajectory and the radius of the IC
@@ -93,21 +102,27 @@ class ModelTRG(geodyn.Model):
     def proxy_singlepoint(self, point):
         """ evaluate the proxy on a single positions.Point instance."""
         proxy = {} #empty dictionnary
+
         if point.r< self.rICB:
             x, y, z = point.x, point.y, point.z
             time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic)
         else: #in case a point is choosen artificially outside the IC, time bigger than tau_ic is allowed. This should in general not be used. 
             x, y, z = point.x, point.y, point.z
             time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic*1.01)
-        if self.proxy_type == "age": proxy["age"] = self.tau_ic-time
-        # add a if? it would be faster if not calculated if not needed. 
-        if self.proxy_type == "theta" or self.proxy_type == "phi":
+        
+        ## calculate the proxy needed (proxy_type value)
+        if self.proxy_type == "age": 
+            proxy["age"] = self.tau_ic-time
+        elif self.proxy_type == "theta" or self.proxy_type == "phi":
             point = self.integration_trajectory(time, [x,y,z], self.tau_ic)
             proxy["position"] = positions.CartesianPoint(point[0], point[1], point[2])
             proxy["phi"] = proxy["position"].phi
             proxy["theta"] = proxy["position"].theta
-        if self.proxy_type == "growth rate": 
+        elif self.proxy_type == "growth rate": 
             proxy["growth rate"] = self.effective_growth_rate(time, point)
+        else: 
+            print "unknown value for proxy_type."
+            proxy = 0.
         return proxy
 
     def distance_to_radius(self, t, r0, t0):
@@ -201,6 +216,9 @@ class PureTranslation(ModelTRG):
     def radius_ic(self, t):
         return self.rICB
     
+    def growth_ic(self, t):
+        return 0.
+
     def verification(self):
         """ For pure translation, velocity has to be > 2*ricb/t_ic """
         v = np.sqrt(self.vt[0]**2+self.vt[1]**2+self.vt[2]**2)
@@ -306,20 +324,6 @@ class PureGrowth(ModelTRG):
     def radius_ic(self, t):
         return self.rICB*(t/self.tau_ic)**self.exponent_growth
 
-    def effective_growth_rate(self, t, point):
-        """ Effective growth rate at the point point (Point instance).
-
-        v_{g_eff} = || v_growth + v_geodynamic ||
-        v_geodynamic is already in cartesian coordinates.
-        v_growth = ||v_growth|| * vec{e}_r (the unit vector for the radial direction)
-        r is the position, described as x,y,z
-        This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
-        """
-        r = np.array([point.x, point.y, point.z])
-        velocity = self.growth_ic(t)*point.er()+self.velocity(t, r)
-        return np.sqrt(velocity[0]**2+velocity[1]**2+velocity[2]**2)
-
-
 
 class TranslationGrowth(ModelTRG):
 
@@ -358,20 +362,6 @@ class TranslationGrowth(ModelTRG):
     def radius_ic(self, t):
         return self.rICB*(t/self.tau_ic)**self.exponent_growth
 
-    def effective_growth_rate(self, t, point):
-        """ Effective growth rate at the point r.
-
-        v_{g_eff} = || v_growth + v_geodynamic ||
-        v_geodynamic is already in cartesian coordinates.
-        v_growth = ||v_growth|| * vec{e}_r (the unit vector for the radial direction)
-        r is the position, described as x,y,z
-        This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
-        """
-        r = np.array([point.x, point.y, point.z])
-        velocity = self.growth_ic(t)*point.er()+self.velocity(t, r)
-        return np.sqrt(velocity[0]**2+velocity[1]**2+velocity[2]**2)
-
-
 
 class TranslationGrowthRotation(ModelTRG):
 
@@ -408,19 +398,6 @@ class TranslationGrowthRotation(ModelTRG):
 
     def radius_ic(self, t):
         return self.rICB*(t/self.tau_ic)**self.exponent_growth
-
-    def effective_growth_rate(self, t, point):
-        """ Effective growth rate at the point r.
-
-        v_{g_eff} = || v_growth + v_geodynamic ||
-        v_geodynamic is already in cartesian coordinates.
-        v_growth = ||v_growth|| * vec{e}_r (the unit vector for the radial direction)
-        r is the position, described as x,y,z
-        This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
-        """
-        r = np.array([point.x, point.y, point.z])
-        velocity = self.growth_ic(t)*point.er()+self.velocity(t, r)
-        return np.sqrt(velocity[0]**2+velocity[1]**2+velocity[2]**2)
 
 
 if __name__ == '__main__':
