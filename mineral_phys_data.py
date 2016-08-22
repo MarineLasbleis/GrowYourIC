@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt #for figures
 import warnings
 import scipy.io as sio
 
+## IMPORTANT : all the functions here use dimensional quantities in unit SI !
 
 
 def export_matlab_data(name_data, file_name = "./CM2008/data.mat"):
@@ -55,7 +56,6 @@ def convert_CM2008_attenuation(kR, poly):
                 heaviside(kR-10**1)*np.polyval(poly,1)
     velocity = 10**velocity
     return velocity
-
 
 
 def heaviside(x):
