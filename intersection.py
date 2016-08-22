@@ -155,9 +155,3 @@ def onkey(event):
     global coords
     coords = [0., 0.]
     plt.close()
-
-if __name__ == "__main__":
-
-    c = intersection(function_f, function_g, 20)
-    print   c, function_f(c), function_g(c), function_diff(c) 
-

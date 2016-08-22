@@ -89,4 +89,3 @@ def average_proxy(ray, method):
 
 
 
-

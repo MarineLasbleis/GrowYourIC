@@ -312,20 +312,3 @@ class RandomData(SeismicData):
         self.size = len(self.data_points)    
 
 
-
-if __name__ == '__main__':
-
-    
-    f = SeismicFromFile()
-    #print f.data_points
-    f.translation_BT(1e6, positions.SeismoPoint(1,0,0))
-    f.map_plot()
-
-    g = SeismicFromFile()
-    g.translation_raypath(1e6, positions.SeismoPoint(1,0,0))
-    g.map_plot()
-
-    fig, ax = plt.subplots()
-    ax.plot(g.translation, f.translation, '.')
-
-    plt.show()

@@ -1,7 +1,7 @@
 
 import py.test 
 
-from geodynamic import * 
+from geodyn_trg import * 
 from positions import *
 
 #def test_exact_translation_velocity_one():
