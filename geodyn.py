@@ -79,11 +79,18 @@ def average_proxy(ray, method):
     Other methods could be: 1/(\sum 1/proxy) (better for computing \delta t)
     """
     total_proxy = 0.
-    for j, point in enumerate(ray):
-        _proxy = method.proxy_singlepoint(point)[method.proxy_type]
-        total_proxy += _proxy
-    N = len(ray)
-    proxy = total_proxy / float(N)
+    if method.evaluation == "inverse":
+        for j, point in enumerate(ray):
+            _proxy = method.proxy_singlepoint(point)[method.proxy_type]
+            total_proxy += 1./_proxy
+        N = len(ray)
+        proxy = 1./total_proxy / float(N)
+    else:
+        for j, point in enumerate(ray):
+            _proxy = method.proxy_singlepoint(point)[method.proxy_type]
+            total_proxy += _proxy
+        N = len(ray)
+        proxy = total_proxy / float(N)
     
     return proxy
 
