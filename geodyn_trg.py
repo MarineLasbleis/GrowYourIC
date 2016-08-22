@@ -87,7 +87,8 @@ class ModelTRG(geodyn.Model):
         This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
         """
         r = np.array([point.x, point.y, point.z])
-        vitesse = self.growth_ic(t)*point.er()+self.velocity(t, r)
+        vitesse = self.growth_ic(t)*point.er()-self.velocity(t, r)
+        ## TO DO : project on \vec{e}_r to get the radial component only?
         return np.sqrt(vitesse[0]**2+vitesse[1]**2+vitesse[2]**2)
 
     def find_time_beforex0(self, point, t0, t1):
