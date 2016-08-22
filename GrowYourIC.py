@@ -74,7 +74,10 @@ if __name__ == '__main__':
     print "omega: ", omega, "en radians"
     print "age", age_ic, ", rICB: ", rICB
 
-
+# Define the velocity: 
+    velocity_amplitude = 3.
+    velocity_center = [0., 100.]#center of the eastern hemisphere
+    velocity = geodyn_trg.translation_velocity(velocity_center, velocity_amplitude)
 
     geodynModel = geodyn_trg.PureTranslation()
 #    geodynModel = geodyn_trg.TranslationRotation()
@@ -89,7 +92,7 @@ if __name__ == '__main__':
                   'vt': velocity,
                   'exponent_growth': 0.3,
                   'omega': omega, 
-                  'proxy_type': "growth rate"}
+                  'proxy_type': "age"}
 
     geodynModel.set_parameters(parameters)
 

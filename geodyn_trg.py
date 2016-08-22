@@ -401,6 +401,18 @@ class TranslationGrowthRotation(ModelTRG):
         return self.rICB*(t/self.tau_ic)**self.exponent_growth
 
 
+
+def translation_velocity(center, amplitude):
+    """ Give the value of the translation velocity to be used in geodyn models, in the format [x, y, z]
+    
+    center: [latitude, longitude]
+    """
+
+    direction = positions.SeismoPoint(1., center[0], center[1])
+    return amplitude * np.array([direction.x, direction.y, direction.z])
+
+
+
 if __name__ == '__main__':
 
     vt = [2.,0.,0.]
