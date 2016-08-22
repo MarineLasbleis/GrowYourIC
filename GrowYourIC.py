@@ -93,7 +93,7 @@ if __name__ == '__main__':
     geodynModel.set_parameters(parameters)
 
     ##  perfect sampling equator
-    npoints = 20 #number of points in the x direction for the data set. 
+    npoints = 100 #number of points in the x direction for the data set. 
     data_set = data.PerfectSamplingEquator(npoints, rICB = 1.)
     data_set.method = "bt_point"
     proxy = geodyn.evaluate_proxy(data_set, geodynModel)
@@ -101,32 +101,32 @@ if __name__ == '__main__':
     data_set.plot_c_vec(geodynModel)
     #data_set.plot_scatter()
     #plt.show()
-
-    # random data set
-    data_set_random = data.RandomData(300)
-    data_set_random.method = "bt_point"
-    proxy_random = geodyn.evaluate_proxy(data_set_random, geodynModel)
-    data_set_random.proxy = proxy_random
-    data_set_random.map_plot(geodynModel.name)
-    data_set_random.phi_plot(geodynModel.name)
-    #plt.show()
-#
-    ## real data set
-    data_set2 = data.SeismicFromFile("results.dat")
-    data_set2.method = "bt_point"
-    proxy2 = geodyn.evaluate_proxy(data_set2, geodynModel)
-    data_set2.proxy = proxy2 #evaluate_proxy(data_set, geodynModel)
-    data_set2.map_plot(geodynModel.name)
-    data_set2.phi_plot(geodynModel.name)
-    #plt.show()
 # 
-#  #     ## real data set, average over raypath
-#     data_set3 = data.SeismicFromFile("results.dat")
-#     data_set3.method = "raypath"
-#     data_set3.NpointsRaypath = 20 
-#     proxy3 = geodyn.evaluate_proxy(data_set3, geodynModel)
-#     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
-#     data_set3.map_plot(geodynModel.name)
-#     data_set3.phi_plot(geodynModel.name)
-# # #
-    plt.show()
+#     # random data set
+#     data_set_random = data.RandomData(300)
+#     data_set_random.method = "bt_point"
+#     proxy_random = geodyn.evaluate_proxy(data_set_random, geodynModel)
+#     data_set_random.proxy = proxy_random
+#     data_set_random.map_plot(geodynModel.name)
+#     data_set_random.phi_plot(geodynModel.name)
+#     #plt.show()
+# #
+#     ## real data set
+#     data_set2 = data.SeismicFromFile("results.dat")
+#     data_set2.method = "bt_point"
+#     proxy2 = geodyn.evaluate_proxy(data_set2, geodynModel)
+#     data_set2.proxy = proxy2 #evaluate_proxy(data_set, geodynModel)
+#     data_set2.map_plot(geodynModel.name)
+#     data_set2.phi_plot(geodynModel.name)
+#     #plt.show()
+# # 
+# #  #     ## real data set, average over raypath
+# #     data_set3 = data.SeismicFromFile("results.dat")
+# #     data_set3.method = "raypath"
+# #     data_set3.NpointsRaypath = 20 
+# #     proxy3 = geodyn.evaluate_proxy(data_set3, geodynModel)
+# #     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
+# #     data_set3.map_plot(geodynModel.name)
+# #     data_set3.phi_plot(geodynModel.name)
+# # # #
+#     plt.show()

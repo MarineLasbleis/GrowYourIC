@@ -256,9 +256,6 @@ class PerfectSamplingEquator(SeismicData):
 
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
-        x = np.linspace(-self.rICB, self.rICB , 100)
-        ax.plot(x, np.sqrt(self.rICB**2-x**2), 'k')
-        ax.plot(x, -np.sqrt(self.rICB**2-x**2), 'k')
         if hasattr(self, "proxy"):
             proxy = self.proxy
         else :
@@ -274,7 +271,8 @@ class PerfectSamplingEquator(SeismicData):
             Z[ix, iy] = pro
         mask_Z = Z==-1    
         Z = np.ma.array(Z, mask = mask_Z)
-        sc = ax.contourf(Y, X, Z, 100)
+        sc = ax.contourf(Y, X, Z, 10, cmap=plt.get_cmap('summer'))
+        #sc2 = ax.contour(Y, X, Z, 10, colors='w')
         
         Vx, Vy = np.empty((self.N, self.N)), np.empty((self.N, self.N))
         for ix, xi in enumerate(x1):
@@ -285,7 +283,12 @@ class PerfectSamplingEquator(SeismicData):
         Vx = np.ma.array(Vx, mask=mask_Z)
         Vy = np.ma.array(Vy, mask=mask_Z)
         #ax.quiver(X, Y, Vx, Vy)
-        ax.streamplot(X,Y,Vx,Vy, color='black', arrowstyle = '->')
+        ax.streamplot(X,Y,Vx,Vy, color='black', arrowstyle = '->', density=0.5)
+        theta = np.linspace(0., 2*np.pi , 1000)
+        ax.plot(np.sin(theta), np.cos(theta), 'k', lw=3)
+        ax.set_xlim([-1.1, 1.1]) 
+        ax.set_ylim([-1.1,1.1])
+
         plt.colorbar(sc)
         title = "Geodynamical model: {}".format(modelgeodyn.name)
         plt.title(title)
