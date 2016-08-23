@@ -15,6 +15,7 @@ from scipy.optimize import fsolve
 import positions
 import intersection 
 import geodyn 
+import mineral_phys_data
 
 
 # def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
@@ -113,7 +114,11 @@ class ModelTRG(geodyn.Model):
         
         ## calculate the proxy needed (proxy_type value)
         if self.proxy_type == "age": 
-            proxy["age"] = self.tau_ic-time
+            proxy["age"] = (self.tau_ic-time)*1.e3
+        elif self.proxy_type == "domain_size":
+            proxy["domain_size"] = self.domain_size(self.tau_ic-time)
+        elif self.proxy_type == "dV_V":
+            proxy["dV_V"] = self.dV_V(self.tau_ic-time)
         elif self.proxy_type == "theta" or self.proxy_type == "phi":
             point = self.integration_trajectory(time, [x,y,z], self.tau_ic)
             proxy["position"] = positions.CartesianPoint(point[0], point[1], point[2])
@@ -161,6 +166,19 @@ class ModelTRG(geodyn.Model):
             x[i], y[i], z[i] = point[0], point[1], point[2]
         return x, y, z 
     
+    def domain_size(self, age):
+        if self.units == None: #take age in seconds
+            age = age * 1.e9 * np.pi* 1e7 #age inner core = 1Byears
+        else: age = age # age has to be in seconds!
+        return mineral_phys_data.domain_size(age)
+    
+    def dV_V(self, age):
+        adimfrequency = mineral_phys_data.adimensional_frequency(self.domain_size(age))
+        polynome = mineral_phys_data.export_matlab_data("Belanoshko_Vp_poly")
+        return mineral_phys_data.convert_CM2008_velocity(adimfrequency, polynome)
+
+
+
     def plot_equatorial(self, t0, t1, Nt = 200,  N=40):
         # Plot the inner core boundary
         phi = np.linspace(0., 2*np.pi, N)

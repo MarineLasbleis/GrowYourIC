@@ -303,7 +303,7 @@ class RandomData(SeismicData):
         self.N = N
         self.name = "Random repartition of data, between 0 and 100km depth"
         self.random_method = "uniform"
-        self.depth = [0., 100./1221.]
+        self.depth = [15./1221., 106./1221.]
         
         for i in range(N):
             ray = positions.Raypath()

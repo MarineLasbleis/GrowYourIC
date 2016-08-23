@@ -75,7 +75,7 @@ if __name__ == '__main__':
     print "age", age_ic, ", rICB: ", rICB
 
 # Define the velocity: 
-    velocity_amplitude = 3.
+    velocity_amplitude = 12.
     velocity_center = [0., 100.]#center of the eastern hemisphere
     velocity = geodyn_trg.translation_velocity(velocity_center, velocity_amplitude)
 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
                   'vt': velocity,
                   'exponent_growth': 0.3,
                   'omega': omega, 
-                  'proxy_type': "age"}
+                  'proxy_type': "dV_V"}
 
     geodynModel.set_parameters(parameters)
 
@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
    
     # random data set
-    data_set_random = data.RandomData(300)
+    data_set_random = data.RandomData(3000)
     data_set_random.method = "bt_point"
     proxy_random = geodyn.evaluate_proxy(data_set_random, geodynModel)
     data_set_random.proxy = proxy_random

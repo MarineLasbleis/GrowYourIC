@@ -28,9 +28,9 @@ def domain_size(age):
     Mgamma = 8.e-10 #m^2/s grain boundary mobility * surface energy
     return np.sqrt(Mgamma * age) # exponent: 0.5 for pure materials, 1/3 to 1/4 for alloys
 
-def adimensional_frequency(age, v=11030, freq=1):
+def adimensional_frequency(size, v=11030., freq=1.):
    """ k_0 a = domain_size * 2 pi freq / v """
-   return domain_size(age) * 2. *np.pi * freq / v
+   return size * 2. *np.pi * freq / v
 
 def convert_CM2008_velocity(kR, poly):
     """ Data from Fig 3 and 4 of Calvet and Margerin 2008 have been stored as polynomial values. This function transform them to a function:
@@ -41,8 +41,6 @@ def convert_CM2008_velocity(kR, poly):
     velocity = heaviside(kR-10.**(-2.))*heaviside(10.-kR)*np.polyval(poly,np.log10(kR))+\
             heaviside(10.**(-2) - kR)*np.polyval(poly,-2.)+\
             heaviside(kR-10.)*np.polyval(poly,1.)
-    velocity = np.polyval(poly, np.log10(kR))
-
     return velocity
 
 def convert_CM2008_attenuation(kR, poly):
@@ -66,7 +64,7 @@ def heaviside(x):
 if __name__ == "__main__":
 
     
-    x = 10**(np.linspace(-2, 1, 50))
+    x = 10**(np.linspace(-4, 4, 200))
     plt.plot(np.log10(x), convert_CM2008_velocity(x, export_matlab_data("Belanoshko_Vp_poly")), 'o-')
     
     plt.show()
