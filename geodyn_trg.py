@@ -36,17 +36,6 @@ class ModelTRG(geodyn.Model):
     def __init__(self):
         pass
 
-    def set_parameters(self, dict_param):
-        """ add any parameter of the form {'param':value} as self.param = value """
-        for k, v in dict_param.items():
-            setattr(self, k, v)
-
-    def verification(self):
-        """ verify if the geodynamical model verify some very simple assumptions (ex: non zero radius, translation velocity fast enough if case without growth, etc.) 
-        this method has to be implemented in derived class.
-        By default, no verification is done."""
-        print "No verification has been implemented for this geodynamical model. If needed, please implement them in the class."
-
     def velocity(self, t, position):
         """ Velocity at the given position and given time. 
             
