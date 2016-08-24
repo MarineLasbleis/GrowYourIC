@@ -124,6 +124,10 @@ if __name__ == '__main__':
     data_set2.map_plot(geodynModel.name)
     data_set2.phi_plot(geodynModel.name)
      #plt.show()
+
+    data_set2.proxy = data_set2.real_residual()
+    data_set2.phi_plot(geodynModel.name)
+    data_set2.map_plot(geodynModel.name)
 # # 
 # #  #     ## real data set, average over raypath
 # #     data_set3 = data.SeismicFromFile("results.dat")

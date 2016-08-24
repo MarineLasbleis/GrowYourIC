@@ -192,9 +192,16 @@ class SeismicFromFile(SeismicData):
             in_Point = positions.SeismoPoint(1., row["in lat"], row["in lon"])
             out_Point = positions.SeismoPoint(1., row["out lat"], row["out lon"])
             ray.add_in_out(in_Point, out_Point)
+            ray.residual = row["PKIKP-PKiKP travel time residual"]
             self.data_points = np.append(self.data_points, ray)
             #self.data_points.append(ray)
         assert(self.size == len(self.data_points))
+
+    def real_residual(self):
+        value = [] 
+        for ray in self.data_points:
+            value = np.append(value, ray.residual)
+        return value
 
 class PerfectSamplingEquator(SeismicData):
     
