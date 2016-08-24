@@ -52,6 +52,18 @@ def from_cartesian_to_seismo(x, y, z):
     return r, 90.-theta, phi
 
 
+def angular_distance_to_point(point, pointREF):
+    """ angular distance between the point REF (reference point) and the point.
+
+    Args: 
+        point: Point instance
+        pointREF: Point instance
+    Return phi: angle between the two points (in degree)
+    """
+    theta, phi = point.theta*np.pi/180., point.phi*np.pi/180.#theta is the latitude
+    thetaREF, phiREF = pointREF.theta*np.pi/180., pointREF.phi*np.pi/180.
+    return np.arccos(np.sin(phiREF)*np.sin(phi)+np.cos(phiREF)*np.cos(phi)*np.cos(abs(theta-thetaREF)))*180./np.pi
+
 
 
 class Point():
@@ -218,3 +230,10 @@ class Raypath_inout(Raypath):
         self.add_in_out(point_in, point_out)
 
 
+if __name__ == "__main__":
+    point1 = SeismoPoint(1, 0, 70)
+    point2 = SeismoPoint(1, 0, -80)
+
+    print angular_distance_to_point(point1, point2)
+    print angular_distance_to_point(point1, point1)
+    print angular_distance_to_point(point2, point1)
