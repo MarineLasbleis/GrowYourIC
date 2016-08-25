@@ -52,17 +52,16 @@ def from_cartesian_to_seismo(x, y, z):
     return r, 90.-theta, phi
 
 
-def angular_distance_to_point(point, pointREF):
-    """ angular distance between the point REF (reference point) and the point.
+def angular_distance_to_point(theta1, phi1, theta2, phi2):
+    """ angular distance between the point (theta1, phi1) and the point (theta2, phi2) at the surface of the core.
 
     Args: 
-        point: Point instance
-        pointREF: Point instance
+        theta1, theta2 : latitude (degree)
+        phi1, phi2: longitude (degree)
     Return phi: angle between the two points (in degree)
     """
-    theta, phi = point.theta*np.pi/180., point.phi*np.pi/180.#theta is the latitude
-    thetaREF, phiREF = pointREF.theta*np.pi/180., pointREF.phi*np.pi/180.
-    return np.arccos(np.sin(phiREF)*np.sin(phi)+np.cos(phiREF)*np.cos(phi)*np.cos(abs(theta-thetaREF)))*180./np.pi
+    theta1, phi1, theta2, phi2 = theta1*np.pi/180., phi1*np.pi/180., theta2*np.pi/180., phi2*np.pi/180.
+    return np.arccos(np.sin(theta1)*np.sin(theta2)+np.cos(theta1)*np.cos(theta2)*np.cos(abs(phi1-phi2)))*180./np.pi
 
 
 
@@ -231,9 +230,10 @@ class Raypath_inout(Raypath):
 
 
 if __name__ == "__main__":
-    point1 = SeismoPoint(1, 0, 70)
-    point2 = SeismoPoint(1, 0, -80)
+    point1 = 0., 70
+    point2 = 0., -80.
 
-    print angular_distance_to_point(point1, point2)
-    print angular_distance_to_point(point1, point1)
-    print angular_distance_to_point(point2, point1)
+    print point1+point2 
+    print angular_distance_to_point(*(point1+point2))
+    print angular_distance_to_point(*(point1+point1))
+    print angular_distance_to_point(*(point2+point1))

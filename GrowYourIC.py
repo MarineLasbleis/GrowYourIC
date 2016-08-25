@@ -75,7 +75,7 @@ if __name__ == '__main__':
     print "age", age_ic, ", rICB: ", rICB
 
 # Define the velocity: 
-    velocity_amplitude = 12.
+    velocity_amplitude = 0.5
     velocity_center = [0., 100.]#center of the eastern hemisphere
     velocity = geodyn_trg.translation_velocity(velocity_center, velocity_amplitude)
 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
                   'vt': velocity,
                   'exponent_growth': 0.3,
                   'omega': omega, 
-                  'proxy_type': "dV_V"}
+                  'proxy_type': "age"}
 
     geodynModel.set_parameters(parameters)
 
@@ -114,7 +114,8 @@ if __name__ == '__main__':
     data_set_random.proxy = proxy_random
     data_set_random.map_plot(geodynModel.name)
     data_set_random.phi_plot(geodynModel.name)
-    #plt.show()
+    data_set_random.distance_plot(geodynModel.name, positions.SeismoPoint(1., 0., -80.))
+#    plt.show()
 #
     ## real data set
     data_set2 = data.SeismicFromFile("results.dat")
@@ -123,19 +124,23 @@ if __name__ == '__main__':
     data_set2.proxy = proxy2 #evaluate_proxy(data_set, geodynModel)
     data_set2.map_plot(geodynModel.name)
     data_set2.phi_plot(geodynModel.name)
+    data_set2.distance_plot(geodynModel.name, positions.SeismoPoint(1., 0., -80.))
      #plt.show()
 
     data_set2.proxy = data_set2.real_residual()
     data_set2.phi_plot(geodynModel.name)
     data_set2.map_plot(geodynModel.name)
-# # 
-# #  #     ## real data set, average over raypath
-# #     data_set3 = data.SeismicFromFile("results.dat")
-# #     data_set3.method = "raypath"
-# #     data_set3.NpointsRaypath = 20 
-# #     proxy3 = geodyn.evaluate_proxy(data_set3, geodynModel)
-# #     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
-# #     data_set3.map_plot(geodynModel.name)
-# #     data_set3.phi_plot(geodynModel.name)
-# # # #
+    data_set2.distance_plot(geodynModel.name, positions.SeismoPoint(1., 0., -80.))
+
+#  #     ## real data set, average over raypath
+#     data_set3 = data.SeismicFromFile("results.dat")
+#     data_set3.method = "raypath"
+#     geodynModel.evaluation= "0"
+#     data_set3.NpointsRaypath = 20 
+#     proxy3 = geodyn.evaluate_proxy(data_set3, geodynModel)
+#     data_set3.proxy = proxy3 #evaluate_proxy(data_set, geodynModel)
+#     data_set3.map_plot(geodynModel.name)
+#     data_set3.phi_plot(geodynModel.name)
+#     data_set3.distance_plot(geodynModel.name, positions.SeismoPoint(1., 0., -80.))
+# #
     plt.show()

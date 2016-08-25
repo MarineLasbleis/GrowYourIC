@@ -159,6 +159,22 @@ class SeismicData():
         plt.ylabel("proxy")
         #plt.show()
 
+    def distance_plot(self, geodyn_model='', point=positions.SeismoPoint(1.,0.,0.)):
+        """ Plot proxy as function of the angular distance with point G """
+
+        fig, ax = plt.subplots()
+        r, theta, phi = self.extract_rtp("bottom_turning_point")
+        r1, theta1, phi1 = point.r, point.theta, point.phi
+        distance = positions.angular_distance_to_point(theta, phi, theta1, phi1)
+        ax.plot(distance, self.proxy, '.')
+        title = "Dataset: {},\n geodynamic model: {}".format(self.name, geodyn_model)
+        plt.title(title)
+        plt.xlabel("Angular distance between turning point and ({} {})".format(theta1, phi1) )
+        plt.ylabel("proxy")
+        #plt.show()
+
+
+
     def adimension(self, scale):
         """ coordinates of points in the data set are made dimensionless using the value of scale """
 
