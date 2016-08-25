@@ -342,16 +342,19 @@ class PerfectSamplingEquatorRadial(SeismicData):
         self.name = "Perfect sampling in the equatorial plane"
         theta = 0.#latitude
         for phi in np.linspace(0., 360., Ntheta):
-            for r in np.linspace(0.01*self.rICB, self.rICB, Nr):
+            for r in np.linspace(0.01*self.rICB, self.rICB*0.999, Nr):
                 ray = positions.Raypath()
                 ray.add_b_t_point(positions.SeismoPoint(r, theta, phi))
+                self.data_points = np.append(self.data_points, ray)
         self.size = len(self.data_points)
 
-    def radius_plot(self):
+    def radius_plot(self, geodyn_model):
         """ Plot proxy as function of radius (to check growth rate) """
         fig, ax = plt.subplots()
         r, theta, phi = self.extract_rtp("bottom_turning_point")
-        ax.plot(r, self.proxy)
+        print len(r), len(self.proxy), self.size
+        ax.plot(r, self.proxy,'o')
+        ax.plot(r, 1.e3*(1-r**2), 'x')
         title = "Dataset: {},\n geodynamic model: {}".format(self.name, geodyn_model)
         plt.title(title)
         plt.xlabel("radius of point")

@@ -239,6 +239,7 @@ class PureTranslation(ModelTRG):
             self.proxy_type
         except NameError:
             raise NameError, "please verify the number of parameters.PureTranslationreqires: rICB, rau_ic, vt and proxy_type."
+        self.units()
 
 
 
@@ -270,7 +271,7 @@ class TranslationRotation(ModelTRG):
             self.omega
         except NameError:
             raise NameError, "please verify the number of parameters. TranslationRotation requires: rICB, tau_ic, vt, omega and proxy_type."
-
+        self.units()
 
 
 class PureRotation(ModelTRG):
@@ -297,7 +298,7 @@ class PureRotation(ModelTRG):
             self.omega
         except NameError:
             raise NameError, "please verify the number of parameters. PureRotation requires: rICB, tau_ic, omega and proxy_type."
-
+        self.units()
 
 class PureGrowth(ModelTRG):
 
@@ -319,6 +320,7 @@ class PureGrowth(ModelTRG):
             self.exponent_growth
         except NameError:
             raise NameError, "please verify the number of parameters. PureGrowth requires: rICB, tau_ic, exponent_growth and proxy_type."
+        self.units()
 
     def growth_ic(self, t):
         if self.exponent_growth == 0.:
@@ -357,6 +359,7 @@ class TranslationGrowth(ModelTRG):
             self.vt
         except NameError:
             raise NameError, "please verify the number of parameters. TranslationGrowth requires: rICB, tau_ic, exponent_growth, vt and proxy_type."
+        self.units()
 
     def growth_ic(self, t):
         if self.exponent_growth == 0.:
@@ -394,6 +397,7 @@ class TranslationGrowthRotation(ModelTRG):
             self.proxy_type
         except NameError:
             raise NameError, "At least one parameter is missing, please verify. Translation, Growth and Translation require: rICB, tau_ic, vt, exponent_growth, omega, proxy_type."
+        self.units()
 
     def growth_ic(self, t):
         if self.exponent_growth == 0.:
@@ -418,4 +422,25 @@ def translation_velocity(center, amplitude):
     direction = positions.SeismoPoint(1., center[0], center[1])
     return amplitude * np.array([direction.x, direction.y, direction.z])
 
+
+def radial_derivative(fun, pos, dr, *args):
+    """ compute the radial derivative of function fun(pos, *args) at the point r with finite difference 
+    
+    d fun/ dr = (fun(r+dr) - fun(r-dr))/(2*dr)
+
+    Args:
+        fun: a function that is defined as fun(pos, *args)
+        pos: [x, y, z] list 
+        dr: a length <1. 
+        *args: additional arguments required by function fun
+    Return the value of the radial derivative.
+    """
+    x, y, z = pos[0], pos[1], pos[2]
+    r, theta, phi = positions.from_cartesian_to_seismo(x, y, z)
+    r1 = min(1., r+dr)
+    r2 = max(0., r-dr)
+    x1, y1, z1 = positions.from_seismo_to_cartesian(r1, theta, phi)
+    x2, y2, z2 = positions.from_seismo_to_cartesian(r2, theta, phi)
+
+    return (fun([x1, y1, z1], *args)-fun([x2, y2, z2], *args))/(r1-r2)
 

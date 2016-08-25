@@ -26,11 +26,32 @@ class Model():
         """ verify if the geodynamical model verify some very simple assumptions (ex: non zero radius, translation velocity fast enough if case without growth, etc.) 
         this method has to be implemented in derived class.
         By default, no verification is done."""
+        self.units()
         print "No verification has been implemented for this geodynamical model. If needed, please implement them in the class."
     
     def proxy_singlepoint(self, point):
         """ evaluate the proxy on a single positions.Point instance."""
         raise NotImplementedError("need to implement proxy_singlepoint() in derived class!")
+
+    def units(self):
+        if self.units == None: #parameters have been given in non-dimensional forms.
+            # if units have been given separately
+            # we need (time_unit, length_unit), (time_unit, velocity_unit) or (length_unit, velocity_unit). For now, let's say we have time_unit and length_unit. 
+            try:
+                time_unit
+                length_unit
+            except NameError: # at least one of them does not exist
+                time_unit = 1.e9 #age inner core of 1billion years. age is in years (please be careful)
+                length_unit = 1.221e6 #radius of inner core today, in km.
+        #self.units has to be of the form ("name", "name"), with the two names the useful values to non dimensionalise
+        elif self.units == ("tau_ic", "rICB"):  time_unit, length_unit = self.tau_ic, self.rICB
+        elif self.units == ("vt", "rICB"):  time_unit, length_unit = self.rICB/self.vt, self.rICB
+        else: time_unit, length_unit = 1e9, 1.221e6
+
+
+            # if no units have been given, we set them arbitrarly
+
+
 
 
 def evaluate_proxy(dataset, method):
@@ -95,4 +116,4 @@ def average_proxy(ray, method):
     return proxy
 
 
-
+    
