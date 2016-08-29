@@ -33,19 +33,19 @@ class Model():
         """ evaluate the proxy on a single positions.Point instance."""
         raise NotImplementedError("need to implement proxy_singlepoint() in derived class!")
 
-    def units(self):
+    def define_units(self):
         if self.units == None: #parameters have been given in non-dimensional forms.
             # if units have been given separately
             # we need (time_unit, length_unit), (time_unit, velocity_unit) or (length_unit, velocity_unit). For now, let's say we have time_unit and length_unit. 
             try:
-                time_unit
-                length_unit
-            except NameError: # at least one of them does not exist
-                time_unit = 1.e9 #age inner core of 1billion years. age is in years (please be careful)
-                length_unit = 1.221e6 #radius of inner core today, in km.
+                self.time_unit
+                self.length_unit
+            except AttributeError: # at least one of them does not exist
+                self.time_unit = 1.e9 #age inner core of 1billion years. age is in years (please be careful)
+                self.length_unit = 1.221e6 #radius of inner core today, in km.
         #self.units has to be of the form ("name", "name"), with the two names the useful values to non dimensionalise
-        elif self.units == ("tau_ic", "rICB"):  time_unit, length_unit = self.tau_ic, self.rICB
-        elif self.units == ("vt", "rICB"):  time_unit, length_unit = self.rICB/self.vt, self.rICB
+        elif self.units == ("tau_ic", "rICB"):  self.time_unit, self.length_unit = self.tau_ic, self.rICB
+        elif self.units == ("vt", "rICB"):  self.time_unit, self.length_unit = self.rICB/self.vt, self.rICB
         else: time_unit, length_unit = 1e9, 1.221e6
 
 
@@ -54,7 +54,7 @@ class Model():
 
 
 
-def evaluate_proxy(dataset, method):
+def evaluate_proxy(dataset, method, verbose = True):
     """ evaluate the value of the proxy on all the points of the data set, using the choosen geodynamical method
         
         dataset : a data.SeismicData object
@@ -74,7 +74,7 @@ def evaluate_proxy(dataset, method):
 
     proxy = np.empty_like(dataset.data_points)
     for i, ray in enumerate(dataset.data_points):
-        if i%100==0: print "Computing Ray number", i
+        if i%100==0 and verbose: print "Computing Ray number", i
         if dataset.method == "bt_point":
             point = ray.bottom_turning_point
             proxy[i] = method.proxy_singlepoint(point)[method.proxy_type]
@@ -89,7 +89,8 @@ def evaluate_proxy(dataset, method):
             dataset.data_points[i].straigth_in_out(N+2)
             raypath = ray.points
             proxy[i] = average_proxy(raypath, method)
-    return proxy
+    print "==="
+    return np.array(proxy).astype(float)
 
 
 

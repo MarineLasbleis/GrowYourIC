@@ -294,7 +294,7 @@ class PerfectSamplingEquator(SeismicData):
             Z[ix, iy] = pro
         mask_Z = Z==-1    
         Z = np.ma.array(Z, mask = mask_Z)
-        sc = ax.contourf(Y, X, Z, 10, cmap=plt.get_cmap('summer'))
+        sc = ax.contourf(X, Y, Z, 10, cmap=plt.get_cmap('summer'))
         #sc2 = ax.contour(Y, X, Z, 10, colors='w')
         
         Vx, Vy = np.empty((self.N, self.N)), np.empty((self.N, self.N))
@@ -306,7 +306,7 @@ class PerfectSamplingEquator(SeismicData):
         Vx = np.ma.array(Vx, mask=mask_Z)
         Vy = np.ma.array(Vy, mask=mask_Z)
         #ax.quiver(X, Y, Vx, Vy)
-        ax.streamplot(X,Y,Vx,Vy, color='black', arrowstyle = '->', density=0.5)
+        ax.streamplot(X,Y,Vy,Vx, color='black', arrowstyle = '->', density=0.5)
         theta = np.linspace(0., 2*np.pi , 1000)
         ax.plot(np.sin(theta), np.cos(theta), 'k', lw=3)
         ax.set_xlim([-1.1, 1.1]) 
@@ -342,7 +342,7 @@ class PerfectSamplingEquatorRadial(SeismicData):
         self.name = "Perfect sampling in the equatorial plane"
         theta = 0.#latitude
         for phi in np.linspace(0., 360., Ntheta):
-            for r in np.linspace(0.01*self.rICB, self.rICB*0.999, Nr):
+            for r in np.linspace(0.1*self.rICB, self.rICB*0.99, Nr):
                 ray = positions.Raypath()
                 ray.add_b_t_point(positions.SeismoPoint(r, theta, phi))
                 self.data_points = np.append(self.data_points, ray)
@@ -352,9 +352,11 @@ class PerfectSamplingEquatorRadial(SeismicData):
         """ Plot proxy as function of radius (to check growth rate) """
         fig, ax = plt.subplots()
         r, theta, phi = self.extract_rtp("bottom_turning_point")
-        print len(r), len(self.proxy), self.size
-        ax.plot(r, self.proxy,'o')
-        ax.plot(r, 1.e3*(1-r**2), 'x')
+        ax.scatter(r, self.proxy, c=phi, cmap="flag")
+        if geodyn_model.proxy_type == "age":
+            ax.plot(r, 1.e-6*geodyn_model.time_unit*(1-r**2), 'x')
+        elif geodyn_model.proxy_type == "growth rate":
+            ax.plot(r, 0.5 * geodyn_model.length_unit/ geodyn_model.time_unit/r)
         title = "Dataset: {},\n geodynamic model: {}".format(self.name, geodyn_model)
         plt.title(title)
         plt.xlabel("radius of point")

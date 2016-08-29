@@ -10,6 +10,7 @@ from mpl_toolkits.basemap import Basemap #to render maps
 import math
 from scipy.integrate import ode
 from scipy.optimize import fsolve
+import warnings
 
 #personal routines
 import positions
@@ -81,6 +82,27 @@ class ModelTRG(geodyn.Model):
         ## TO DO : project on \vec{e}_r to get the radial component only?
         return np.sqrt(vitesse[0]**2+vitesse[1]**2+vitesse[2]**2)
 
+    def effective_growth_rate2(self, t, point):
+        """ Effective growth rate at the point r defined by the radial derivative of the field age
+        
+        \dot{r} = -1/( d(age)/dr )
+
+        Args:
+            t: time
+            point: position (Point instance)
+        Return: 
+            scalar
+        """
+        r = np.array([point.x, point.y, point.z])
+        dadr = radial_derivative(self.crystallisation_time, r, self.rICB*0.001, self.tau_ic)
+        if abs(dadr) < 1.e-2: #if the age derivative is too close to 0, then we set it to 1.e-6. Avoid having too large growth rates. 
+            message = "Age growth may be divergent. Value of da/dr = {}, modified for {}, corresponding to age growth of {} m/years".format(dadr,  np.sign(dadr)*1.e-2    , 1e2*self.length_unit/self.time_unit)
+            warnings.warn(message)
+            dadr = np.sign(dadr)*1.e-2
+        return 1./(dadr*self.time_unit/self.length_unit)
+
+
+
     def find_time_beforex0(self, point, t0, t1):
         """ find the intersection between the trajectory and the radius of the IC
         if needed, can be re defined in derived class!
@@ -94,16 +116,12 @@ class ModelTRG(geodyn.Model):
         """ evaluate the proxy on a single positions.Point instance."""
         proxy = {} #empty dictionnary
 
-        if point.r< self.rICB:
-            x, y, z = point.x, point.y, point.z
-            time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic)
-        else: #in case a point is choosen artificially outside the IC, time bigger than tau_ic is allowed. This should in general not be used. 
-            x, y, z = point.x, point.y, point.z
-            time = self.find_time_beforex0([x, y, z], self.tau_ic, self.tau_ic*1.01)
+        x, y, z = point.x, point.y, point.z
+        time = self.crystallisation_time([x,y,z], self.tau_ic)
         
         ## calculate the proxy needed (proxy_type value)
         if self.proxy_type == "age": 
-            proxy["age"] = (self.tau_ic-time)*1.e3
+            proxy["age"] = (self.tau_ic-time)*1e-6*self.time_unit # age is in Myears! 
         elif self.proxy_type == "domain_size":
             proxy["domain_size"] = self.domain_size(self.tau_ic-time)
         elif self.proxy_type == "dV_V":
@@ -114,12 +132,40 @@ class ModelTRG(geodyn.Model):
             proxy["phi"] = proxy["position"].phi
             proxy["theta"] = proxy["position"].theta
         elif self.proxy_type == "growth rate": 
-            proxy["growth rate"] = self.effective_growth_rate(time, point)
+            proxy["growth rate"] = self.effective_growth_rate2(time, point)
         else: 
             print "unknown value for proxy_type."
             proxy = 0.
         return proxy
 
+    def crystallisation_time(self, point, tau_ic):
+        """ Return the crystallisation time.
+
+        The cristallisation time of a particle in the inner core is defined as the intersection between the trajectory and the radius of the inner core.
+
+        Args:
+            point: [x, y, z]
+            tau_ic: time
+        Return: time
+        """
+        if np.sqrt(point[0]**2+point[1]**2+point[2]**2) < self.rICB: tau_2 = tau_ic
+        else: tau_2 = 1.01*tau_ic
+        return self.find_time_beforex0(point, tau_ic, tau_2)
+
+    def crystallisation_position(self, point, time):
+        """ Return the crystallisation position.
+
+        The cristallisation time of a particle in the inner core is defined as the intersection between the trajectory and the radius of the inner core.
+        This function return the position of the particle at this time.
+
+        Args:
+            point: [x, y, z]
+            time: calulated from crystallisation_time
+        Return: time
+        """
+        _point = self.integration_trajectory(time, point, self.tau_ic)
+        return positions.CartesianPoint(_point[0], _point[1], _point[2])
+ 
     def distance_to_radius(self, t, r0, t0):
         return self.trajectory_r(t, r0, t0)-self.radius_ic(t)
 
@@ -156,17 +202,13 @@ class ModelTRG(geodyn.Model):
         return x, y, z 
     
     def domain_size(self, age):
-        if self.units == None: #take age in seconds
-            age = age * 1.e9 * np.pi* 1e7 #age inner core = 1Byears
-        else: age = age # age has to be in seconds!
+        age = age * self.time_unit * np.pi* 1e7# age has to be in seconds!
         return mineral_phys_data.domain_size(age)
     
     def dV_V(self, age):
         adimfrequency = mineral_phys_data.adimensional_frequency(self.domain_size(age))
         polynome = mineral_phys_data.export_matlab_data("Belanoshko_Vp_poly")
         return mineral_phys_data.convert_CM2008_velocity(adimfrequency, polynome)
-
-
 
     def plot_equatorial(self, t0, t1, Nt = 200,  N=40):
         # Plot the inner core boundary
@@ -239,7 +281,6 @@ class PureTranslation(ModelTRG):
             self.proxy_type
         except NameError:
             raise NameError, "please verify the number of parameters.PureTranslationreqires: rICB, rau_ic, vt and proxy_type."
-        self.units()
 
 
 
@@ -271,7 +312,6 @@ class TranslationRotation(ModelTRG):
             self.omega
         except NameError:
             raise NameError, "please verify the number of parameters. TranslationRotation requires: rICB, tau_ic, vt, omega and proxy_type."
-        self.units()
 
 
 class PureRotation(ModelTRG):
@@ -298,7 +338,7 @@ class PureRotation(ModelTRG):
             self.omega
         except NameError:
             raise NameError, "please verify the number of parameters. PureRotation requires: rICB, tau_ic, omega and proxy_type."
-        self.units()
+
 
 class PureGrowth(ModelTRG):
 
@@ -320,7 +360,6 @@ class PureGrowth(ModelTRG):
             self.exponent_growth
         except NameError:
             raise NameError, "please verify the number of parameters. PureGrowth requires: rICB, tau_ic, exponent_growth and proxy_type."
-        self.units()
 
     def growth_ic(self, t):
         if self.exponent_growth == 0.:
@@ -359,7 +398,6 @@ class TranslationGrowth(ModelTRG):
             self.vt
         except NameError:
             raise NameError, "please verify the number of parameters. TranslationGrowth requires: rICB, tau_ic, exponent_growth, vt and proxy_type."
-        self.units()
 
     def growth_ic(self, t):
         if self.exponent_growth == 0.:
@@ -397,7 +435,6 @@ class TranslationGrowthRotation(ModelTRG):
             self.proxy_type
         except NameError:
             raise NameError, "At least one parameter is missing, please verify. Translation, Growth and Translation require: rICB, tau_ic, vt, exponent_growth, omega, proxy_type."
-        self.units()
 
     def growth_ic(self, t):
         if self.exponent_growth == 0.:
