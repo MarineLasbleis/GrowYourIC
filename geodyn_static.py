@@ -3,33 +3,32 @@
 # Author : Marine Lasbleis
 
 
-
 import numpy as np
-import matplotlib.pyplot as plt #for figures
-from mpl_toolkits.basemap import Basemap #to render maps
+import matplotlib.pyplot as plt  # for figures
+from mpl_toolkits.basemap import Basemap  # to render maps
 import math
 from scipy.integrate import ode
 from scipy.optimize import fsolve
 
-#personal routines
+# personal routines
 import positions
-import intersection 
+import intersection
 import geodyn
 
 
 class Hemispheres(geodyn.Model):
     """ Static hemispheres: 
-        
+
         proxy is just defines as -1 in the western hemisphere and +1 in the eastern one."""
 
     def __init__(self):
-        self.name= "Static hemispheres"
+        self.name = "Static hemispheres"
 
     def proxy_singlepoint(self, point):
         """ -1 in western hemisphere, +1 in the eastern hemisphere"""
-        proxy = {} #empty dict
-        angle = -30 #
-        proxy["age"] = np.sign(np.sin((point.phi+angle)*np.pi/180.))
+        proxy = {}  # empty dict
+        angle = -30
+        proxy["age"] = np.sign(np.sin((point.phi + angle) * np.pi / 180.))
         return proxy
 
     def velocity(self, time, point):
@@ -38,4 +37,3 @@ class Hemispheres(geodyn.Model):
 
     def radius_ic(self, t):
         return self.rICB
-

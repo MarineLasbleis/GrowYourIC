@@ -3,19 +3,18 @@
 # Author : Marine Lasbleis
 
 
-
 import numpy as np
-import matplotlib.pyplot as plt #for figures
-from mpl_toolkits.basemap import Basemap #to render maps
+import matplotlib.pyplot as plt  # for figures
+from mpl_toolkits.basemap import Basemap  # to render maps
 import math
 from scipy.integrate import ode
 from scipy.optimize import fsolve
 import warnings
 
-#personal routines
+# personal routines
 import positions
-import intersection 
-import geodyn 
+import intersection
+import geodyn
 import mineral_phys_data
 
 
@@ -25,7 +24,7 @@ import mineral_phys_data
 #     x_0, y_0, z_0 = point.x, point.y, point.z
 #     mean_direction = np.sqrt(direction.x**2+ direction.y**2+ direction.z**2)
 #     a, b, c = direction.x/mean_direction, direction.y/mean_direction, direction.z/mean_direction
-# 
+#
 #     solution_1 = x_0*a+y_0*b+z_0*c + np.sqrt((x_0*a+y_0*b+z_0*c)**2-(x_0**2+y_0**2+z_0**2-RICB**2))
 #     solution_2 = x_0*a+y_0*b+z_0*c - np.sqrt((x_0*a+y_0*b+z_0*c)**2-(x_0**2+y_0**2+z_0**2-RICB**    2))
 #     ## TO DO : verify that we can remove solution_2 ? Is solution_1 always max?
@@ -33,40 +32,43 @@ import mineral_phys_data
 
 
 class ModelTRG(geodyn.Model):
-    
+
     def __init__(self):
         pass
 
     def velocity(self, t, position):
         """ Velocity at the given position and given time. 
-            
+
             Need to be implemented in derived classes. 
             Needed in cartesian coordinates.
-            
+
             Example :
             velocity, in cartesian coordinates
-    
+
             position is a cartesian position [x, y, z]
             vt is the translation velocity (numpy array (1,3))
             rotation velocity is $\omega \vec{e}_z \times \vec{r}$.
-            
+
             return vt + np.array([-omega * r[1], omega * r[0], 0.] )
             """
-        raise NotImplementedError("need to implement velocity() in derived class!")
+        raise NotImplementedError(
+            "need to implement velocity() in derived class!")
 
     def radius_ic(self, t):
         """ radius of the inner core with time. 
-            
+
             Need to be implemented in derived classes.
             """
-        raise NotImplementedError("need to implement radius_ic() in derived class!")
+        raise NotImplementedError(
+            "need to implement radius_ic() in derived class!")
 
     def growth_ic(self, t):
         """ growth rate of the inner core with time. 
-            
+
             Need to be implemented in derived classes.
             """
-        raise NotImplementedError("need to implement growth_ic() in derived class!")
+        raise NotImplementedError(
+            "need to implement growth_ic() in derived class!")
 
     def effective_growth_rate(self, t, point):
         """ Effective growth rate at the point r.
@@ -78,13 +80,13 @@ class ModelTRG(geodyn.Model):
         This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
         """
         r = np.array([point.x, point.y, point.z])
-        vitesse = self.growth_ic(t)*point.er()-self.velocity(t, r)
-        ## TO DO : project on \vec{e}_r to get the radial component only?
-        return np.sqrt(vitesse[0]**2+vitesse[1]**2+vitesse[2]**2)
+        vitesse = self.growth_ic(t) * point.er() - self.velocity(t, r)
+        # TO DO : project on \vec{e}_r to get the radial component only?
+        return np.sqrt(vitesse[0]**2 + vitesse[1]**2 + vitesse[2]**2)
 
     def effective_growth_rate2(self, t, point):
         """ Effective growth rate at the point r defined by the radial derivative of the field age
-        
+
         \dot{r} = -1/( d(age)/dr )
 
         Args:
@@ -94,14 +96,16 @@ class ModelTRG(geodyn.Model):
             scalar
         """
         r = np.array([point.x, point.y, point.z])
-        dadr = radial_derivative(self.crystallisation_time, r, self.rICB*0.001, self.tau_ic)
-        if abs(dadr) < 1.e-2: #if the age derivative is too close to 0, then we set it to 1.e-6. Avoid having too large growth rates. 
-            message = "Age growth may be divergent. Value of da/dr = {}, modified for {}, corresponding to age growth of {} m/years".format(dadr,  np.sign(dadr)*1.e-2    , 1e2*self.length_unit/self.time_unit)
+        dadr = radial_derivative(
+            self.crystallisation_time, r, self.rICB * 0.001, self.tau_ic)
+        # if the age derivative is too close to 0, then we set it to 1.e-6.
+        # Avoid having too large growth rates.
+        if abs(dadr) < 1.e-2:
+            message = "Age growth may be divergent. Value of da/dr = {}, modified for {}, corresponding to age growth of {} m/years".format(
+                dadr,  np.sign(dadr) * 1.e-2, 1e2 * self.length_unit / self.time_unit)
             warnings.warn(message)
-            dadr = np.sign(dadr)*1.e-2
-        return 1./(dadr*self.time_unit/self.length_unit)
-
-
+            dadr = np.sign(dadr) * 1.e-2
+        return 1. / (dadr * self.time_unit / self.length_unit)
 
     def find_time_beforex0(self, point, t0, t1):
         """ find the intersection between the trajectory and the radius of the IC
@@ -111,29 +115,30 @@ class ModelTRG(geodyn.Model):
         """
         return intersection.zero_brentq(self.distance_to_radius, point, t0, a=0., b=t1)
 
-
     def proxy_singlepoint(self, point):
         """ evaluate the proxy on a single positions.Point instance."""
-        proxy = {} #empty dictionnary
+        proxy = {}  # empty dictionnary
 
         x, y, z = point.x, point.y, point.z
-        time = self.crystallisation_time([x,y,z], self.tau_ic)
-        
-        ## calculate the proxy needed (proxy_type value)
-        if self.proxy_type == "age": 
-            proxy["age"] = (self.tau_ic-time)*1e-6*self.time_unit # age is in Myears! 
+        time = self.crystallisation_time([x, y, z], self.tau_ic)
+
+        # calculate the proxy needed (proxy_type value)
+        if self.proxy_type == "age":
+            proxy["age"] = (self.tau_ic - time) * 1e-6 * \
+                self.time_unit  # age is in Myears!
         elif self.proxy_type == "domain_size":
-            proxy["domain_size"] = self.domain_size(self.tau_ic-time)
+            proxy["domain_size"] = self.domain_size(self.tau_ic - time)
         elif self.proxy_type == "dV_V":
-            proxy["dV_V"] = self.dV_V(self.tau_ic-time)
+            proxy["dV_V"] = self.dV_V(self.tau_ic - time)
         elif self.proxy_type == "theta" or self.proxy_type == "phi":
-            point = self.integration_trajectory(time, [x,y,z], self.tau_ic)
-            proxy["position"] = positions.CartesianPoint(point[0], point[1], point[2])
+            point = self.integration_trajectory(time, [x, y, z], self.tau_ic)
+            proxy["position"] = positions.CartesianPoint(
+                point[0], point[1], point[2])
             proxy["phi"] = proxy["position"].phi
             proxy["theta"] = proxy["position"].theta
-        elif self.proxy_type == "growth rate": 
+        elif self.proxy_type == "growth rate":
             proxy["growth rate"] = self.effective_growth_rate2(time, point)
-        else: 
+        else:
             print "unknown value for proxy_type."
             proxy = 0.
         return proxy
@@ -148,8 +153,10 @@ class ModelTRG(geodyn.Model):
             tau_ic: time
         Return: time
         """
-        if np.sqrt(point[0]**2+point[1]**2+point[2]**2) < self.rICB: tau_2 = tau_ic
-        else: tau_2 = 1.01*tau_ic
+        if np.sqrt(point[0]**2 + point[1]**2 + point[2]**2) < self.rICB:
+            tau_2 = tau_ic
+        else:
+            tau_2 = 1.01 * tau_ic
         return self.find_time_beforex0(point, tau_ic, tau_2)
 
     def crystallisation_position(self, point, time):
@@ -165,30 +172,31 @@ class ModelTRG(geodyn.Model):
         """
         _point = self.integration_trajectory(time, point, self.tau_ic)
         return positions.CartesianPoint(_point[0], _point[1], _point[2])
- 
+
     def distance_to_radius(self, t, r0, t0):
-        return self.trajectory_r(t, r0, t0)-self.radius_ic(t)
+        return self.trajectory_r(t, r0, t0) - self.radius_ic(t)
 
     def trajectory_r(self, t, r0, t0):
         """ for a point at position r0 at time t0, return the radial component of the position of the point at time t.
-            
+
             """
         trajectory = self.integration_trajectory(t, r0, t0)
         #r, t, p = positions.from_cartesian_to_seismo(trajectory[0], trajectory[1], trajectory[2])
-        r = trajectory[0]**2+trajectory[1]**2+trajectory[2]**2
+        r = trajectory[0]**2 + trajectory[1]**2 + trajectory[2]**2
         return np.sqrt(r)
 
     def integration_trajectory(self, t1, r0, t0):
         """ integration of the equation dr(t)/dt = v(r,t)
-        
+
         return the position of the point at the time t1.
         r0: initial position
         t0: initial time
         t1: tmax of the integration
             """
         r = ode(self.velocity).set_integrator('dopri5')
-        r.set_initial_value(r0, t0) # .set_f_params() if the function has any parameters
-        return np.real(r.integrate(r.t+(t1-t0)))
+        # .set_f_params() if the function has any parameters
+        r.set_initial_value(r0, t0)
+        return np.real(r.integrate(r.t + (t1 - t0)))
 
     def trajectory_single_point(self, point, t0, t1, num_t):
         """ return the trajectory of a point (a positions.Point instance) between the times t0 and t1, knowing that it was at the position.Point at t0, given nt times steps. 
@@ -199,40 +207,43 @@ class ModelTRG(geodyn.Model):
         for i, t in enumerate(time):
             point = self.integration_trajectory(t, [x[0], y[0], z[0]], t0)
             x[i], y[i], z[i] = point[0], point[1], point[2]
-        return x, y, z 
-    
+        return x, y, z
+
     def domain_size(self, age):
-        age = age * self.time_unit * np.pi* 1e7# age has to be in seconds!
+        age = age * self.time_unit * np.pi * 1e7  # age has to be in seconds!
         return mineral_phys_data.domain_size(age)
-    
+
     def dV_V(self, age):
-        adimfrequency = mineral_phys_data.adimensional_frequency(self.domain_size(age))
+        adimfrequency = mineral_phys_data.adimensional_frequency(
+            self.domain_size(age))
         polynome = mineral_phys_data.export_matlab_data("Belanoshko_Vp_poly")
         return mineral_phys_data.convert_CM2008_velocity(adimfrequency, polynome)
 
-    def plot_equatorial(self, t0, t1, Nt = 200,  N=40):
+    def plot_equatorial(self, t0, t1, Nt=200,  N=40):
         # Plot the inner core boundary
-        phi = np.linspace(0., 2*np.pi, N)
-        x, y = self.rICB*np.cos(phi), self.rICB*np.sin(phi)
+        phi = np.linspace(0., 2 * np.pi, N)
+        x, y = self.rICB * np.cos(phi), self.rICB * np.sin(phi)
         plt.plot(x, y, 'b')
         for i, phi in enumerate(phi):
-            trajx, trajy, trajz = self.trajectory_single_point(positions.CartesianPoint(x[i], y[i], 0.), t0, t1, Nt)
+            trajx, trajy, trajz = self.trajectory_single_point(
+                positions.CartesianPoint(x[i], y[i], 0.), t0, t1, Nt)
             trajectory_r = np.sqrt(trajx**2. + trajy**2 + trajz**2)
-            mx = np.ma.masked_array(trajx, mask = trajectory_r >= self.rICB)
-            my = np.ma.masked_array(trajy, mask = trajectory_r >= self.rICB)
+            mx = np.ma.masked_array(trajx, mask=trajectory_r >= self.rICB)
+            my = np.ma.masked_array(trajy, mask=trajectory_r >= self.rICB)
             plt.plot(mx, my)
             plt.plot(mx[::10], my[::10], '+b')
             velocity = self.velocity(self.tau_ic, [trajx, trajy, trajz])
-            plt.quiver(mx[::10], my[::10], np.ma.masked_array(velocity[0], mask = trajectory_r >= self.rICB)[::10], np.ma.masked_array(velocity[1], mask = trajectory_r >= self.rICB)[::10], units='width')
+            plt.quiver(mx[::10], my[::10], np.ma.masked_array(velocity[0], mask=trajectory_r >= self.rICB)[
+                       ::10], np.ma.masked_array(velocity[1], mask=trajectory_r >= self.rICB)[::10], units='width')
         plt.axis("equal")
-        plt.xlim([-1,1])
-        plt.ylim([-1,1])
-        #plt.show()
+        plt.xlim([-1, 1])
+        plt.ylim([-1, 1])
+        # plt.show()
 
     def translation_velocity(self):
         try:
             self.vt
-            assert(len(self.vt)==3)
+            assert(len(self.vt) == 3)
         except (NameError, AttributeError):
             print "translation velocity has not been given. Please enter the three components of the velocity: (be careful, it has to be dimensionless)"
             value = map(float, raw_input("Translation velocity: ").split())
@@ -246,33 +257,33 @@ class ModelTRG(geodyn.Model):
             print "Rotation velocity has not been defined. Please enter the value for omega: "
             value = float(input("Rotation rate: "))
             self.set_rotation(value)
-        return np.array([-self.omega * r[1], self.omega * r[0], 0.] )    
+        return np.array([-self.omega * r[1], self.omega * r[0], 0.])
 
 
 class PureTranslation(ModelTRG):
-    
+
     def __init__(self):
         self.name = "Translation"
 
     def velocity(self, t, position):
       #  position = np.array(position)
-      #  if position.ndim == 1: 
+      #  if position.ndim == 1:
       #      ncols= 1
-      #  else: 
+      #  else:
       #      nlines, ncols = position.shape
       #  return np.repeat([self.vt], ncols, axis=0)
-        return self.translation_velocity() 
+        return self.translation_velocity()
 
     def radius_ic(self, t):
         return self.rICB
-    
+
     def growth_ic(self, t):
         return 0.
 
     def verification(self):
         """ For pure translation, velocity has to be > 2*ricb/t_ic """
-        v = np.sqrt(self.vt[0]**2+self.vt[1]**2+self.vt[2]**2)
-        if v<= 2.* self.rICB/self.tau_ic :
+        v = np.sqrt(self.vt[0]**2 + self.vt[1]**2 + self.vt[2]**2)
+        if v <= 2. * self.rICB / self.tau_ic:
             raise ValueError, "For pure translation, velocity has to be > 2*ricb/t_ic."
         try:
             self.rICB
@@ -283,26 +294,25 @@ class PureTranslation(ModelTRG):
             raise NameError, "please verify the number of parameters.PureTranslationreqires: rICB, rau_ic, vt and proxy_type."
 
 
-
 class TranslationRotation(ModelTRG):
 
     def __init__(self):
         self.name = "TranslationRotation"
-    
+
     def velocity(self, t, r):
         """ velocity at the point position
 
         position is a np.array [x, y, z] 
         """
         return self.translation_velocity() + self.rotation_velocity(r)
-   
+
     def radius_ic(self, t):
         return self.rICB
 
     def verification(self):
         """ For translation, velocity has to be (at least) > 2*ricb/t_ic. Please note that with rotation, it may need an even higher velocity. """
-        v = np.sqrt(self.vt[0]**2+self.vt[1]**2+self.vt[2]**2)
-        if v<= 2.* self.rICB/self.tau_ic :
+        v = np.sqrt(self.vt[0]**2 + self.vt[1]**2 + self.vt[2]**2)
+        if v <= 2. * self.rICB / self.tau_ic:
             raise ValueError, "For translation, velocity has to be (at least) > 2*ricb/t_ic."
         try:
             self.rICB
@@ -318,19 +328,19 @@ class PureRotation(ModelTRG):
 
     def __init__(self):
         self.name = "Rotation"
-    
+
     def velocity(self, t, r):
         """ velocity at the point position
 
         position is a np.array [x, y, z] 
         """
-        
-        return self.rotation_velocity() 
+
+        return self.rotation_velocity()
 
     def verification(self):
         """ pure rotation cannot give age values because the streamlines do not cross the inner core boundary."""
         if proxy_type == 'age':
-            raise ValueError, "pure rotation cannot give age values because the streamlines do not cross the     inner core boundary." 
+            raise ValueError, "pure rotation cannot give age values because the streamlines do not cross the     inner core boundary."
         try:
             self.rICB
             self.tau_ic
@@ -344,14 +354,14 @@ class PureGrowth(ModelTRG):
 
     def __init__(self):
         self.name = "PureGrowth"
-    
+
     def velocity(self, t, r):
         """ velocity at the point position
-    
+
         position is a np.array [x, y, z]
         """
-        return np.array([0.,0.,0.]) 
-  
+        return np.array([0., 0., 0.])
+
     def verification(self):
         try:
             self.rICB
@@ -365,13 +375,13 @@ class PureGrowth(ModelTRG):
         if self.exponent_growth == 0.:
             return 0.
         else:
-            if t <=0. :
+            if t <= 0.:
                 return 0.
             else:
-                return self.exponent_growth*self.rICB*(t/self.tau_ic)**(self.exponent_growth-1.)
+                return self.exponent_growth * self.rICB * (t / self.tau_ic)**(self.exponent_growth - 1.)
 
     def radius_ic(self, t):
-        return self.rICB*(t/self.tau_ic)**self.exponent_growth
+        return self.rICB * (t / self.tau_ic)**self.exponent_growth
 
 
 class TranslationGrowth(ModelTRG):
@@ -381,11 +391,11 @@ class TranslationGrowth(ModelTRG):
 
     def velocity(self, t, r):
         """ velocity at the point position
-    
+
         position is a np.array [x, y, z]
         """
-        return self.translation_velocity() 
-  
+        return self.translation_velocity()
+
     def radius_ic(self, t):
         return self.growth_ic(t)
 
@@ -403,13 +413,13 @@ class TranslationGrowth(ModelTRG):
         if self.exponent_growth == 0.:
             return 0.
         else:
-            if t <=0. :
+            if t <= 0.:
                 return 0.
             else:
-                return self.exponent_growth*self.rICB*(t/self.tau_ic)**(self.exponent_growth-1.)
+                return self.exponent_growth * self.rICB * (t / self.tau_ic)**(self.exponent_growth - 1.)
 
     def radius_ic(self, t):
-        return self.rICB*(t/self.tau_ic)**self.exponent_growth
+        return self.rICB * (t / self.tau_ic)**self.exponent_growth
 
 
 class TranslationGrowthRotation(ModelTRG):
@@ -417,13 +427,12 @@ class TranslationGrowthRotation(ModelTRG):
     def __init__(self):
         self.name = "Translation, Rotation and Growth"
 
-
     def velocity(self, t, r):
         """ velocity at the point position
-    
+
         position is a np.array [x, y, z]
         """
-        return self.translation_velocity()+ self.rotation_velocity(r)
+        return self.translation_velocity() + self.rotation_velocity(r)
 
     def verification(self):
         try:
@@ -440,19 +449,18 @@ class TranslationGrowthRotation(ModelTRG):
         if self.exponent_growth == 0.:
             return 0.
         else:
-            if t <=0. :
+            if t <= 0.:
                 return 0.
             else:
-                return self.exponent_growth*self.rICB*(t/self.tau_ic)**(self.exponent_growth-1.)
+                return self.exponent_growth * self.rICB * (t / self.tau_ic)**(self.exponent_growth - 1.)
 
     def radius_ic(self, t):
-        return self.rICB*(t/self.tau_ic)**self.exponent_growth
-
+        return self.rICB * (t / self.tau_ic)**self.exponent_growth
 
 
 def translation_velocity(center, amplitude):
     """ Give the value of the translation velocity to be used in geodyn models, in the format [x, y, z]
-    
+
     center: [latitude, longitude]
     """
 
@@ -462,7 +470,7 @@ def translation_velocity(center, amplitude):
 
 def radial_derivative(fun, pos, dr, *args):
     """ compute the radial derivative of function fun(pos, *args) at the point r with finite difference 
-    
+
     d fun/ dr = (fun(r+dr) - fun(r-dr))/(2*dr)
 
     Args:
@@ -474,10 +482,9 @@ def radial_derivative(fun, pos, dr, *args):
     """
     x, y, z = pos[0], pos[1], pos[2]
     r, theta, phi = positions.from_cartesian_to_seismo(x, y, z)
-    r1 = min(1., r+dr)
-    r2 = max(0., r-dr)
+    r1 = min(1., r + dr)
+    r2 = max(0., r - dr)
     x1, y1, z1 = positions.from_seismo_to_cartesian(r1, theta, phi)
     x2, y2, z2 = positions.from_seismo_to_cartesian(r2, theta, phi)
 
-    return (fun([x1, y1, z1], *args)-fun([x2, y2, z2], *args))/(r1-r2)
-
+    return (fun([x1, y1, z1], *args) - fun([x2, y2, z2], *args)) / (r1 - r2)
