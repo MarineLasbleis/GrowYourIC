@@ -207,7 +207,7 @@ class SeismicData():
 
 class SeismicFromFile(SeismicData):
 
-    def __init__(self, filename="results.dat", RICB=1.):
+    def __init__(self, filename="results.dat", RICB=1221.):
         
         SeismicData.__init__(self)
 
