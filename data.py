@@ -2,8 +2,6 @@
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 # Author : Marine Lasbleis
 
-
-
 import numpy as np
 import matplotlib.pyplot as plt #for figures
 from mpl_toolkits.basemap import Basemap #to render maps
@@ -15,15 +13,34 @@ import positions
 import plot_data
 
 
-def read_from_file(filename, names=["station", "PKIKP-PKiKP travel time residual", "zeta", "epicentral distance", "station lat", "stat    ion lon", "event lat", "event lon", "event depth", "in lat", "in lon", "out lat", "out lon", "turn lat", "turn lon", "turn depth", "in    ner core travel time", "PKIKP/PKiKP amplitude ratio"], slices="all"):
+def read_from_file(filename, names=["station",
+                                    "PKIKP-PKiKP travel time residual",
+                                    "zeta",
+                                    "epicentral distance",
+                                    "station lat",
+                                    "station lon",
+                                    "event lat",
+                                    "event lon",
+                                    "event depth",
+                                    "in lat",
+                                    "in lon",
+                                    "out lat",
+                                    "out lon",
+                                    "turn lat",
+                                    "turn lon",
+                                    "turn depth",
+                                    "inner core travel time",
+                                    "PKIKP/PKiKP amplitude ratio"],
+                   slices="all"):
     """ read seismic data repartition
-    
+
     input parameters:
     - filename: name of the data file
     - names: names of the columns for the data set
     - slices: names of columns for the output.
     output:
-    - data : pandas DataFrame with all the datas. Columns name are indicated by the variable "names".
+    - data : pandas DataFrame with all the datas.
+    Columns name are indicated by the variable "names".
     """
     df = pd.read_table(filename, sep=' ', names=names, skiprows=0)
     if slices != "all":
@@ -33,29 +50,29 @@ def read_from_file(filename, names=["station", "PKIKP-PKiKP travel time residual
 
 class SeismicData():
     """ Class for seismic data """
-    
+
     def __init__(self):
-        self.data_points = [] 
+        self.data_points = []
         self.size = None
-    
+
     def __getitem__(self, key):
         return self.data_points[key]
-    
+
     def extract_xyz(self, type_of_point):
-        assert self.size, 'data_points is probably empty' # TO DO : raise exceptions ins    tead of using assert
+        assert self.size, 'data_points is probably empty'
+        # TODO : raise exceptions ins    tead of using assert
         x, y, z = np.empty([self.size, 1]), np.empty([self.size, 1]), np.empty([self.size, 1])
         for i, ray in enumerate(self.data_points):
             point = getattr(ray, type_of_point)
             x[i] = point.x
             y[i] = point.y
             z[i] = point.z
-        return x, y, z 
+        return x, y, z
 
     def extract_rtp(self, type_of_point):
-        """Extract the radius, theta (latitute), phi (longitude) for a serie of points 
-    
-        """
-        assert self.size, 'data_points is probably empty' # TO DO : raise exceptions ins    tead of using asse    rt
+        """Extract the radius, theta (latitute), phi (longitude) for a serie of points"""
+        assert self.size, 'data_points is probably empty'
+        # TODO : raise exceptions instead of using assert
         r, theta, phi = np.empty([self.size, 1]), np.empty([self.size, 1]), np.empty([self.size, 1])
         for i, ray in enumerate(self.data_points):
             point = getattr(ray, type_of_point)
@@ -65,14 +82,15 @@ class SeismicData():
         return r, theta, phi
 
     def extract_btpoints(self):
-        assert self.size, 'data_points is probably empty' # TO DO : raise exceptions instead of using assert
+        assert self.size, 'data_points is probably empty'
+        # TODO : raise exceptions instead of using assert
         # need to also assert that bottom_turning_point exist or can be calculated!
         r, theta, phi = np.empty([self.size, 1]), np.empty([self.size, 1]), np.empty([self.size, 1])
         for i, ray in enumerate(self.data_points):
             r[i] = ray.bottom_turning_point.r
             theta[i] = ray.bottom_turning_point.theta
             phi[i] = ray.bottom_turning_point.phi
-        return r, theta, phi 
+        return r, theta, phi
 
     def extract_in(self):
         assert self.size, 'data_points is probably empty' # TO DO : raise exceptions instead of using assert
@@ -189,7 +207,7 @@ class SeismicData():
 
 class SeismicFromFile(SeismicData):
 
-    def __init__(self, filename="results.dat", RICB=1221.):
+    def __init__(self, filename="results.dat", RICB=1.):
         
         SeismicData.__init__(self)
 
@@ -221,7 +239,7 @@ class SeismicFromFile(SeismicData):
 
 class PerfectSamplingEquator(SeismicData):
     
-    def __init__(self, N, rICB = 1221.):
+    def __init__(self, N, rICB = 1.):
         SeismicData.__init__(self)
         self.rICB = rICB
         self.N = N
@@ -299,7 +317,7 @@ class RandomData(SeismicData):
 
 class PerfectSamplingEquatorRadial(SeismicData):
     
-    def __init__(self, Nr, Ntheta, rICB = 1221.):
+    def __init__(self, Nr, Ntheta, rICB = 1.):
         SeismicData.__init__(self)
         self.rICB = rICB
         self.name = "Perfect sampling in the equatorial plane"
