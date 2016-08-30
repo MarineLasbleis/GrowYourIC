@@ -44,7 +44,7 @@ if __name__ == '__main__':
     data_set.method = "bt_point"
     proxy = geodyn.evaluate_proxy(data_set, geodynModel)
     data_set.proxy = proxy #evaluate_proxy(data_set, geodynModel)
-    data_set.plot_c_vec(geodynModel)
+    data_set.plot_c_vec(geodynModel, proxy=proxy)
     #data_set.plot_scatter()
    # plt.show()
 

@@ -2,9 +2,25 @@
 # Project : From geodynamic to Seismic observations in the Earth's inner core
 # Author : Marine Lasbleis
 
+""" Module data.py
+
+This module define the classes SeismicData() to handle seismic data set.
+These datasets define the geographic repartition of raypath in the inner core.
+
+functions:
+    read_from_file: to read a file with seismic data
+
+classes:
+    SeismicData: base class
+    SeismicFromFile: data obtained from a file (real data)
+    PerfectSamplingEquator
+    PerfectSamplingEquatorRadial
+    RandomData: random data, well partitioned on the horizontal, and between 15 and 106km
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt  # for figures
-from mpl_toolkits.basemap import Basemap  # to render maps
+# from mpl_toolkits.basemap import Basemap  # to render maps
 import pandas as pd
 
 # personal routines
@@ -42,25 +58,26 @@ def read_from_file(filename, names=["station",
     - data : pandas DataFrame with all the datas.
     Columns name are indicated by the variable "names".
     """
-    df = pd.read_table(filename, sep=' ', names=names, skiprows=0)
+    data = pd.read_table(filename, sep=' ', names=names, skiprows=0)
     if slices != "all":
-        df = df[slices]
-    return df
+        data = data[slices]
+    return data
 
 
-class SeismicData():
+class SeismicData(object):
     """ Class for seismic data """
 
     def __init__(self):
         self.data_points = []
         self.size = None
+        self.proxy = 0.
+        self.name = None
 
     def __getitem__(self, key):
         return self.data_points[key]
 
     def extract_xyz(self, type_of_point):
-        assert self.size, 'data_points is probably empty'
-        # TODO : raise exceptions ins    tead of using assert
+        """Extract the cartesian coordinates of the points in the data set"""
         x, y, z = np.empty([self.size, 1]), np.empty(
             [self.size, 1]), np.empty([self.size, 1])
         for i, ray in enumerate(self.data_points):
@@ -71,9 +88,7 @@ class SeismicData():
         return x, y, z
 
     def extract_rtp(self, type_of_point):
-        """Extract the radius, theta (latitute), phi (longitude) for a serie of points"""
-        assert self.size, 'data_points is probably empty'
-        # TODO : raise exceptions instead of using assert
+        """Extract the radius, theta (latitute), phi (longitude) of the points"""
         r, theta, phi = np.empty([self.size, 1]), np.empty(
             [self.size, 1]), np.empty([self.size, 1])
         for i, ray in enumerate(self.data_points):
@@ -83,88 +98,19 @@ class SeismicData():
             phi[i] = point.phi
         return r, theta, phi
 
-    def extract_btpoints(self):
-        assert self.size, 'data_points is probably empty'
-        # TODO : raise exceptions instead of using assert
-        # need to also assert that bottom_turning_point exist or can be
-        # calculated!
-        r, theta, phi = np.empty([self.size, 1]), np.empty(
-            [self.size, 1]), np.empty([self.size, 1])
-        for i, ray in enumerate(self.data_points):
-            r[i] = ray.bottom_turning_point.r
-            theta[i] = ray.bottom_turning_point.theta
-            phi[i] = ray.bottom_turning_point.phi
-        return r, theta, phi
-
-    def extract_in(self):
-        # TO DO : raise exceptions instead of using assert
-        assert self.size, 'data_points is probably empty'
-        # need to also assert that bottom_turning_point exist or can be
-        # calculated!
-        r, theta, phi = np.empty([self.size, 1]), np.empty(
-            [self.size, 1]), np.empty([self.size, 1])
-        for i, ray in enumerate(self.data_points):
-            r[i] = ray.in_point.r
-            theta[i] = ray.in_point.theta
-            phi[i] = ray.in_point.phi
-        return r, theta, phi
-
-    def extract_out(self):
-        # TO DO : raise exceptions instead of using assert
-        assert self.size, 'data_points is probably empty'
-        # need to also assert that bottom_turning_point exist or can be
-        # calculated!
-        r, theta, phi = np.empty([self.size, 1]), np.empty(
-            [self.size, 1]), np.empty([self.size, 1])
-        for i, ray in enumerate(self.data_points):
-            r[i] = ray.out_point.r
-            theta[i] = ray.out_point.theta
-            phi[i] = ray.out_point.phi
-        return r, theta, phi
-
-# def translation_BT(self, velocity, direction):
-# assert self.size, 'data_points is probably empty' # TO DO : raise exceptions instead of using assert
-# need to also assert that bottom_turning_point exist or can be calculated!
-##         self.translation = np.empty([self.size, 1])
-# for i, ray in enumerate(self.data_points):
-##             self.translation[i] = geodynamic.exact_translation(ray.bottom_turning_point, velocity, direction)
-##
-# def translation_raypath(self, velocity, direction, N=10):
-# """
-# N : number of points in the trajectory
-# """
-# need to check in raypath exist. In case it does not, need to apply one of the method for raypath
-##         self.translation = np.zeros([self.size, 1])
-# for i, ray in enumerate(self.data_points):
-# assuming raypath does not exist, so need to be calculated (but would be faster if it checks before and do not run this if it's not needed)
-# self.data_points[i].straigth_in_out(N)
-# raypath = ray.points #raypath is a np array, each elements being one point.
-##             total_translation = 0.
-# for j, points in enumerate(raypath):
-##                 _translation = geodynamic.exact_translation(points, velocity, direction)
-##                 total_translation += _translation
-##
-# total_translation /= N #TO DO : add the weigth by the distance (each points may be at different distances from each others?)
-##             self.translation[i] = total_translation /float(N)
-##
     def map_plot(self, geodyn_model=''):
         """ plot data on a map."""
-        # need to check which data exist, if raypath, BT point, in-out point, etc.
-        # and it should plot as much data as possible (only BT if only exist, but raypath also)
-        # should also ask for which data set you want to plot (or plot all of
-        # them? dt from data, and results if they exist?)
+        # user should plot on map in the main code.
 
         m, fig = plot_data.setting_map()
-        cm = plt.cm.get_cmap('RdYlBu')
-
-        r, theta, phi = self.extract_btpoints()
-        r, theta, phi = self.extract_rtp("bottom_turning_point")
+        colormap = plt.cm.get_cmap('RdYlBu')
+        _, theta, phi = self.extract_rtp("bottom_turning_point")
         x, y = m(phi, theta)
         proxy = np.array([self.proxy]).T.astype(float)
-        sc = m.scatter(x, y, c=proxy, zorder=10, cmap=cm)
+        sc = m.scatter(x, y, c=proxy, zorder=10, cmap=colormap)
 
         # TO DO : make a function to plot great circles correctly!
-        #r1, theta1, phi1 = self.extract_in()
+        #r1, theta1, phi1 = self.extract_in() #use extract_rtp()
         #r2, theta2, phi2 = self.extract_out()
         # for i, t in enumerate(theta1):
         #    z, w = m.gcpoints(phi1[i], theta1[i], phi2[i], theta2[i], 200)#
@@ -178,9 +124,9 @@ class SeismicData():
 
     def phi_plot(self, geodyn_model=''):
         """ Plot proxy as function of longitude """
-
+        # user should use pyplot.plot functions in the main code
         fig, ax = plt.subplots()
-        r, theta, phi = self.extract_rtp("bottom_turning_point")
+        _, _, phi = self.extract_rtp("bottom_turning_point")
         ax.plot(phi, self.proxy, '.')
         title = "Dataset: {},\n geodynamic model: {}".format(
             self.name, geodyn_model)
@@ -191,10 +137,10 @@ class SeismicData():
 
     def distance_plot(self, geodyn_model='', point=positions.SeismoPoint(1., 0., 0.)):
         """ Plot proxy as function of the angular distance with point G """
-
+        # user should use pyplot.plot functions in the main code
         fig, ax = plt.subplots()
-        r, theta, phi = self.extract_rtp("bottom_turning_point")
-        r1, theta1, phi1 = point.r, point.theta, point.phi
+        _, theta, phi = self.extract_rtp("bottom_turning_point")
+        theta1, phi1 = point.theta, point.phi
         distance = positions.angular_distance_to_point(
             theta, phi, theta1, phi1)
         ax.plot(distance, self.proxy, '.')
@@ -206,24 +152,12 @@ class SeismicData():
         plt.ylabel("proxy")
         # plt.show()
 
-    def adimension(self, scale):
-        """ coordinates of points in the data set are made dimensionless using the value of scale """
-
-        if self.size == None:
-            raise IndexError("The data set is empty!")
-        elif self.size <= 0:
-            raise IndexError("The data set is empty!")
-        else:
-            for i, ray in self.data_points:
-                self.data_points[i].adim(scale)
-
 
 class SeismicFromFile(SeismicData):
+    """Seismic data set from file."""
 
     def __init__(self, filename="results.dat", RICB=1221.):
-
         SeismicData.__init__(self)
-
         self.name = "Data set from Lauren's file"
         # seismic data set (from Lauren's file)
         self.filename = filename
@@ -231,23 +165,20 @@ class SeismicFromFile(SeismicData):
                        "turn lon", "turn depth", "in lat", "in lon", "out lat", "out lon"]
         self.data = read_from_file(filename, slices=self.slices)
         self.size = self.data.shape[0]
-
         self.data_points = []
-
-        for i, row in self.data.iterrows():
+        for _, row in self.data.iterrows():
             ray = positions.Raypath()
             ray.add_b_t_point(positions.SeismoPoint(
                 1. - row["turn depth"] / RICB, row["turn lat"], row["turn lon"]))
-            in_Point = positions.SeismoPoint(1., row["in lat"], row["in lon"])
-            out_Point = positions.SeismoPoint(
+            in_point = positions.SeismoPoint(1., row["in lat"], row["in lon"])
+            out_point = positions.SeismoPoint(
                 1., row["out lat"], row["out lon"])
-            ray.add_in_out(in_Point, out_Point)
+            ray.add_in_out(in_point, out_point)
             ray.residual = row["PKIKP-PKiKP travel time residual"]
             self.data_points = np.append(self.data_points, ray)
-            # self.data_points.append(ray)
-        assert(self.size == len(self.data_points))
 
     def real_residual(self):
+        """Extract the values of residuals from the file"""
         value = []
         for ray in self.data_points:
             value = np.append(value, ray.residual)
@@ -272,20 +203,19 @@ class PerfectSamplingEquator(SeismicData):
     def plot_c_vec(self, modelgeodyn, proxy=1):
         """ Plot contourf of the proxy + streamlines of the flow.
 
-        Args: 
+        Args:
             modelgeodyn: a geodyn.Model instance
-            proxy: the values to be plot are either defined as self.proxy, given as proxy in the function, or set to 1 if not given.
+            proxy: the values to be plot are either defined as self.proxy,
+            given as proxy in the function, or set to 1 if not given.
         """
 
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
-        if hasattr(self, "proxy"):
-            proxy = self.proxy
         x1 = np.linspace(-self.rICB, self.rICB, self.N)
         y1 = np.linspace(-self.rICB, self.rICB, self.N)
         X, Y = np.meshgrid(x1, y1)
         Z = -1. * np.ones_like(X)
-        x, y, z = self.extract_xyz("bottom_turning_point")
+        x, y, _ = self.extract_xyz("bottom_turning_point")
         for it, pro in enumerate(proxy):
             ix = [i for i, j in enumerate(x1) if j == x[it]]
             iy = [i for i, j in enumerate(y1) if j == y[it]]
@@ -296,8 +226,8 @@ class PerfectSamplingEquator(SeismicData):
         #sc2 = ax.contour(Y, X, Z, 10, colors='w')
 
         Vx, Vy = np.empty((self.N, self.N)), np.empty((self.N, self.N))
-        for ix, xi in enumerate(x1):
-            for iy, yi in enumerate(y1):
+        for ix, _ in enumerate(x1):
+            for iy, _ in enumerate(y1):
                 velocity = modelgeodyn.velocity(
                     modelgeodyn.tau_ic, [X[ix, iy], Y[ix, iy], 0.])
                 Vx[ix, iy] = velocity[0]
@@ -320,6 +250,7 @@ class PerfectSamplingEquator(SeismicData):
 
 
 class RandomData(SeismicData):
+    """ Random repartition of point, between depth 106 and 15km"""
 
     def __init__(self, N, rICB=1.):
         SeismicData.__init__(self)
@@ -329,7 +260,7 @@ class RandomData(SeismicData):
         self.random_method = "uniform"
         self.depth = [15. / 1221., 106. / 1221.]
 
-        for i in range(N):
+        for _ in range(N):
             ray = positions.Raypath()
             ray.add_b_t_point(positions.RandomPoint(
                 self.random_method, self.depth, rICB))
@@ -338,6 +269,7 @@ class RandomData(SeismicData):
 
 
 class PerfectSamplingEquatorRadial(SeismicData):
+    """ Points in the equatorial cross section, along radius"""
 
     def __init__(self, Nr, Ntheta, rICB=1.):
         SeismicData.__init__(self)
@@ -354,7 +286,7 @@ class PerfectSamplingEquatorRadial(SeismicData):
     def radius_plot(self, geodyn_model):
         """ Plot proxy as function of radius (to check growth rate) """
         fig, ax = plt.subplots()
-        r, theta, phi = self.extract_rtp("bottom_turning_point")
+        r, _, phi = self.extract_rtp("bottom_turning_point")
         ax.scatter(r, self.proxy, c=phi, cmap="flag")
         if geodyn_model.proxy_type == "age":
             ax.plot(r, 1.e-6 * geodyn_model.time_unit * (1 - r**2), 'x')
