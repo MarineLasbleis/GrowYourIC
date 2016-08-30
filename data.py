@@ -234,55 +234,18 @@ class PerfectSamplingEquator(SeismicData):
                     self.data_points = np.append(self.data_points, ray)
         self.size = len(self.data_points)
 
-    def plot_scatter(self):
-        fig, ax = plt.subplots()
-        x = np.linspace(-self.rICB, self.rICB , 100)
-        ax.plot(x, np.sqrt(self.rICB**2-x**2), 'k')
-        ax.plot(x, -np.sqrt(self.rICB**2-x**2), 'k')
-        if hasattr(self, "proxy"):
-            proxy = np.array([self.proxy]).T.astype(float)
-        else :
-            proxy = 1.
-        x, y, z = self.extract_xyz("bottom_turning_point")
-        sc = ax.scatter(x, y, c=proxy)
-        plt.axis("equal")
-        plt.colorbar(sc)
-        #plt.show()
-
-    def plot_contourf(self):
-        fig, ax = plt.subplots()
-        ax.set_aspect('equal')
-        x = np.linspace(-self.rICB, self.rICB , 100)
-        ax.plot(x, np.sqrt(self.rICB**2-x**2), 'k')
-        ax.plot(x, -np.sqrt(self.rICB**2-x**2), 'k')
-        if hasattr(self, "proxy"):
-            proxy = self.proxy
-        else :
-            proxy = 1.
-        x1 = np.linspace(-self.rICB, self.rICB , self.N)
-        y1 = np.linspace(-self.rICB, self.rICB , self.N)
-        X, Y = np.meshgrid(x1, y1)
-        Z = -1.*np.ones_like(X)
-        x, y, z = self.extract_xyz("bottom_turning_point")
-        for it, pro in enumerate(proxy):
-            ix = [i for i, j in enumerate(x1) if j == x[it]]
-            iy = [i for i, j in enumerate(y1) if j == y[it]]
-            Z[ix, iy] = pro
-        Z = np.ma.array(Z, mask = Z==-1)    
-        sc = ax.contourf(Y, X, Z, 100)
+    def plot_c_vec(self, modelgeodyn, proxy=1):        
+        """ Plot contourf of the proxy + streamlines of the flow.
         
-        plt.colorbar(sc)
-        #plt.show()
-
-
-    def plot_c_vec(self, modelgeodyn):
-
+        Args: 
+            modelgeodyn: a geodyn.Model instance
+            proxy: the values to be plot are either defined as self.proxy, given as proxy in the function, or set to 1 if not given.
+        """
+        
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
         if hasattr(self, "proxy"):
             proxy = self.proxy
-        else :
-            proxy = 1.
         x1 = np.linspace(-self.rICB, self.rICB , self.N)
         y1 = np.linspace(-self.rICB, self.rICB , self.N)
         X, Y = np.meshgrid(x1, y1)
@@ -294,7 +257,7 @@ class PerfectSamplingEquator(SeismicData):
             Z[ix, iy] = pro
         mask_Z = Z==-1    
         Z = np.ma.array(Z, mask = mask_Z)
-        sc = ax.contourf(X, Y, Z, 10, cmap=plt.get_cmap('summer'))
+        sc = ax.contourf(Y, X, Z, 10, cmap=plt.get_cmap('summer'))
         #sc2 = ax.contour(Y, X, Z, 10, colors='w')
         
         Vx, Vy = np.empty((self.N, self.N)), np.empty((self.N, self.N))
@@ -306,7 +269,7 @@ class PerfectSamplingEquator(SeismicData):
         Vx = np.ma.array(Vx, mask=mask_Z)
         Vy = np.ma.array(Vy, mask=mask_Z)
         #ax.quiver(X, Y, Vx, Vy)
-        ax.streamplot(X,Y,Vy,Vx, color='black', arrowstyle = '->', density=0.5)
+        ax.streamplot(X,Y,Vx,Vy, color='black', arrowstyle = '->', density=0.5)
         theta = np.linspace(0., 2*np.pi , 1000)
         ax.plot(np.sin(theta), np.cos(theta), 'k', lw=3)
         ax.set_xlim([-1.1, 1.1]) 
