@@ -244,12 +244,3 @@ class Raypath_inout(Raypath):
         Raypath.__init__(self)
         self.add_in_out(point_in, point_out)
 
-
-if __name__ == "__main__":
-    point1 = 0., 70
-    point2 = 0., -80.
-
-    print point1 + point2
-    print angular_distance_to_point(*(point1 + point2))
-    print angular_distance_to_point(*(point1 + point1))
-    print angular_distance_to_point(*(point2 + point1))
