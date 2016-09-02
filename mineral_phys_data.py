@@ -5,6 +5,9 @@
 # Seismic properties of material as function of ka (adimensional frequency): P and S wave velocity and attenuation.
 # Please refer to Calvet and Margerin 2008 (figures 3 and 4)
 
+from __future__ import division
+from __future__ import absolute_import
+
 
 import numpy as np
 import matplotlib.pyplot as plt  # for figures

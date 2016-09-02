@@ -17,6 +17,8 @@ classes:
     PerfectSamplingEquatorRadial
     RandomData: random data, well partitioned on the horizontal, and between 15 and 106km
 """
+from __future__ import division
+from __future__ import absolute_import
 
 import numpy as np
 import matplotlib.pyplot as plt  # for figures
