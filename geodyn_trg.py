@@ -139,7 +139,7 @@ class ModelTRG(geodyn.Model):
         elif self.proxy_type == "growth rate":
             proxy["growth rate"] = self.effective_growth_rate2(time, point)
         else:
-            print "unknown value for proxy_type."
+            print("unknown value for proxy_type.")
             proxy = 0.
         return proxy
 
@@ -245,7 +245,7 @@ class ModelTRG(geodyn.Model):
             self.vt
             assert(len(self.vt) == 3)
         except (NameError, AttributeError):
-            print "translation velocity has not been given. Please enter the three components of the velocity: (be careful, it has to be dimensionless)"
+            print("translation velocity has not been given. Please enter the three components of the velocity: (be careful, it has to be dimensionless)")
             value = map(float, raw_input("Translation velocity: ").split())
             self.set_vt(value)
         return self.vt
@@ -254,7 +254,7 @@ class ModelTRG(geodyn.Model):
         try:
             self.omega
         except (NameError, AttributeError):
-            print "Rotation velocity has not been defined. Please enter the value for omega: "
+            print("Rotation velocity has not been defined. Please enter the value for omega: ")
             value = float(input("Rotation rate: "))
             self.set_rotation(value)
         return np.array([-self.omega * r[1], self.omega * r[0], 0.])

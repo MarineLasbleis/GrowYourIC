@@ -21,9 +21,6 @@ if __name__ == '__main__':
     velocity = [.5, 0., 0.]
     omega = -0.5*np.pi # over write rotation rate. Rotation rates has to be in ]-np.pi, np.pi[
 
-    print "velocity: ", velocity
-    print "omega: ", omega, "en radians"
-    print "age", age_ic, ", rICB: ", rICB
 
     models = [geodyn_trg.PureTranslation(), geodyn_trg.TranslationRotation(), geodyn_trg.PureGrowth(), geodyn_trg.TranslationGrowth(), geodyn_trg.TranslationGrowthRotation()] 
 

@@ -89,24 +89,21 @@ def interval(f, a, b, *args, **kwargs):
     if check_validity_interval(f, a, b, *args):
         return a, b
     elif check_validity_interval(f, b/2., b*1.001, *args):
-        print "b/2"
         return b/2., b*1.001
     elif check_validity_interval(f, 3.*b/4., b*1.01, *args):
-        print "3b/4"
         return 3.*b/4., b*1.01
     elif check_validity_interval(f, b*0.9, b*1.1, *args):
-        print "0.9b" 
         return b*0.9, b*1.1
     elif check_validity_interval(f, b*0.9, b*1.01, *args):
         return b*0.98, b*1.01
     else: 
-        print "now we have a problem"
+        print("now we have a problem")
         iterations = 0
         while not check_validity_interval(f, a, b, *args) and iterations <=10:
             if iterations == 0:
                 a, b = choose_interval_on_graph(f, a, b, *args)
             elif iterations == 10:
-                print "To solve this, you need to choose the interval such as the funct    ion changes sign. You have a last chance to find one: please type the two values of     the interval."
+                print("To solve this, you need to choose the interval such as the funct    ion changes sign. You have a last chance to find one: please type the two values of the interval.")
                 a = float(input("Enter first value: "))
                 b = float(input("Enter second value: "))
             else:
@@ -117,7 +114,7 @@ def interval(f, a, b, *args, **kwargs):
 def choose_interval_on_graph(f, a, b, *args):
     """ allow the user to click on graph to choose an interval."""
     global coords
-    print args
+    print(args)
     coords = []
     fig = plt.figure()
     ax = fig.add_subplot(111)

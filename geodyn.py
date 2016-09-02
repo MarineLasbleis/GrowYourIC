@@ -78,22 +78,22 @@ def evaluate_proxy(dataset, method, verbose=True):
         dataset : a data.SeismicData object
         method : a geodyn.Model  object
         """
-    print "==="
-    print "== Evaluate value of proxy for all points of the data set "
-    print "= Geodynamic model is", method.name
-    print "= Proxy is", method.proxy_type
-    print "= Data set is", dataset.name
-    print "= Proxy is evaluated for", dataset.method
+    print("===")
+    print("== Evaluate value of proxy for all points of the data set ")
+    print("= Geodynamic model isi {}".format(method.name))
+    print("= Proxy is {}".format(method.proxy_type))
+    print("= Data set is {}".format(dataset.name))
+    print("= Proxy is evaluated for {}".format(dataset.method))
     if dataset.method == "raypath":
-        print "=== Raypath is", dataset.NpointsRaypath, " number of points"
-    print "= Number of points to examine: ", dataset.size
+        print("=== Raypath is {} number of points".format(dataset.NpointsRaypath))
+    print("= Number of points to examine: {}".format(dataset.size))
 
     method.verification()
 
     proxy = np.empty_like(dataset.data_points)
     for i, ray in enumerate(dataset.data_points):
         if i % 100 == 0 and verbose:
-            print "Computing Ray number", i
+            print("Computing Ray number {}".format(i))
         if dataset.method == "bt_point":
             point = ray.bottom_turning_point
             proxy[i] = method.proxy_singlepoint(point)[method.proxy_type]
@@ -108,7 +108,7 @@ def evaluate_proxy(dataset, method, verbose=True):
             dataset.data_points[i].straigth_in_out(number_points + 2)
             raypath = ray.points
             proxy[i] = average_proxy(raypath, method)
-    print "==="
+    print("===")
     return np.array(proxy).astype(float)
 
 
