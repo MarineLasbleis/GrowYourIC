@@ -1,7 +1,7 @@
 # GrowYourIC
 From geodynamics to Seismic observations in the Earth's inner core
 
-![Alt text](https://github.com/MarineLasbleis/GrowYourIC/blob/master/RTP.pdf?raw=true "RotationTranslationGrowth")
+![Alt text](https://github.com/MarineLasbleis/GrowYourIC/blob/master/RTP.pdf "RotationTranslationGrowth")
 
 
 This program calculates seismic observations (synthetics one) from
