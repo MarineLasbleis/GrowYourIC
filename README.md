@@ -42,33 +42,54 @@ P-waves travel time residuals (as done in Geballe 2013)
 
 
 
-files:
+files: (classes start with a capital letter, regular functions with a small letter)
 - positions.py
- * Point()
-  + SeismoPoint(Point)
-  + CartesianPoint(Point)
-  + RandomPoint(Point)
-	Raypath()
-		Raypath_BT(Raypath)
-		Raypath_inout(Raypath)
-- geodynamic.py
-	ModelGeodynamic()
-		PureTranslation(ModelGeodynamic)
-		TranslationRotation(ModelGeodynamic)
-		PureRotation(ModelGeodynamic)
-		PureGrowth(ModelGeodynamic)
-		TranslationGrowth(ModelGeodynamic)
-		TranslationGrowthRotation(ModelGeodynamic)
+ + from_seismo_to_cartesian()
+ + from_cartesian_to_seismo()
+ + angular_distance_to_point()
+ + Point(object)
+ + SeismoPoint(Point)
+ + CartesianPoint(Point)
+ + RandomPoint(Point)
+ + Raypath(object)
+ + Raypath_BT(Raypath)
+ + Raypath_inout(Raypath)
+- geodyn.py
+ + evaluate_proxy()
+ + average_proxy()
+ + Model(object)
+- geodyn_trg.py
+ + translation_velocity()
+ + radial_derivative()
+ + ModelTRG(geodyn.Model)
+ + PureTranslation(ModelTRG)
+ + TranslationRotation(ModelTRG)
+ + PureRotation(ModelTRG)
+ + PureGrowth(ModelTRG)
+ + TranslationGrowth(ModelTRG)
+ + TranslationGrowthRotation(ModelTRG)
+- geodyn_static.py
+ + Hemispheres(geodyn.Model)
 - data.py
-	SeismicData()
-		SeismicFromFile(SeismicData)
-		PerfectSamplingEquator(SeismicData)
-		RandomData(SeismicData)
+ + read_from_file()
+ + SeismicData(object)
+ + SeismicFromFile(SeismicData)
+ + PerfectSamplingEquator(SeismicData)
+ + RandomData(SeismicData)
+ + PerfectSamplingEquatorRadial(SeismicData)
 - intersection.py
-
+ + zero_brentq() (only function used outside the module)
+- mineral_phys_data.py
+ + export_matlab_data(name_data, file_name="./CM2008/data.mat"):
+ + domain_size(age):
+ + adimensional_frequency(size, v=11030., freq=1.):
+ + convert_CM2008_velocity(kR, poly):
+ + convert_CM2008_attenuation(kR, poly):
+ + heaviside(x):
+- plot_data.py
+ + setting_map() #to prepare a map for plotting data.
 
 
  TO DO:
 
-- add other proxies and way to compute proxies. Now, only age is rendered. (geodynamic.py)
 - add other intersections methods. Only brentq is used. see intersection.py. Also, adding a way to remember the choice of the user could be a good idea (for the values of the limits of the brentq) For example, first plot the trajectory_r compared to radius for N (10? 100?) samples, and allow the user to input the [x0, x1] he want to use for the run. 
