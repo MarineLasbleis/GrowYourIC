@@ -202,7 +202,7 @@ class PerfectSamplingEquator(SeismicData):
                     self.data_points = np.append(self.data_points, ray)
         self.size = len(self.data_points)
 
-    def plot_c_vec(self, modelgeodyn, proxy=1):
+    def plot_c_vec(self, modelgeodyn, proxy=1, cm=plt.get_cmap('summer'), nameproxy=""):
         """ Plot contourf of the proxy + streamlines of the flow.
 
         Args:
@@ -224,7 +224,7 @@ class PerfectSamplingEquator(SeismicData):
             Z[ix, iy] = pro
         mask_Z = Z == -1
         Z = np.ma.array(Z, mask=mask_Z)
-        sc = ax.contourf(Y, X, Z, 10, cmap=plt.get_cmap('summer'))
+        sc = ax.contourf(Y, X, Z, 10, cmap=cm)
         #sc2 = ax.contour(Y, X, Z, 10, colors='w')
 
         Vx, Vy = np.empty((self.N, self.N)), np.empty((self.N, self.N))
@@ -244,7 +244,8 @@ class PerfectSamplingEquator(SeismicData):
         ax.set_xlim([-1.1, 1.1])
         ax.set_ylim([-1.1, 1.1])
 
-        plt.colorbar(sc)
+        cbar = plt.colorbar(sc)
+        cbar.set_label(nameproxy)
         title = "Geodynamical model: {}".format(modelgeodyn.name)
         plt.title(title)
         plt.axis("off")
