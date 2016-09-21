@@ -44,10 +44,10 @@ P-waves travel time residuals (as done in Geballe 2013)
 
 files:
 - positions.py
-* Point()
-+ SeismoPoint(Point)
-+ CartesianPoint(Point)
-+ RandomPoint(Point)
+ * Point()
+  + SeismoPoint(Point)
+  + CartesianPoint(Point)
+  + RandomPoint(Point)
 	Raypath()
 		Raypath_BT(Raypath)
 		Raypath_inout(Raypath)
