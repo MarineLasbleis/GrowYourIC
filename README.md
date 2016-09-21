@@ -1,7 +1,7 @@
 # GrowYourIC
 From geodynamics to Seismic observations in the Earth's inner core
 
-![Alt text](https://github.com/MarineLasbleis/GrowYourIC/blob/master/RTP.png "RotationTranslationGrowth")
+![RotationTranslationGrowth](https://github.com/MarineLasbleis/GrowYourIC/blob/master/RTP.png "RotationTranslationGrowth")
 
 
 This program calculates seismic observations (synthetics one) from
@@ -44,8 +44,8 @@ P-waves travel time residuals (as done in Geballe 2013)
 
 files:
 - positions.py
-	Point()
-		SeismoPoint(Point)
+-- Point()
+--- SeismoPoint(Point)
 		CartesianPoint(Point)
 		RandomPoint(Point)
 	Raypath()
