@@ -119,7 +119,7 @@ class ModelTRG(geodyn.Model):
         """
         return intersection.zero_brentq(self.distance_to_radius, point, t0, a=0., b=t1)
 
-    def proxy_singlepoint(self, point):
+    def proxy_singlepoint(self, point, proxy_type):
         """ evaluate the proxy on a single positions.Point instance."""
         proxy = {}  # empty dictionnary
 
@@ -127,20 +127,20 @@ class ModelTRG(geodyn.Model):
         time = self.crystallisation_time([x, y, z], self.tau_ic)
 
         # calculate the proxy needed (proxy_type value)
-        if self.proxy_type == "age":
+        if proxy_type == "age":
             proxy["age"] = (self.tau_ic - time) * 1e-6 * \
                 self.time_unit  # age is in Myears!
-        elif self.proxy_type == "domain_size":
+        elif proxy_type == "domain_size":
             proxy["domain_size"] = self.domain_size(self.tau_ic - time)
-        elif self.proxy_type == "dV_V":
+        elif proxy_type == "dV_V":
             proxy["dV_V"] = self.dV_V(self.tau_ic - time)
-        elif self.proxy_type == "theta" or self.proxy_type == "phi":
+        elif proxy_type == "theta" or proxy_type == "phi":
             point = self.integration_trajectory(time, [x, y, z], self.tau_ic)
             proxy["position"] = positions.CartesianPoint(
                 point[0], point[1], point[2])
             proxy["phi"] = proxy["position"].phi
             proxy["theta"] = proxy["position"].theta
-        elif self.proxy_type == "growth rate":
+        elif proxy_type == "growth rate":
             proxy["growth rate"] = self.effective_growth_rate2(time, point)
         else:
             print("unknown value for proxy_type.")
@@ -293,9 +293,8 @@ class PureTranslation(ModelTRG):
             self.rICB
             self.tau_ic
             self.vt
-            self.proxy_type
         except NameError:
-            raise NameError("please verify the number of parameters.PureTranslation requires: rICB, rau_ic, vt and proxy_type.")
+            raise NameError("please verify the number of parameters.PureTranslation requires: rICB, rau_ic and vt.")
 
 
 class TranslationRotation(ModelTRG):
@@ -322,10 +321,9 @@ class TranslationRotation(ModelTRG):
             self.rICB
             self.tau_ic
             self.vt
-            self.proxy_type
             self.omega
         except NameError:
-            raise NameError("please verify the number of parameters. TranslationRotation requires: rICB, tau_ic, vt, omega and proxy_type.")
+            raise NameError("please verify the number of parameters. TranslationRotation requires: rICB, tau_ic, vt, omega.")
 
 
 class PureRotation(ModelTRG):
@@ -348,10 +346,9 @@ class PureRotation(ModelTRG):
         try:
             self.rICB
             self.tau_ic
-            self.proxy_type
             self.omega
         except NameError:
-            raise NameError("please verify the number of parameters. PureRotation requires: rICB, tau_ic, omega and proxy_type.")
+            raise NameError("please verify the number of parameters. PureRotation requires: rICB, tau_ic, omega.")
 
 
 class PureGrowth(ModelTRG):
@@ -370,10 +367,9 @@ class PureGrowth(ModelTRG):
         try:
             self.rICB
             self.tau_ic
-            self.proxy_type
             self.exponent_growth
         except NameError:
-            raise NameError("please verify the number of parameters. PureGrowth requires: rICB, tau_ic, exponent_growth and proxy_type.")
+            raise NameError("please verify the number of parameters. PureGrowth requires: rICB, tau_ic, exponent_growth.")
 
     def growth_ic(self, t):
         if self.exponent_growth == 0.:
@@ -407,11 +403,10 @@ class TranslationGrowth(ModelTRG):
         try:
             self.rICB
             self.tau_ic
-            self.proxy_type
             self.exponent_growth
             self.vt
         except NameError:
-            raise NameError("please verify the number of parameters. TranslationGrowth requires: rICB, tau_ic, exponent_growth, vt and proxy_type.")
+            raise NameError("please verify the number of parameters. TranslationGrowth requires: rICB, tau_ic, exponent_growth, vt.")
 
     def growth_ic(self, t):
         if self.exponent_growth == 0.:
@@ -445,9 +440,8 @@ class TranslationGrowthRotation(ModelTRG):
             self.vt
             self.exponent_growth
             self.omega
-            self.proxy_type
         except NameError:
-            raise NameError("At least one parameter is missing, please verify. Translation, Growth and Translation require: rICB, tau_ic, vt, exponent_growth, omega, proxy_type.")
+            raise NameError("At least one parameter is missing, please verify. Translation, Growth and Translation require: rICB, tau_ic, vt, exponent_growth, omega.")
 
     def growth_ic(self, t):
         if self.exponent_growth == 0.:
