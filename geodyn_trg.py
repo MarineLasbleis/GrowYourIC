@@ -141,7 +141,7 @@ class ModelTRG(geodyn.Model):
             proxy["phi"] = proxy["position"].phi
             proxy["theta"] = proxy["position"].theta
         elif proxy_type == "growth rate":
-            proxy["growth rate"] = self.effective_growth_rate2(time, point)
+            proxy["growth rate"] = self.effective_growth_rate2(time, point) #in m/years
         else:
             print("unknown value for proxy_type.")
             proxy = 0.

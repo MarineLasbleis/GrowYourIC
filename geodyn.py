@@ -94,7 +94,6 @@ def evaluate_proxy(dataset, method, proxy_type="", verbose=True):
     print("= Number of points to examine: {}".format(dataset.size))
 
     method.verification()
-
     proxy = np.empty_like(dataset.data_points)
     for i, ray in enumerate(dataset.data_points):
         if i % 100 == 0 and verbose:
