@@ -77,16 +77,18 @@ class ModelTRG(geodyn.Model):
     def effective_growth_rate(self, t, point):
         """ Effective growth rate at the point r.
 
-        v_{g_eff} = || v_growth + v_geodynamic ||
-        v_geodynamic is already in cartesian coordinates.
+        v_{g_eff} = || v_growth - v_geodynamic*e_r ||
+        v_geodynamic is already in cartesian coordinates. 
         v_growth = ||v_growth|| * vec{e}_r (the unit vector for the radial direction)
+        point.er() gives the cartesian coordinates of the vector e_r
+        point.proj_er(vect) gives the value of the vector projected on the vector e_r
         r is the position, described as x,y,z
         This function is used for points that are at the surface: r(t) is a point at the surface of the inner core at the time t.
         """
         r = np.array([point.x, point.y, point.z])
-        vitesse = self.growth_ic(t) * point.er() - self.velocity(t, r)
-        # TO DO : project on \vec{e}_r to get the radial component only?
-        return np.sqrt(vitesse[0]**2 + vitesse[1]**2 + vitesse[2]**2)
+        vitesse = point.proj_er(self.velocity(t,r)) #projected on e_r
+        growth = self.growth_ic(t) - vitesse 
+        return growth 
 
     def effective_growth_rate2(self, t, point):
         """ Effective growth rate at the point r defined by the radial derivative of the field age
@@ -125,6 +127,7 @@ class ModelTRG(geodyn.Model):
 
         x, y, z = point.x, point.y, point.z
         time = self.crystallisation_time([x, y, z], self.tau_ic)
+        position_crys = self.crystallisation_position([x,y,z], time)
 
         # calculate the proxy needed (proxy_type value)
         if proxy_type == "age":
@@ -141,7 +144,7 @@ class ModelTRG(geodyn.Model):
             proxy["phi"] = proxy["position"].phi
             proxy["theta"] = proxy["position"].theta
         elif proxy_type == "growth rate":
-            proxy["growth rate"] = self.effective_growth_rate2(time, point) #in m/years
+            proxy["growth rate"] = self.effective_growth_rate(time, position_crys) #in m/years. growth rate at the time of the crystallization.
         else:
             print("unknown value for proxy_type.")
             proxy = 0.
@@ -166,7 +169,8 @@ class ModelTRG(geodyn.Model):
     def crystallisation_position(self, point, time):
         """ Return the crystallisation position.
 
-        The cristallisation time of a particle in the inner core is defined as the intersection between the trajectory and the radius of the inner core.
+        The cristallisation time of a particle in the inner core is defined as 
+        the intersection between the trajectory and the radius of the inner core.
         This function return the position of the particle at this time.
 
         Args:

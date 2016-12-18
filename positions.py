@@ -120,8 +120,22 @@ class Point():
         except (AttributeError, NameError, AssertionError):
             self.add_seismo()
         phi = self.phi / 180. * np.pi
-        theta = 90. - self.theta * np.pi / 180.
+        theta = (90. - self.theta) * np.pi / 180.
         return np.array([np.sin(theta) * np.cos(phi), np.sin(theta) * np.sin(phi), np.cos(theta)])
+
+
+    def proj_er(self, vector):
+        """ projection of a vector on e_r, the radial vector in spherical coordinates.
+    
+        input: vector (cartesian coordinates)
+        output: scalar
+        """
+        vx, vy, vz = vector[0], vector[1], vector[2] #cartesian coordinates
+        phi = self.phi / 180. * np.pi
+        theta = (90. - self.theta) * np.pi / 180.
+        return np.sin(theta)*np.cos(phi)*vx+ np.sin(theta)*np.sin(phi)*vy+ np.cos(theta)*vz
+
+
 
     # ,type_="turningpoint", seismo="surface"):
     def random_point(self, set_method="uniform", depth=[0., 1.], rICB=1.):
@@ -248,3 +262,22 @@ class Raypath_inout(Raypath):
         Raypath.__init__(self)
         self.add_in_out(point_in, point_out)
 
+
+if __name__ == "__main__":
+
+    import matplotlib.pyplot as plt
+
+    theta = 0.
+    phi = np.linspace(0, 360, 50)
+
+    v_t = [0.,1,0]
+
+    fig, ax = plt.subplots()
+
+    for p in phi:
+        point = SeismoPoint(1, theta, p)
+        print(point.r, point.theta, point.phi)
+        growth = point.proj_er(v_t)
+        ax.plot(p, growth, 'o')
+
+    plt.show()
