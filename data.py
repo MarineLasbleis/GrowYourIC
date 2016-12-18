@@ -66,6 +66,27 @@ def read_from_file(filename, names=["station",
     return data
 
 
+def construct_meshgrid(x, y, z, info_x, info_y):
+    """ Construct a meshgrid based on x, y and z, to plot contourf.
+    x, y, z: 1D arrays, same size
+    x, y are the positions, and z the value that you want to plot.
+    info_x and info_y are the info to construct X and Y, using linspace.
+    return X, Y, Z that can be used directly for contour and contourf.
+    """
+    min_x, max_x, N_x = info_x
+    min_y, max_y, N_y = info_y
+    x1 = np.linspace(min_x, max_x, N_x)
+    y1 = np.linspace(min_y, max_y, N_y)
+    X, Y = np.meshgrid(x1, y1)
+    Z = -1. * np.ones_like(X)
+    print(x1.shape, y1.shape, X.shape, Y.shape, z.shape)
+    for it, z_element in enumerate(z):
+        ix = [i for i, j in enumerate(x1) if j == x[it]]
+        iy = [i for i, j in enumerate(y1) if j == y[it]]
+        Z[ix, iy] = z_element
+    return X, Y, Z
+
+
 class SeismicData(object):
     """ Class for seismic data """
 
@@ -305,23 +326,31 @@ class PerfectSamplingEquatorRadial(SeismicData):
 
 
 class Equator_upperpart(SeismicData):
-    """ meshgrid for the uppermost part of IC (0-130km), at the equator."""
+    """ meshgrid for the uppermost part of IC (2-120km), at the equator."""
 
-    def __init__(self, Nr, Np, rICB=1., d0=0., d1=130.):
+    def __init__(self, Nr, Np, rICB=1., d0=2., d1=120.):
         SeismicData.__init__(self)
         self.rICB = rICB
         self.N = Nr*Np
-        self.name = "Meshgrid at the equator between 0 and 100km depth"
+        self.Np = Np
+        self.Nr = Nr
+        self.name = "Meshgrid at the equator between 0 and 120km depth"
         self.depth = [d0 / 1221., d1 / 1221.]
         self.theta = 0. # at the equator
 
         for depth in np.linspace(self.depth[0], self.depth[1], Nr):
-            for phi in np.linspace(0., 360., Np):
-
+            for phi in np.linspace(-180., 180., Np):
                 ray = positions.Raypath()
                 point = positions.SeismoPoint(self.rICB-depth, 0., phi)
                 ray.add_b_t_point(point)
-            self.data_points = np.append(self.data_points, ray)
+                self.data_points = np.append(self.data_points, ray)
         self.size = len(self.data_points)
 
+    def mesh_RPProxy(self, proxy):
+        r, t, p = self.extract_rtp("bottom_turning_point")
+        #depth = (self.rICB - r)*self.rICB
+        R = r.reshape(-1, self.Np)
+        PHI = p.reshape(-1, self.Np)
+        PROXY = proxy.reshape(-1, self.Np)
 
+        return R, PHI, PROXY 
