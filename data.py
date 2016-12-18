@@ -301,3 +301,27 @@ class PerfectSamplingEquatorRadial(SeismicData):
         plt.title(title)
         plt.xlabel("radius of point")
         plt.ylabel("proxy")
+
+
+
+class Equator_upperpart(SeismicData):
+    """ meshgrid for the uppermost part of IC (0-130km), at the equator."""
+
+    def __init__(self, Nr, Np, rICB=1., d0=0., d1=130.):
+        SeismicData.__init__(self)
+        self.rICB = rICB
+        self.N = Nr*Np
+        self.name = "Meshgrid at the equator between 0 and 100km depth"
+        self.depth = [d0 / 1221., d1 / 1221.]
+        self.theta = 0. # at the equator
+
+        for depth in np.linspace(self.depth[0], self.depth[1], Nr):
+            for phi in np.linspace(0., 360., Np):
+
+                ray = positions.Raypath()
+                point = positions.SeismoPoint(self.rICB-depth, 0., phi)
+                ray.add_b_t_point(point)
+            self.data_points = np.append(self.data_points, ray)
+        self.size = len(self.data_points)
+
+
