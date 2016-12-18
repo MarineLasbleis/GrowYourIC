@@ -55,6 +55,10 @@ proxy = geodyn.evaluate_proxy(data_set, geodynModel, proxy_type="age", verbose =
 data_set.plot_c_vec(geodynModel, proxy=proxy, cm=cm, nameproxy="age (Myears)")
 #plt.show()
 
+
+
+## Visualize what is going on at the uppermost part, equator only.
+
 data_meshgrid = data.Equator_upperpart(50,50)
 data_meshgrid.method = "bt_point"
 proxy_meshgrid = geodyn.evaluate_proxy(data_meshgrid, geodynModel, proxy_type="age", verbose = False)
@@ -67,9 +71,6 @@ fig.gca().invert_yaxis()
 ax.set_xlim(-180,180)
 cbar = fig.colorbar(sc)
 cbar.set_clim(0, maxAge)
-
-fig2, ax2 = plt.subplots(figsize=(8, 2))
-ax2.tripcolor(p.reshape(data_meshgrid.size), r.reshape(data_meshgrid.size), proxy_meshgrid, shading='gouraud')
 
 fig3, ax3 = plt.subplots(figsize=(8, 2))
 X, Y, Z  = data_meshgrid.mesh_RPProxy(proxy_meshgrid)
