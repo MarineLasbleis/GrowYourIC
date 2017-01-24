@@ -24,7 +24,7 @@ class Hemispheres(geodyn.Model):
     def __init__(self):
         self.name = "Static hemispheres"
 
-    def proxy_singlepoint(self, point):
+    def proxy_singlepoint(self, point, proxy_type):
         """ -1 in western hemisphere, +1 in the eastern hemisphere"""
         proxy = {}  # empty dict
         angle = -30
