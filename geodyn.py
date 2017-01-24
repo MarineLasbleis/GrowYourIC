@@ -43,7 +43,7 @@ class Model(object):
         raise NotImplementedError(
             "need to implement verification() in derived class!")
 
-    def proxy_singlepoint(self, point):
+    def proxy_singlepoint(self, point, *arg):
         """ evaluate the proxy on a single positions.Point instance."""
         raise NotImplementedError(
             "need to implement proxy_singlepoint() in derived class!")
@@ -111,12 +111,12 @@ def evaluate_proxy(dataset, method, proxy_type="", verbose=True):
             number_points = dataset.NpointsRaypath
             dataset.data_points[i].straigth_in_out(number_points + 2)
             raypath = ray.points
-            proxy[i] = average_proxy(raypath, method)
+            proxy[i] = average_proxy(raypath, method, proxy_type)
     print("===")
     return np.array(proxy).astype(float)
 
 
-def average_proxy(ray, method):
+def average_proxy(ray, method, proxy_type):
     r""" method to average proxy over the raypath.
 
     Simple method is direct average of the proxy: $\sum proxy(r) / \sum dr$.
@@ -125,13 +125,13 @@ def average_proxy(ray, method):
     total_proxy = 0.
     if method.evaluation == "inverse":
         for _, point in enumerate(ray):
-            _proxy = method.proxy_singlepoint(point)[method.proxy_type]
+            _proxy = method.proxy_singlepoint(point, proxy_type)[proxy_type]
             total_proxy += 1. / _proxy
         number = len(ray)
         proxy = 1. / total_proxy / float(number)
     else:
         for j, point in enumerate(ray):
-            _proxy = method.proxy_singlepoint(point)[method.proxy_type]
+            _proxy = method.proxy_singlepoint(point, proxy_type)[proxy_type]
             total_proxy += _proxy
         number = len(ray)
         proxy = total_proxy / float(number)
