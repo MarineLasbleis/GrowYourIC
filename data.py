@@ -95,6 +95,7 @@ class SeismicData(object):
         self.size = None
         self.proxy = 0.
         self.name = None
+        self.shortname = None
 
     def __getitem__(self, key):
         return self.data_points[key]
@@ -181,7 +182,8 @@ class SeismicFromFile(SeismicData):
 
     def __init__(self, filename="results.dat", RICB=1221.):
         SeismicData.__init__(self)
-        self.name = "Data set from Lauren's file"
+        self.name = "Data set from Waszek and Deuss 2011"
+        self.shortname = "WD11"
         # seismic data set (from Lauren's file)
         self.filename = filename
         self.slices = ["PKIKP-PKiKP travel time residual", "turn lat",
@@ -215,6 +217,7 @@ class PerfectSamplingEquator(SeismicData):
         self.rICB = rICB
         self.N = N
         self.name = "Perfect sampling in the equatorial plane"
+        self.shortname = "equatorial"
         for x in np.linspace(-self.rICB, self.rICB, N):
             for y in np.linspace(-self.rICB, self.rICB, N):
                 ray = positions.Raypath()
@@ -281,6 +284,7 @@ class RandomData(SeismicData):
         self.rICB = rICB
         self.N = N
         self.name = "Random repartition of data, between 0 and 100km depth"
+        self.shortname = "random_0-100"
         self.random_method = "uniform"
         self.depth = [15. / 1221., 106. / 1221.]
 
@@ -299,6 +303,7 @@ class PerfectSamplingEquatorRadial(SeismicData):
         SeismicData.__init__(self)
         self.rICB = rICB
         self.name = "Perfect sampling in the equatorial plane"
+        self.shortname = "equatorialplane"
         theta = 0.  # latitude
         for phi in np.linspace(0., 360., Ntheta):
             for r in np.linspace(0.1 * self.rICB, self.rICB * 0.99, Nr):
@@ -335,6 +340,7 @@ class Equator_upperpart(SeismicData):
         self.Np = Np
         self.Nr = Nr
         self.name = "Meshgrid at the equator between 0 and 120km depth"
+        self.shortname = "meshgrid"
         self.depth = [d0 / 1221., d1 / 1221.]
         self.theta = 0. # at the equator
 
