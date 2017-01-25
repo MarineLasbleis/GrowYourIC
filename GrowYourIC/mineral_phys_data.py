@@ -17,7 +17,7 @@ import scipy.io as sio
 # IMPORTANT : all the functions here use dimensional quantities in unit SI !
 
 
-def export_matlab_data(name_data, file_name="./CM2008/data.mat"):
+def export_matlab_data(name_data, file_name="./data/CM2008/data.mat"):
     """ Values for polynomial fit of the velocity and attenuation are included in data.mat. Scipy export them as a dictionary."""
     return sio.loadmat(file_name)[name_data]
 
