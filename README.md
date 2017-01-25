@@ -43,6 +43,17 @@ P-waves travel time residuals (as done in Geballe 2013)
 
 ## Quickstart
 
+### Python dependencies:
+(please use pip to install them)
+
+numpy
+
+scipy
+
+matplotlib (version 2.5 at least)
+
+matplotlib.basemap
+
 ### installation: 
 >> python3 setup.py install
 
