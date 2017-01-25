@@ -2,7 +2,7 @@ from __future__ import absolute_import, print_function
 import os
 import re
 import sys
-
+import codecs
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -16,7 +16,7 @@ def find_version(*file_paths):
                               version_file, re.M)
     if version_match:
         return version_match.group(1)
-raise RuntimeError("Unable to find version string.")
+    raise RuntimeError("Unable to find version string.")
 
 version = find_version('GrowYourIC', '__init__.py')
 
@@ -24,8 +24,9 @@ metadata = dict(name="GrowYourIC",
                 version=version,
                 description="a toolkit to propagate seismic rays through models of Earth's inner core",
                 url="https://github.com/MarineLasbleis/GrowYourIC",
-                licence='GPL',
+                license='GPL',
                 long_description="a toolkit to propagate seismic rays through models of Earth's inner core",
+                py_modules=['GrowYourIC'],
                 packages=['GrowYourIC'],
                 classifiers=[
                     'Programming Language :: Python :: 3.4'],
