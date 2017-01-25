@@ -3,7 +3,7 @@ From geodynamics to Seismic observations in the Earth's inner core
 
 ![RotationTranslationGrowth](https://github.com/MarineLasbleis/GrowYourIC/blob/master/RTP.png "RotationTranslationGrowth")
 
-
+## Overview
 This program calculates seismic observations (synthetics one) from
 a given geodynamical model.
 
@@ -24,7 +24,8 @@ Mineral Physics:
 not yet implemented
 
 
-For now, the code does not provide "seismic observations", but we try
+For now, the code does not provide "seismic observations" (=seismic velocity and/or seismic residuals), 
+but we try
 to match the seismic observations with the spatial repartition of a
 proxy which has a physical meaning (can be: age of material,
 deformation of material, etc.)
@@ -40,7 +41,16 @@ with actual residual travel time from same data set. Next step would
 be to predict growth rate of crystals at IC conditions and compute
 P-waves travel time residuals (as done in Geballe 2013)
 
+## Quickstart
 
+### installation: 
+>> python3 setup.py install
+
+to check the installation:
+python examples.py
+(does not require external database for seismic rays)
+
+## List of files
 
 files: (classes start with a capital letter, regular functions with a small letter)
 - positions.py
