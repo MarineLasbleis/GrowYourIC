@@ -1,8 +1,10 @@
 
 import py.test 
 
-from geodyn_trg import * 
-from positions import *
+import GrowYourIC
+
+from GrowYourIC.geodyn_trg import * 
+from GrowYourIC.positions import *
 
 #def test_exact_translation_velocity_one():
 #    assert exact_translation(SeismoPoint(0,0,0), 1.)==1221.

@@ -1,13 +1,17 @@
+from __future__ import absolute_import
+
 # import statements
 import numpy as np
 import matplotlib.pyplot as plt #for figures
 from mpl_toolkits.basemap import Basemap #to render maps
 import math
 
-import positions
-import geodyn, geodyn_trg, geodyn_static
-import plot_data
-import data
+import GrowYourIC
+
+from GrowYourIC import positions
+from GrowYourIC import geodyn, geodyn_trg, geodyn_static
+from GrowYourIC import plot_data
+from GrowYourIC import data
 
 plt.rcParams['figure.figsize'] = (8.0, 3.0) #size of figures
 cm = plt.cm.get_cmap('viridis')

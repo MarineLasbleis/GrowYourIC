@@ -26,9 +26,9 @@ import matplotlib.pyplot as plt  # for figures
 import pandas as pd
 
 # personal routines
-import positions
+from . import positions
 # import geodynamic
-import plot_data
+from . import plot_data
 
 
 def read_from_file(filename, names=["station",

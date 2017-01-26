@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     geodynModel.set_parameters(parameters)
     geodynModel.define_units()
-    print geodynModel.__dict__
+    print(geodynModel.__dict__)
 
     ##  perfect sampling equator
     npoints = 20 #number of points in the x direction for the data set. 
