@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt #for figures
 from mpl_toolkits.basemap import Basemap #to render maps
 import math
 
-import positions
-import geodyn, geodyn_trg, geodyn_static
-import plot_data
-import data
+from . import positions
+from . import geodyn, geodyn_trg, geodyn_static
+from . import plot_data
+from . import data
 
 
 if __name__ == '__main__':

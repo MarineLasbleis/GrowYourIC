@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt #for figures
 from mpl_toolkits.basemap import Basemap #to render maps
 
 #personal routines
-import positions
+from . import positions
 
 
 def setting_map():

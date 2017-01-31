@@ -10,7 +10,6 @@ from __future__ import absolute_import
 
 
 import numpy as np
-
 import sys  # .float_info import epsilon # to use assert on floating point equivalence
 
 

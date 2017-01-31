@@ -16,10 +16,10 @@ from scipy.optimize import fsolve
 import warnings
 
 # personal routines
-import positions
-import intersection
-import geodyn
-import mineral_phys_data
+from . import positions
+from . import intersection
+from . import geodyn
+from . import mineral_phys_data
 
 
 # def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):

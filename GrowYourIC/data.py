@@ -26,9 +26,9 @@ import matplotlib.pyplot as plt  # for figures
 import pandas as pd
 
 # personal routines
-import positions
+from . import positions
 # import geodynamic
-import plot_data
+from . import plot_data
 
 
 def read_from_file(filename, names=["station",
@@ -100,7 +100,7 @@ class SeismicData(object):
     def __getitem__(self, key):
         return self.data_points[key]
 
-    def extract_xyz(self, type_of_point):
+    def extract_xyz(self, type_of_point="bottom_turning_point"):
         """Extract the cartesian coordinates of the points in the data set"""
         x, y, z = np.empty([self.size, 1]), np.empty(
             [self.size, 1]), np.empty([self.size, 1])
@@ -111,7 +111,7 @@ class SeismicData(object):
             z[i] = point.z
         return x, y, z
 
-    def extract_rtp(self, type_of_point):
+    def extract_rtp(self, type_of_point="bottom_turning_point"):
         """Extract the radius, theta (latitute), phi (longitude) of the points"""
         r, theta, phi = np.empty([self.size, 1]), np.empty(
             [self.size, 1]), np.empty([self.size, 1])

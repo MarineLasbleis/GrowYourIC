@@ -11,9 +11,9 @@ from scipy.integrate import ode
 from scipy.optimize import fsolve
 
 # personal routines
-import positions
-import intersection
-import geodyn
+from . import positions
+from . import intersection
+from . import geodyn
 
 
 class Hemispheres(geodyn.Model):
