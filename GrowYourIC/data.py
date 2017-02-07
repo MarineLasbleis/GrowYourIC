@@ -380,12 +380,12 @@ class PerfectSamplingSurface(SeismicData):
         self.size = len(self.data_points)
 
 
-    def mesh_RPProxy(self, proxy):
+    def mesh_TPProxy(self, proxy):
         r, t, p = self.extract_rtp("bottom_turning_point")
         #depth = (self.rICB - r)*self.rICB
-        THETA = t.reshape(-1, self.Np)
-        PHI = p.reshape(-1, self.Np)
-        PROXY = proxy.reshape(-1, self.Np)
+        THETA = t.reshape(-1, self.N)
+        PHI = p.reshape(-1, self.N)
+        PROXY = proxy.reshape(-1, self.N)
 
         return THETA, PHI, PROXY 
 
