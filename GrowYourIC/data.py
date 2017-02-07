@@ -16,6 +16,7 @@ classes:
     PerfectSamplingEquator
     PerfectSamplingEquatorRadial
     RandomData: random data, well partitioned on the horizontal, and between 15 and 106km
+    PerfectSamplingSurface
 """
 from __future__ import division
 from __future__ import absolute_import
@@ -180,10 +181,10 @@ class SeismicData(object):
 class SeismicFromFile(SeismicData):
     """Seismic data set from file."""
 
-    def __init__(self, filename="results.dat", RICB=1221.):
+    def __init__(self, filename="results.dat", RICB=1221., name="Data set from Waszek and Deuss 2011", shortname="WD11"):
         SeismicData.__init__(self)
-        self.name = "Data set from Waszek and Deuss 2011"
-        self.shortname = "WD11"
+        self.name = name #"Data set from Waszek and Deuss 2011"
+        self.shortname = shortname # "WD11"
         # seismic data set (from Lauren's file)
         self.filename = filename
         self.slices = ["PKIKP-PKiKP travel time residual", "turn lat",
@@ -360,3 +361,32 @@ class Equator_upperpart(SeismicData):
         PROXY = proxy.reshape(-1, self.Np)
 
         return R, PHI, PROXY 
+
+
+class PerfectSamplingSurface(SeismicData):
+
+    def __init__(self, N, rICB=1.):
+        SeismicData.__init__(self)
+        self.rICB = rICB
+        self.N = N
+        self.name = "Perfect sampling at the surface"
+        self.shortname = "surface"
+        for t in np.linspace(-90, 90, N):
+            for p in np.linspace(-180, 180, N):
+                ray = positions.Raypath()
+                ray.add_b_t_point(positions.SeismoPoint(rICB, t, p))
+                if ray.bottom_turning_point.r <= self.rICB:
+                    self.data_points = np.append(self.data_points, ray)
+        self.size = len(self.data_points)
+
+
+    def mesh_TPProxy(self, proxy):
+        r, t, p = self.extract_rtp("bottom_turning_point")
+        #depth = (self.rICB - r)*self.rICB
+        THETA = t.reshape(-1, self.N)
+        PHI = p.reshape(-1, self.N)
+        PROXY = proxy.reshape(-1, self.N)
+
+        return THETA, PHI, PROXY 
+
+

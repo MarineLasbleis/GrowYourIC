@@ -1,5 +1,6 @@
 # Folders for figures
 ./figures/*.pdf
+*.pdf
 
 # Byte-compiled / optimized / DLL files
 #
