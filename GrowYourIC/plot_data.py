@@ -25,3 +25,15 @@ def setting_map():
     m.drawmapboundary(fill_color='#99ffff')
     return m, fig
 
+def setting_map_ortho():
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    m = Basemap(projection='ortho',lat_0=45,lon_0=-100,resolution='c')
+    m.drawcoastlines(linewidth=0.25)
+    #m.drawcountries(linewidth=0.25)
+    m.fillcontinents(color='#cc9966',lake_color='#99ffff')
+    m.drawmeridians(np.arange(0,360,30))
+    m.drawparallels(np.arange(-90,90,30))
+    m.drawmapboundary(fill_color='#99ffff')
+    return m, fig
+
