@@ -181,10 +181,10 @@ class SeismicData(object):
 class SeismicFromFile(SeismicData):
     """Seismic data set from file."""
 
-    def __init__(self, filename="results.dat", RICB=1221.):
+    def __init__(self, filename="results.dat", RICB=1221., name="Data set from Waszek and Deuss 2011", shortname="WD11"):
         SeismicData.__init__(self)
-        self.name = "Data set from Waszek and Deuss 2011"
-        self.shortname = "WD11"
+        self.name = name #"Data set from Waszek and Deuss 2011"
+        self.shortname = shortname # "WD11"
         # seismic data set (from Lauren's file)
         self.filename = filename
         self.slices = ["PKIKP-PKiKP travel time residual", "turn lat",
