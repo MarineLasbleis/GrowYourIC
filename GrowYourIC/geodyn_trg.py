@@ -19,7 +19,7 @@ import warnings
 from . import positions
 from . import intersection
 from . import geodyn
-from . import mineral_phys_data
+from . import mineral_phys
 
 
 # def exact_translation(point, velocity, direction=positions.CartesianPoint(1,0,0)):
@@ -219,13 +219,13 @@ class ModelTRG(geodyn.Model):
 
     def domain_size(self, age):
         age = age * self.time_unit * np.pi * 1e7  # age has to be in seconds!
-        return mineral_phys_data.domain_size(age)
+        return mineral_phys.domain_size(age)
 
     def dV_V(self, age):
         adimfrequency = mineral_phys_data.adimensional_frequency(
             self.domain_size(age))
-        polynome = mineral_phys_data.export_matlab_data("Belanoshko_Vp_poly")
-        return mineral_phys_data.convert_CM2008_velocity(adimfrequency, polynome)
+        polynome = mineral_phys.export_matlab_data("Belanoshko_Vp_poly")
+        return mineral_phys.convert_CM2008_velocity(adimfrequency, polynome)
 
     def plot_equatorial(self, t0, t1, Nt=200,  N=40):
         # Plot the inner core boundary
