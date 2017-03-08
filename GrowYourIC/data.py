@@ -365,7 +365,12 @@ class Equator_upperpart(SeismicData):
 
 class PerfectSamplingSurface(SeismicData):
 
-    def __init__(self, N, rICB=1.):
+    def __init__(self, N, depth=0., rICB=1.):
+        """ Grid of points partitioned at the surface (or at given depth under surface)
+            
+        :: arg depth:: depth in percentage below ICB.
+
+        """
         SeismicData.__init__(self)
         self.rICB = rICB
         self.N = N
@@ -374,7 +379,7 @@ class PerfectSamplingSurface(SeismicData):
         for t in np.linspace(-90, 90, N):
             for p in np.linspace(-180, 180, N):
                 ray = positions.Raypath()
-                ray.add_b_t_point(positions.SeismoPoint(rICB, t, p))
+                ray.add_b_t_point(positions.SeismoPoint(rICB-rICB*depth, t, p))
                 if ray.bottom_turning_point.r <= self.rICB:
                     self.data_points = np.append(self.data_points, ray)
         self.size = len(self.data_points)
