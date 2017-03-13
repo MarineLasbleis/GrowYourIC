@@ -64,13 +64,13 @@ def angular_distance_to_point(theta1, phi1, theta2, phi2):
         phi1, phi2: longitude (degree)
     Return phi: angle between the two points (in degree)
     """
-    if theta1==theta2 and phi1 == phi2: 
+    if np.array([theta1]).size==1 and np.array([theta2]).size==1 and theta1==theta2 and phi1 == phi2: 
         return 0.
     theta1, phi1, theta2, phi2 = theta1 * np.pi / 180., phi1 * \
         np.pi / 180., theta2 * np.pi / 180., phi2 * np.pi / 180.
     return np.arccos(np.sin(theta1) * np.sin(theta2) + np.cos(theta1) * np.cos(theta2) * np.cos(abs(phi1 - phi2))) * 180. / np.pi
 
-def straight_trajectory(self, Point1, Point2, N):
+def straight_trajectory(Point1, Point2, N):
     """ Trajectory is a straight line between Point1 and Point2, with N points.
 
     Point1, Point2: Point()
@@ -170,6 +170,10 @@ RICB = 1221.
 
 
 class SeismoPoint(Point):
+    """ Point instance initialized with 'seismic' coordinates
+    
+    a, b, c : radius, theta (latitude) and phi (longitude) in degrees
+    """
 
     def __init__(self, a, b, c):
         self.r, self.theta, self.phi = a, b, c
@@ -177,6 +181,10 @@ class SeismoPoint(Point):
 
 
 class CartesianPoint(Point):
+    """ Point instance initialized with cartesian coordinates 
+    
+    a, b, c: x, y, z
+    """
 
     def __init__(self, a, b, c):
         self.x, self.y, self.z = a, b, c
@@ -257,39 +265,3 @@ class Raypath():
             raise Exception(
                 "in, out or bottom turning points have not been defined!")
 
-
-class Raypath_BT(Raypath):
-    """ Raypath defined primarly by the bottom point """
-
-    def __init__(self, point, zeta):
-        Raypath.__init__(self)
-        self.add_b_t_point(point)
-        self.add_direction(zeta)
-
-
-class Raypath_inout(Raypath):
-    """ Raypath defined primarly by the in and out points """
-
-    def __init__(self, point_in, point_out):
-        Raypath.__init__(self)
-        self.add_in_out(point_in, point_out)
-
-
-if __name__ == "__main__":
-
-    import matplotlib.pyplot as plt
-
-    theta = 0.
-    phi = np.linspace(0, 360, 50)
-
-    v_t = [0.,1,0]
-
-    fig, ax = plt.subplots()
-
-    for p in phi:
-        point = SeismoPoint(1, theta, p)
-        print(point.r, point.theta, point.phi)
-        growth = point.proj_er(v_t)
-        ax.plot(p, growth, 'o')
-
-    plt.show()
