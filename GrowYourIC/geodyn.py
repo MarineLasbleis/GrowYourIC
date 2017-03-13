@@ -109,7 +109,7 @@ def evaluate_proxy(dataset, method, proxy_type="", verbose=True):
             # we may want to compute the velocity for each point
             # and average over the inverse of the velocities.
             number_points = dataset.NpointsRaypath
-            dataset.data_points[i].straigth_in_out(number_points + 2)
+            dataset.data_points[i].straight_in_out(number_points + 2)
             raypath = ray.points
             proxy[i] = average_proxy(raypath, method, proxy_type)
     print("===")
