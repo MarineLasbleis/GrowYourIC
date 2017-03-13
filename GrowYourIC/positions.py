@@ -213,17 +213,35 @@ class Raypath():
         self.in_point = None
         self.out_point = None
 
-    def add_b_t_point(self, point):
+    def add_property(self, dict_property, brute_force=False):
+        """ add any property to the raypath.
+
+        dict_property has to be of the form {'property':value} and will give self.property= value
+        """
+        for k, v in dict_property.items():
+            if brute_force:
+                setattr(self, k, v)
+            else:
+                try:
+                    getattr(self, k) #do not set new attribute except if brute force is wanted. 
+                except AttributeError:
+                    setattr(self, k, v)
+                else:
+                    if getattr(self, k) == None:
+                        setattr(self, k, v)
+                    else:
+                        if getattr(self, k) != v:
+                            print('Attribute {} already defined with value {}. It has not been changed to {}.'.format(k, getattr(self, k), v))
+
+
+    def add_b_t_point(self, point, brute_force=False):
         """ Bottom turning point of the trajectory """
-        assert(self.bottom_turning_point == None)
-        self.bottom_turning_point = point
-
-    def add_direction(self, zeta):
-        self.direction = zeta
-
-    def add_in_out(self, point_in, point_out):
-        self.in_point = point_in
-        self.out_point = point_out
+        if self.bottom_turning_point == None:
+            self.bottom_turning_point = point
+        elif brute_force:
+            self.bottom_turning_point = point
+        else:
+            print("bottom_turning_point already defined. Values has not been changed.")
 
     # def straigth_trajectory(self, Point1, Point2, N):
     #     """ Trajectory is a straigth line between Point1 and Point2, with N points.
@@ -243,16 +261,16 @@ class Raypath():
     #     return _Points[1:-1], _length
 
     def straight_in_out(self, N):
-        """ Trajectory is a straight line between in and out points, with N points. """
+        """ Trajectory is a straight line between in and out points, with N points (in and out points not directly parts of the trajectory). """
         try:
             self.points = []
             self.points, self.length = straight_trajectory(
-                self.in_point, self.out_point, N)
+                self.in_point, self.out_point, N+2)
         except(NameError, AttributeError):
             raise Exception("in and out points have not been defined!")
 
     def straight_in_out_bt(self, N):
-        """ Trajectory is a straight line between in and out points, with 2N-1 points. """
+        """ Trajectory is a straight line between in and out points, with 2(N-2) points. """
         if not (self.in_point == None or self.out_point == None or self.bottom_turning_point == None):
             points1, length1 = straight_trajectory(
                 self.in_point, self.bottom_turning_point, N)
@@ -260,8 +278,12 @@ class Raypath():
                 self.bottom_turning_point, self.out_point, N)
             self.points = []
             self.length = length1 + length2
-            self.points = points1 + points2[1:]
+            self.points = points1 + self.bottom_turning_point + points2
         else:
             raise Exception(
                 "in, out or bottom turning points have not been defined!")
 
+
+# TODO
+## calculate zeta from in/out points
+## 
