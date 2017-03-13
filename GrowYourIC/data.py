@@ -189,7 +189,7 @@ class SeismicFromFile(SeismicData):
             in_point = positions.SeismoPoint(1., row["in lat"], row["in lon"])
             out_point = positions.SeismoPoint(
                 1., row["out lat"], row["out lon"])
-            ray.add_in_out(in_point, out_point)
+            ray.add_property({'in_point':in_point, 'out_point':out_point})
             ray.residual = row["PKIKP-PKiKP travel time residual"]
             self.data_points = np.append(self.data_points, ray)
 
