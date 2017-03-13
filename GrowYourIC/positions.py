@@ -286,4 +286,5 @@ class Raypath():
 
 # TODO
 ## calculate zeta from in/out points
-## 
+## calculate bottom turning point:wq
+
