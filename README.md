@@ -7,12 +7,12 @@ From geodynamics to Seismic observations in the Earth's inner core
 This program calculates seismic observations (synthetics one) from
 a given geodynamical model.
 
-Calculate raypath:
+Calculate raypath (only PKIKP types paths are implemented now):
 - from real data set (data file has to be given)
  * from Lauren's data set : station, PKIKP-PKiKP travel time residual, zeta (angle from rotation axis), epicentral distance, station lat, station lon, event lat, event lon, event depth, inner core in lat, in lon, out lat, out lon, turn lat, turn lon, turn depth (in inner core), inner core travel time, PKIKP/PKiKP amplitude ratio
 - for random sampling (surface and depth repartition can be choosed or
 set to default values)
-- for perfect sampling (either only in the equatorial plane, or in the total volume)
+- for perfect sampling (either only in the equatorial plane, or in the total volume). "perfect" sampling is used to construct meshgrids and contourf plots. 
 - TO DO: perfect sampling but with Poisson-disc sampling (see Mitchell’s Best-Candidate)
 
 Geodynamical models:
@@ -21,7 +21,7 @@ et al. 2013, Deguen et al. 2014) (return age or growth rate of material)
 - Translation - growth - super rotation (return age or growth rate of material)
 
 Mineral Physics:
-not yet implemented
+- Calvet and Margerin 2008 data (polynomial fit of the figures of the paper)
 
 
 For now, the code does not provide "seismic observations" (=seismic velocity and/or seismic residuals), 
@@ -58,8 +58,16 @@ matplotlib.basemap
 >> python3 setup.py install
 
 to check the installation:
-python examples.py
+python3 examples.py
 (does not require external database for seismic rays)
+
+### Data distributed with the package
+
+The folder GrowYourIC/data contains a couple of data files that can be used by the user 
+(if used for any type of publication, please refer to each file header with citation information. 
+Do not distribute the files without their header and proper citation.)
+
+Please copy the data files in your work folder to be able to use them. Examples may be run in the folder GrowYourIC and will use directly data files in the original folder. 
 
 ## List of files
 

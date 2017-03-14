@@ -32,24 +32,14 @@ from . import positions
 from . import plot_data
 
 
-def read_from_file(filename, names=["station",
-                                    "PKIKP-PKiKP travel time residual",
-                                    "zeta",
-                                    "epicentral distance",
-                                    "station lat",
-                                    "station lon",
-                                    "event lat",
-                                    "event lon",
-                                    "event depth",
-                                    "in lat",
-                                    "in lon",
-                                    "out lat",
-                                    "out lon",
+def read_from_file(filename, names=["PKIKP-PKiKP travel time residual", 
                                     "turn lat",
-                                    "turn lon",
-                                    "turn depth",
-                                    "inner core travel time",
-                                    "PKIKP/PKiKP amplitude ratio"],
+                                    "turn lon", 
+                                    "turn depth", 
+                                    "in lat", 
+                                    "in lon", 
+                                    "out lat", 
+                                    "out lon" ] ,
                    slices="all"):
     """ read seismic data repartition
 
@@ -61,7 +51,7 @@ def read_from_file(filename, names=["station",
     - data : pandas DataFrame with all the datas.
     Columns name are indicated by the variable "names".
     """
-    data = pd.read_table(filename, sep=' ', names=names, skiprows=0)
+    data = pd.read_table(filename, sep=' ', names=names, skiprows=10)
     if slices != "all":
         data = data[slices]
     return data
@@ -181,7 +171,7 @@ class SeismicData(object):
 class SeismicFromFile(SeismicData):
     """Seismic data set from file."""
 
-    def __init__(self, filename="results.dat", RICB=1221., name="Data set from Waszek and Deuss 2011", shortname="WD11"):
+    def __init__(self, filename="WD11.dat", RICB=1221., name="Data set from Waszek and Deuss 2011", shortname="WD11"):
         SeismicData.__init__(self)
         self.name = name #"Data set from Waszek and Deuss 2011"
         self.shortname = shortname # "WD11"
@@ -189,7 +179,7 @@ class SeismicFromFile(SeismicData):
         self.filename = filename
         self.slices = ["PKIKP-PKiKP travel time residual", "turn lat",
                        "turn lon", "turn depth", "in lat", "in lon", "out lat", "out lon"]
-        self.data = read_from_file(filename, slices=self.slices)
+        self.data = read_from_file(filename)
         self.size = self.data.shape[0]
         self.data_points = []
         for _, row in self.data.iterrows():
@@ -199,7 +189,7 @@ class SeismicFromFile(SeismicData):
             in_point = positions.SeismoPoint(1., row["in lat"], row["in lon"])
             out_point = positions.SeismoPoint(
                 1., row["out lat"], row["out lon"])
-            ray.add_in_out(in_point, out_point)
+            ray.add_property({'in_point':in_point, 'out_point':out_point})
             ray.residual = row["PKIKP-PKiKP travel time residual"]
             self.data_points = np.append(self.data_points, ray)
 
@@ -365,7 +355,12 @@ class Equator_upperpart(SeismicData):
 
 class PerfectSamplingSurface(SeismicData):
 
-    def __init__(self, N, rICB=1.):
+    def __init__(self, N, depth=0., rICB=1.):
+        """ Grid of points partitioned at the surface (or at given depth under surface)
+            
+        :: arg depth:: depth in percentage below ICB.
+
+        """
         SeismicData.__init__(self)
         self.rICB = rICB
         self.N = N
@@ -374,7 +369,7 @@ class PerfectSamplingSurface(SeismicData):
         for t in np.linspace(-90, 90, N):
             for p in np.linspace(-180, 180, N):
                 ray = positions.Raypath()
-                ray.add_b_t_point(positions.SeismoPoint(rICB, t, p))
+                ray.add_b_t_point(positions.SeismoPoint(rICB-rICB*depth, t, p))
                 if ray.bottom_turning_point.r <= self.rICB:
                     self.data_points = np.append(self.data_points, ray)
         self.size = len(self.data_points)
