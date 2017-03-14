@@ -61,6 +61,14 @@ to check the installation:
 python3 examples.py
 (does not require external database for seismic rays)
 
+### Data distributed with the package
+
+The folder GrowYourIC/data contains a couple of data files that can be used by the user 
+(if used for any type of publication, please refer to each file header with citation information. 
+Do not distribute the files without their header and proper citation.)
+
+Please copy the data files in your work folder to be able to use them. Examples may be run in the folder GrowYourIC and will use directly data files in the original folder. 
+
 ## List of files
 
 files: (classes start with a capital letter, regular functions with a small letter)
