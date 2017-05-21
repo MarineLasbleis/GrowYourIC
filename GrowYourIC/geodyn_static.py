@@ -21,14 +21,15 @@ class Hemispheres(geodyn.Model):
 
         proxy is just defines as -1 in the western hemisphere and +1 in the eastern one."""
 
-    def __init__(self):
+    def __init__(self, angletheta=0., anglephi=30.):
         self.name = "Static hemispheres"
+        self.anglephi = anglephi
+        self.angletheta = angletheta
 
     def proxy_singlepoint(self, point, proxy_type):
         """ -1 in western hemisphere, +1 in the eastern hemisphere"""
         proxy = {}  # empty dict
-        angle = -30
-        proxy["age"] = np.sign(np.sin((point.phi + angle) * np.pi / 180.))
+        proxy["hemisphere"] = np.sign(np.sin((point.phi + self.anglephi) * np.pi / 180.))
         return proxy
 
     def velocity(self, time, point):
@@ -37,3 +38,6 @@ class Hemispheres(geodyn.Model):
 
     def radius_ic(self, t):
         return self.rICB
+
+    def verification(self):
+        pass

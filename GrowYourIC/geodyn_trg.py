@@ -126,6 +126,12 @@ class ModelTRG(geodyn.Model):
         proxy = {}  # empty dictionnary
 
         x, y, z = point.x, point.y, point.z
+
+        if proxy_type == "hemispheres":  #be careful, it's the hemisphere at the time t_end (not at time of freezing)
+            proxy["hemispheres"] = self.hemispheres(point)
+            return proxy  # no calculation of time, etc. 
+
+
         time = self.crystallisation_time([x, y, z], self.tau_ic)
         position_crys = self.crystallisation_position([x,y,z], time)
 
@@ -257,6 +263,14 @@ class ModelTRG(geodyn.Model):
             value = map(float, raw_input("Translation velocity: ").split())
             self.set_vt(value)
         return self.vt
+
+    def hemispheres(self, point):
+        """ Calculate which hemisphere, return -1 or 1."""
+        vx, vy, vz = self.translation_velocity()
+        phi = point.phi / 180. * np.pi
+        theta = (90. - point.theta) * np.pi / 180.
+        return np.sign(np.sin(theta)*np.cos(phi)*vx+ np.sin(theta)*np.sin(phi)*vy+ np.cos(theta)*vz)
+        
 
     def rotation_velocity(self, r):
         try:

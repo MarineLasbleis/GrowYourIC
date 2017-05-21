@@ -218,7 +218,7 @@ class PerfectSamplingEquator(SeismicData):
         self.size = len(self.data_points)
 
     def plot_c_vec(self, modelgeodyn, proxy=1, cm=plt.get_cmap('summer'), nameproxy=""):
-        """ Plot contourf of the proxy + streamlines of the flow.
+        """ Plot contourf of the proxy + streamlines of the flow in meridional cross section.
 
         Args:
             modelgeodyn: a geodyn.Model instance
@@ -265,6 +265,43 @@ class PerfectSamplingEquator(SeismicData):
         plt.title(title)
         plt.axis("off")
         # plt.show()
+
+    def plot_c(self, modelgeodyn, proxy=1, cm=plt.get_cmap('summer'), nameproxy=""):
+        """ Plot contourf of the proxy in meridional cross section -- no stream lines.
+
+        Args:
+            modelgeodyn: a geodyn.Model instance
+            proxy: the values to be plot are either defined as self.proxy,
+            given as proxy in the function, or set to 1 if not given.
+        """
+
+        fig, ax = plt.subplots()
+        ax.set_aspect('equal')
+        x1 = np.linspace(-self.rICB, self.rICB, self.N)
+        y1 = np.linspace(-self.rICB, self.rICB, self.N)
+        X, Y = np.meshgrid(x1, y1)
+        Z = -1. * np.ones_like(X)
+        x, y, _ = self.extract_xyz("bottom_turning_point")
+        for it, pro in enumerate(proxy):
+            ix = [i for i, j in enumerate(x1) if j == x[it]]
+            iy = [i for i, j in enumerate(y1) if j == y[it]]
+            Z[ix, iy] = pro
+        mask_Z = Z == -1
+        Z = np.ma.array(Z, mask=mask_Z)
+        sc = ax.contourf(Y, X, Z, 10, cmap=cm)
+        #sc2 = ax.contour(Y, X, Z, 10, colors='w')
+
+        theta = np.linspace(0., 2 * np.pi, 1000)
+        ax.plot(np.sin(theta), np.cos(theta), 'k', lw=3)
+        ax.set_xlim([-1.1, 1.1])
+        ax.set_ylim([-1.1, 1.1])
+
+        cbar = plt.colorbar(sc)
+        cbar.set_label(nameproxy)
+        title = "Geodynamical model: {}".format(modelgeodyn.name)
+        plt.title(title)
+        plt.axis("off")
+
 
 
 class RandomData(SeismicData):

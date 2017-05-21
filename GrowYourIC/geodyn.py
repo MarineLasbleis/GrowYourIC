@@ -76,22 +76,23 @@ class Model(object):
            # if no units have been given, we set them arbitrarly
 
 
-def evaluate_proxy(dataset, method, proxy_type="", verbose=True):
+def evaluate_proxy(dataset, method, proxy_type="", verbose=True, info=True):
     """ evaluate the value of the proxy on all the points of the data set
 
         dataset : a data.SeismicData object
         method : a geodyn.Model  object
         """
     if proxy_type=="": proxy_type = method.proxy_type
-    print("===")
-    print("== Evaluate value of proxy for all points of the data set ")
-    print("= Geodynamic model isi {}".format(method.name))
-    print("= Proxy is {}".format(proxy_type))
-    print("= Data set is {}".format(dataset.name))
-    print("= Proxy is evaluated for {}".format(dataset.method))
-    if dataset.method == "raypath":
-        print("=== Raypath is {} number of points".format(dataset.NpointsRaypath))
-    print("= Number of points to examine: {}".format(dataset.size))
+    if info:
+        print("===")
+        print("== Evaluate value of proxy for all points of the data set ")
+        print("= Geodynamic model isi {}".format(method.name))
+        print("= Proxy is {}".format(proxy_type))
+        print("= Data set is {}".format(dataset.name))
+        print("= Proxy is evaluated for {}".format(dataset.method))
+        if dataset.method == "raypath":
+            print("=== Raypath is {} number of points".format(dataset.NpointsRaypath))
+        print("= Number of points to examine: {}".format(dataset.size))
 
     method.verification()
     proxy = np.empty_like(dataset.data_points)
