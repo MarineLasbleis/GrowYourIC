@@ -86,7 +86,7 @@ def evaluate_proxy(dataset, method, proxy_type="", verbose=True, info=True):
     if info:
         print("===")
         print("== Evaluate value of proxy for all points of the data set ")
-        print("= Geodynamic model isi {}".format(method.name))
+        print("= Geodynamic model is {}".format(method.name))
         print("= Proxy is {}".format(proxy_type))
         print("= Data set is {}".format(dataset.name))
         print("= Proxy is evaluated for {}".format(dataset.method))
