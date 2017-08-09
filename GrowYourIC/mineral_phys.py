@@ -13,11 +13,14 @@ import numpy as np
 import matplotlib.pyplot as plt  # for figures
 import warnings
 import scipy.io as sio
+import pkg_resources  # to use data files of the package
 
 # IMPORTANT : all the functions here use dimensional quantities in unit SI !
 
+DATA_PATH = pkg_resources.resource_filename('GrowYourIC', 'data/CM2008_data.mat')
+print(DATA_PATH)
 
-def export_matlab_data(name_data, file_name="./data.mat"):
+def export_matlab_data(name_data, file_name=DATA_PATH):
     """ Values for polynomial fit of the velocity and attenuation are included in data.mat. Scipy export them as a dictionary."""
     return sio.loadmat(file_name)[name_data]
 
