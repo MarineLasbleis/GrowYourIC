@@ -28,6 +28,8 @@ metadata = dict(name="GrowYourIC",
                 long_description="a toolkit to propagate seismic rays through models of Earth's inner core",
                 py_modules=['GrowYourIC'],
                 packages=['GrowYourIC'],
+                package_dir={'GrowYourIC': 'GrowYourIC'},
+                package_data={'GrowYourIC': ['data/*.dat', 'data/*.mat']},
                 classifiers=[
                     'Programming Language :: Python :: 3.4'],
                 author='Marine Lasbleis',
