@@ -14,6 +14,6 @@ from . import geodyn
 from . import intersection
 from . import positions
 from . import plot_data
-from . import mineral_phys_data
+from . import mineral_phys
 from . import geodyn_trg
 from . import geodyn_static

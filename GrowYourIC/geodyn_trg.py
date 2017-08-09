@@ -228,7 +228,7 @@ class ModelTRG(geodyn.Model):
         return mineral_phys.domain_size(age)
 
     def dV_V(self, age):
-        adimfrequency = mineral_phys_data.adimensional_frequency(
+        adimfrequency = mineral_phys.adimensional_frequency(
             self.domain_size(age))
         polynome = mineral_phys.export_matlab_data("Belanoshko_Vp_poly")
         return mineral_phys.convert_CM2008_velocity(adimfrequency, polynome)
