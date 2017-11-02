@@ -7,7 +7,7 @@ GrowYourIC is a tool to model seismic observation through inner core geodynamica
 """
 
 from __future__ import absolute_import
-__version__ = "0.3"
+__version__ = "0.4"
 
 from . import data
 from . import geodyn
