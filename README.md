@@ -3,6 +3,12 @@ From geodynamics to Seismic observations in the Earth's inner core
 
 ![RotationTranslationGrowth](https://github.com/MarineLasbleis/GrowYourIC/blob/master/RTP.png "RotationTranslationGrowth")
 
+
+Associated publication (please cite it if you are using this toolbox for scientific purpose)
+M. Lasbleis, L. Waszek, E. Day. GrowYourIC: a step towards a coherent model of seismic structure,
+accepted in Geochemistry, Geophysics, Geosystems. DOI:10.1002/2017GC007149
+
+
 ## Overview
 This program calculates seismic observations (synthetics one) from
 a given geodynamical model.
@@ -52,7 +58,7 @@ scipy
 
 matplotlib (version 2.5 at least)
 
-matplotlib.basemap
+matplotlib.basemap (to be installed from their website : http://matplotlib.org/basemap/ 
 
 ### installation: 
 >> python3 setup.py install
