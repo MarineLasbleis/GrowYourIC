@@ -31,7 +31,6 @@ def from_seismo_to_cartesian(r, theta, phi):
     z = r * np.cos(theta)
     return x, y, z
 
-
 def from_cartesian_to_seismo(x, y, z):
     """ Calculate the spherical coordinates (w/ latitude) from cartesian coordinates)
 
@@ -54,7 +53,6 @@ def from_cartesian_to_seismo(x, y, z):
         phi = phi * 180. / np.pi
         # phi = np.arctan(y/x)*180./np.pi # longitude, in degree
     return r, 90. - theta, phi
-
 
 def angular_distance_to_point(theta1, phi1, theta2, phi2):
     """ angular distance between the point (theta1, phi1) and the point (theta2, phi2) at the surface of the core.
@@ -86,7 +84,6 @@ def straight_trajectory(Point1, Point2, N):
         _Points.append(CartesianPoint(
             Point1.x + _vector[0] * dx, Point1.y + _vector[1] * dx, Point1.z + _vector[2] * dx))
     return _Points[1:-1], _length
-
 
 
 class Point():
@@ -134,7 +131,6 @@ class Point():
         theta = (90. - self.theta) * np.pi / 180.
         return np.array([np.sin(theta) * np.cos(phi), np.sin(theta) * np.sin(phi), np.cos(theta)])
 
-
     def proj_er(self, vector):
         """ projection of a vector on e_r, the radial vector in spherical coordinates.
     
@@ -152,14 +148,12 @@ class Point():
         theta = (90. - self.theta) * np.pi / 180.
         return np.sin(theta)*np.cos(phi)*vx+ np.sin(theta)*np.sin(phi)*vy+ np.cos(theta)*vz
 
-
-
     # ,type_="turningpoint", seismo="surface"):
     def random_point(self, set_method="uniform", depth=[0., 1.], rICB=1.):
         """ Create a random point (not raypath)
 
-        set_method: type of the distribution. Default is uniform over the sphere of radius self.r
-RICB = 1221.
+        set_method: type of the distribution. 
+        Default is uniform over the sphere of radius self.rRICB = 1221.
         """
         r = rICB - np.random.uniform(depth[0], depth[1])
         phi = np.random.uniform(-180., 180.)
@@ -233,7 +227,6 @@ class Raypath():
                         if getattr(self, k) != v:
                             print('Attribute {} already defined with value {}. It has not been changed to {}.'.format(k, getattr(self, k), v))
 
-
     def add_b_t_point(self, point, brute_force=False):
         """ Bottom turning point of the trajectory """
         if self.bottom_turning_point == None:
@@ -286,5 +279,5 @@ class Raypath():
 
 # TODO
 ## calculate zeta from in/out points
-## calculate bottom turning point:wq
+## calculate bottom turning point
 

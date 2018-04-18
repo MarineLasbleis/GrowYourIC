@@ -20,6 +20,9 @@ classes:
 """
 from __future__ import division
 from __future__ import absolute_import
+#TO DO: verify if this is necessary? check with Python 2?
+
+
 
 import numpy as np
 import matplotlib.pyplot as plt  # for figures
@@ -56,27 +59,9 @@ def read_from_file(filename, names=["PKIKP-PKiKP travel time residual",
         data = data[slices]
     return data
 
-# This function is way to complicated, and reshape work well for what we need. Keep it here in case we actually have randomly distributed points on a grid. 
-# def construct_meshgrid(x, y, z, info_x, info_y):
-#     """ Construct a meshgrid based on x, y and z, to plot contourf.
-#     x, y, z: 1D arrays, same size
-#     x, y are the positions, and z the value that you want to plot.
-#     info_x and info_y are the info to construct X and Y, using linspace.
-#     return X, Y, Z that can be used directly for contour and contourf.
-#     """
-#     min_x, max_x, N_x = info_x
-#     min_y, max_y, N_y = info_y
-#     x1 = np.linspace(min_x, max_x, N_x)
-#     y1 = np.linspace(min_y, max_y, N_y)
-#     X, Y = np.meshgrid(x1, y1)
-#     Z = -1. * np.ones_like(X)
-#     print(x1.shape, y1.shape, X.shape, Y.shape, z.shape)
-#     for it, z_element in enumerate(z):
-#         ix = [i for i, j in enumerate(x1) if j == x[it]]
-#         iy = [i for i, j in enumerate(y1) if j == y[it]]
-#         Z[ix, iy] = z_element
-#     return X, Y, Z
-# 
+
+
+
 
 class SeismicData(object):
     """ Class for seismic data """
@@ -173,10 +158,45 @@ class SeismicFromFile(SeismicData):
 
     def __init__(self, filename="WD11.dat", RICB=1221., name="Data set from Waszek and Deuss 2011", shortname="WD11"):
         SeismicData.__init__(self)
-        self.name = name #"Data set from Waszek and Deuss 2011"
-        self.shortname = shortname # "WD11"
+        #self.name = name #"Data set from Waszek and Deuss 2011"
+        #self.shortname = shortname # "WD11"
         # seismic data set (from Lauren's file)
         self.filename = filename
+        self.isitknowndataset()
+        #self.slices = ["PKIKP-PKiKP travel time residual", "turn lat",
+        #               "turn lon", "turn depth", "in lat", "in lon", "out lat", "out lon"]
+        #self.data = read_from_file(filename)
+        #self.size = self.data.shape[0]
+        #self.data_points = []
+        #for _, row in self.data.iterrows():
+        #    ray = positions.Raypath()
+        #    ray.add_b_t_point(positions.SeismoPoint(
+        #        1. - row["turn depth"] / RICB, row["turn lat"], row["turn lon"]))
+        #    in_point = positions.SeismoPoint(1., row["in lat"], row["in lon"])
+        #    out_point = positions.SeismoPoint(
+        #        1., row["out lat"], row["out lon"])
+        #    ray.add_property({'in_point':in_point, 'out_point':out_point})
+        #    ray.residual = row["PKIKP-PKiKP travel time residual"]
+        #    self.data_points = np.append(self.data_points, ray)
+
+
+    def isitknowndataset(self, verbose=True):
+        """ Check if the data set is already known. If not, explain how to add one. 
+
+        Required variables to specify: 
+        self.name and self.shortname : names to be printed on figures and filenames (text)
+        self.data_points : all the raypaths (numpy array)
+        self.size : total size of the data set (int, number of points)
+
+        """
+        if self.filename == "WD11.dat":
+            self.name = "Data set from Waszek and Deuss 2011"
+            self.shortname = "WD11"
+            self.WD11()
+            if verbose: print("Waszek and Deuss 2011 successfully loaded. {} trajectories.".format(self.size))
+            
+    def WD11(self):
+        """ the data set is the Waszek and Deuss 2011 in the file WD11.dat """
         self.slices = ["PKIKP-PKiKP travel time residual", "turn lat",
                        "turn lon", "turn depth", "in lat", "in lon", "out lat", "out lon"]
         self.data = read_from_file(filename)
@@ -192,6 +212,14 @@ class SeismicFromFile(SeismicData):
             ray.add_property({'in_point':in_point, 'out_point':out_point})
             ray.residual = row["PKIKP-PKiKP travel time residual"]
             self.data_points = np.append(self.data_points, ray)
+
+    def Stephenson(self):
+        self.slices = ["turn lat", "turn lon", "turn depth", "in lat", "in lon", 
+                       "out lat", "out lon", "travel time residual relative to ak135"]
+        nb_slices = [12,13,14,15,16,17.18,25]
+
+        self.data = read_from_file(filename, names=self.slices , slices=nb_slices)
+
 
     def real_residual(self):
         """Extract the values of residuals from the file"""
@@ -303,7 +331,6 @@ class PerfectSamplingEquator(SeismicData):
         plt.axis("off")
 
 
-
 class RandomData(SeismicData):
     """ Random repartition of point, between depth 106 and 15km"""
 
@@ -315,7 +342,6 @@ class RandomData(SeismicData):
         self.shortname = "random_0-100"
         self.random_method = "uniform"
         self.depth = [15. / 1221., 106. / 1221.]
-
         for _ in range(N):
             ray = positions.Raypath()
             ray.add_b_t_point(positions.RandomPoint(
@@ -357,7 +383,6 @@ class PerfectSamplingEquatorRadial(SeismicData):
         plt.ylabel("proxy")
 
 
-
 class Equator_upperpart(SeismicData):
     """ meshgrid for the uppermost part of IC (2-120km), at the equator."""
 
@@ -371,7 +396,6 @@ class Equator_upperpart(SeismicData):
         self.shortname = "meshgrid"
         self.depth = [d0 / 1221., d1 / 1221.]
         self.theta = 0. # at the equator
-
         for depth in np.linspace(self.depth[0], self.depth[1], Nr):
             for phi in np.linspace(-180., 180., Np):
                 ray = positions.Raypath()
@@ -386,7 +410,6 @@ class Equator_upperpart(SeismicData):
         R = r.reshape(-1, self.Np)
         PHI = p.reshape(-1, self.Np)
         PROXY = proxy.reshape(-1, self.Np)
-
         return R, PHI, PROXY 
 
 
@@ -418,7 +441,41 @@ class PerfectSamplingSurface(SeismicData):
         THETA = t.reshape(-1, self.N)
         PHI = p.reshape(-1, self.N)
         PROXY = proxy.reshape(-1, self.N)
-
         return THETA, PHI, PROXY 
 
+
+
+# Joanne Stephenson data set: 
+#12 - bottoming latitude
+#13 - bottoming longitude
+#14 - bottoming depth
+#15 - IC entry lat 
+#16 - IC entry lon
+#17 - IC exit lat
+#18 - IC exit lon
+#25 - travel time residual relative to ak135
+
+
+
+# This function is way to complicated, and reshape work well for what we need. Keep it here in case we actually have randomly distributed points on a grid. 
+# def construct_meshgrid(x, y, z, info_x, info_y):
+#     """ Construct a meshgrid based on x, y and z, to plot contourf.
+#     x, y, z: 1D arrays, same size
+#     x, y are the positions, and z the value that you want to plot.
+#     info_x and info_y are the info to construct X and Y, using linspace.
+#     return X, Y, Z that can be used directly for contour and contourf.
+#     """
+#     min_x, max_x, N_x = info_x
+#     min_y, max_y, N_y = info_y
+#     x1 = np.linspace(min_x, max_x, N_x)
+#     y1 = np.linspace(min_y, max_y, N_y)
+#     X, Y = np.meshgrid(x1, y1)
+#     Z = -1. * np.ones_like(X)
+#     print(x1.shape, y1.shape, X.shape, Y.shape, z.shape)
+#     for it, z_element in enumerate(z):
+#         ix = [i for i, j in enumerate(x1) if j == x[it]]
+#         iy = [i for i, j in enumerate(y1) if j == y[it]]
+#         Z[ix, iy] = z_element
+#     return X, Y, Z
+# 
 
