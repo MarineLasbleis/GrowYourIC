@@ -35,29 +35,9 @@ from . import positions
 from . import plot_data
 
 
-def read_from_file(filename, names=["PKIKP-PKiKP travel time residual", 
-                                    "turn lat",
-                                    "turn lon", 
-                                    "turn depth", 
-                                    "in lat", 
-                                    "in lon", 
-                                    "out lat", 
-                                    "out lon" ] ,
-                   slices="all"):
-    """ read seismic data repartition
-
-    input parameters:
-    - filename: name of the data file
-    - names: names of the columns for the data set
-    - slices: names of columns for the output.
-    output:
-    - data : pandas DataFrame with all the datas.
-    Columns name are indicated by the variable "names".
-    """
-    data = pd.read_table(filename, sep=' ', names=names, skiprows=10)
-    if slices != "all":
-        data = data[slices]
-    return data
+# Read from files with pandas: 
+## example: pd.read_table(self.filename, sep='\s+', names=self.slices, skiprows=10) 
+## example: pd.read_table(self.filename, sep='\s+', header=None)[nb_slices]
 
 
 
@@ -133,7 +113,6 @@ class SeismicData(object):
         plt.title(title)
         plt.xlabel("longitude of bottom turning point")
         plt.ylabel("proxy")
-        # plt.show()
 
     def distance_plot(self, geodyn_model='', point=positions.SeismoPoint(1., 0., 0.)):
         """ Plot proxy as function of the angular distance with point G """
@@ -150,7 +129,6 @@ class SeismicData(object):
         plt.xlabel(
             "Angular distance between turning point and ({} {})".format(theta1, phi1))
         plt.ylabel("proxy")
-        # plt.show()
 
 
 class SeismicFromFile(SeismicData):
@@ -158,27 +136,9 @@ class SeismicFromFile(SeismicData):
 
     def __init__(self, filename="WD11.dat", RICB=1221., name="Data set from Waszek and Deuss 2011", shortname="WD11"):
         SeismicData.__init__(self)
-        #self.name = name #"Data set from Waszek and Deuss 2011"
-        #self.shortname = shortname # "WD11"
-        # seismic data set (from Lauren's file)
         self.filename = filename
+        self.rICB = RICB
         self.isitknowndataset()
-        #self.slices = ["PKIKP-PKiKP travel time residual", "turn lat",
-        #               "turn lon", "turn depth", "in lat", "in lon", "out lat", "out lon"]
-        #self.data = read_from_file(filename)
-        #self.size = self.data.shape[0]
-        #self.data_points = []
-        #for _, row in self.data.iterrows():
-        #    ray = positions.Raypath()
-        #    ray.add_b_t_point(positions.SeismoPoint(
-        #        1. - row["turn depth"] / RICB, row["turn lat"], row["turn lon"]))
-        #    in_point = positions.SeismoPoint(1., row["in lat"], row["in lon"])
-        #    out_point = positions.SeismoPoint(
-        #        1., row["out lat"], row["out lon"])
-        #    ray.add_property({'in_point':in_point, 'out_point':out_point})
-        #    ray.residual = row["PKIKP-PKiKP travel time residual"]
-        #    self.data_points = np.append(self.data_points, ray)
-
 
     def isitknowndataset(self, verbose=True):
         """ Check if the data set is already known. If not, explain how to add one. 
@@ -189,23 +149,34 @@ class SeismicFromFile(SeismicData):
         self.size : total size of the data set (int, number of points)
 
         """
-        if self.filename == "WD11.dat":
+        if self.filename[-8:] == "WD11.dat":
             self.name = "Data set from Waszek and Deuss 2011"
             self.shortname = "WD11"
             self.WD11()
-            if verbose: print("Waszek and Deuss 2011 successfully loaded. {} trajectories.".format(self.size))
+            #if verbose: 
+            print("Waszek and Deuss 2011 successfully loaded. {} trajectories.".format(self.size))
+
+        if self.filename[-24:] == "DF_sample_ksi_sorted.dat":
+            self.name = "Data set from J. Stephenson"
+            self.shortname = "Steph."
+            self.Stephenson()
+            #if verbose: 
+            print("Data set successfully loaded. {} trajectories.".format(self.size))
+
+        else:
+            print("There is an Error. You tried to load a data file of real distribution, but the file was not recognized.")
             
     def WD11(self):
         """ the data set is the Waszek and Deuss 2011 in the file WD11.dat """
         self.slices = ["PKIKP-PKiKP travel time residual", "turn lat",
                        "turn lon", "turn depth", "in lat", "in lon", "out lat", "out lon"]
-        self.data = read_from_file(filename)
+        self.data = pd.read_table(self.filename, sep='\s+', names=self.slices, skiprows=10)#read_from_file(self.filename)
         self.size = self.data.shape[0]
         self.data_points = []
         for _, row in self.data.iterrows():
             ray = positions.Raypath()
             ray.add_b_t_point(positions.SeismoPoint(
-                1. - row["turn depth"] / RICB, row["turn lat"], row["turn lon"]))
+                1. - row["turn depth"] / self.rICB, row["turn lat"], row["turn lon"]))
             in_point = positions.SeismoPoint(1., row["in lat"], row["in lon"])
             out_point = positions.SeismoPoint(
                 1., row["out lat"], row["out lon"])
@@ -216,13 +187,23 @@ class SeismicFromFile(SeismicData):
     def Stephenson(self):
         self.slices = ["turn lat", "turn lon", "turn depth", "in lat", "in lon", 
                        "out lat", "out lon", "travel time residual relative to ak135"]
-        nb_slices = [12,13,14,15,16,17.18,25]
-
-        self.data = read_from_file(filename, names=self.slices , slices=nb_slices)
-
+        nb_slices = [12,13,14,15,16,17,18,24]
+        self.data = pd.read_table(self.filename, sep='\s+', header=None)[nb_slices]
+        self.data.columns = self.slices
+        self.size = self.data.shape[0]
+        for _, row in self.data.iterrows():
+            ray = positions.Raypath()
+            ray.add_b_t_point(positions.SeismoPoint(
+                1. - row["turn depth"] / self.rICB, row["turn lat"], row["turn lon"]))
+            in_point = positions.SeismoPoint(1., row["in lat"], row["in lon"])
+            out_point = positions.SeismoPoint(
+                1., row["out lat"], row["out lon"])
+            ray.add_property({'in_point':in_point, 'out_point':out_point})
+            ray.residual = row["travel time residual relative to ak135"]  # careful here with the names of the column for residual!
+            self.data_points = np.append(self.data_points, ray)
 
     def real_residual(self):
-        """Extract the values of residuals from the file"""
+        """ Extract the values of residuals from the data. """
         value = []
         for ray in self.data_points:
             value = np.append(value, ray.residual)
