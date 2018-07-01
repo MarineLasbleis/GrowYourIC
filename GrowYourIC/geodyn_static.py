@@ -25,6 +25,7 @@ class Hemispheres(geodyn.Model):
         self.name = "Static hemispheres"
         self.anglephi = anglephi
         self.angletheta = angletheta
+        self.tau_ic = 0.
 
     def proxy_singlepoint(self, point, proxy_type):
         """ -1 in western hemisphere, +1 in the eastern hemisphere"""
@@ -48,22 +49,25 @@ class Hemispheres(geodyn.Model):
 
 
 class Radial_sym(geodyn.Model):
-    """ Static hemispheres: 
+    """ Simple radial symmetry (no flow)
 
-        proxy is just defines as -1 in the western hemisphere and +1 in the eastern one."""
+    An additional function can be added and given as a variable (fonction) to define the radial dependency.
+    See the class Innermost_IC for an example.
+    """
 
     def __init__(self, fonction=None):
         self.name = "Radial symmetry"
+        self.tau_ic = 0.
 
-        if fonction == None:
+        if fonction == None:   #TODO maybe should be something as "check if self.radial_dependency is defined, and if not, then defines it"?
             def fonction(r):
                 return r
-        self.function_radius = fonction #has to be a function with 1 argument (radius)
+        self.radial_dependency = fonction #has to be a function with 1 argument (radius)
 
     def proxy_singlepoint(self, point, proxy_type):
         """  """
         proxy = {}  # empty dict
-        proxy["radius"] = self.function_radius(point.r)
+        proxy["radius"] = self.radial_dependency(point.r)
         #np.sign(np.sin((point.phi + self.anglephi) * np.pi / 180.))
         return proxy
 
@@ -76,3 +80,20 @@ class Radial_sym(geodyn.Model):
 
     def verification(self):
         pass
+
+
+class Innermost_IC(Radial_sym):
+    """ """
+
+    def __init__(self, radius_IIC):
+        self.radius_IIC = radius_IIC 
+
+        def fonction(r):
+            if r>self.radius_IIC:
+                answer = 1.
+            else:
+                answer = 0.
+            return answer
+
+        Radial_sym.__init__(self, fonction)
+        self.name = "Innermost inner core"

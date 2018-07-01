@@ -37,6 +37,11 @@ class TestSeismicDataPoint():
         assert point.phi==p
 
 
+class TestSeismicFromFile():
 
- 
+    def test_load_data(self):
+        WD11 = SeismicFromFile('WD11.dat')
+        out, err = capfd.readouterr()
+        assert out == ""
+        
 
