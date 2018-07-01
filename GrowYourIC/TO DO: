@@ -1,0 +1,12 @@
+TO DO: 
+
+- check Python 2.7?
+
+- verify the new version of data.py: 
+-- rebuild the library and install it (pip ? How does it work again?)
+
+line 57: problem potential for other files: modify the readtable, and verify the slices. 
+
+
+for anisotropy: 
+## calculate zeta from in/out points
