@@ -236,23 +236,6 @@ class Raypath():
         else:
             print("bottom_turning_point already defined. Values has not been changed.")
 
-    # def straigth_trajectory(self, Point1, Point2, N):
-    #     """ Trajectory is a straigth line between Point1 and Point2, with N points.
-
-    #     Point1, Point2: Point()
-    #     N: integer (number of points on the trajectory)
-
-    #     Use the cartesian coordinates of both points.
-    #     """
-    #     _Points = []
-    #     _vector = [Point2.x - Point1.x, Point2.y -
-    #                Point1.y, Point2.z - Point1.z]
-    #     _length = np.sqrt(_vector[0]**2 + _vector[1]**2 + _vector[2]**2)
-    #     for dx in np.linspace(0, 1, N):
-    #         _Points.append(CartesianPoint(
-    #             Point1.x + _vector[0] * dx, Point1.y + _vector[1] * dx, Point1.z + _vector[2] * dx))
-    #     return _Points[1:-1], _length
-
     def straight_in_out(self, N):
         """ Trajectory is a straight line between in and out points, with N points (in and out points not directly parts of the trajectory). """
         try:
@@ -276,8 +259,86 @@ class Raypath():
             raise Exception(
                 "in, out or bottom turning points have not been defined!")
 
+    def calc_zeta(self):
+        """ zeta is the angle with rotation (vertical) axis.
+        
+        in and out points are required. 
+        """
+        # defining the axis
+        ax_x, ax_y, ax_z = 0, 0, 1
+        vec_ax = [ax_x, ax_y, ax_z]
+        # defining the trajectory vector
+        try:
+            x1, y1, z1 = self.in_point.x, self.in_point.y, self.in_point.z, 
+            x2, y2, z2 = self.out_point.x, self.out_point.y, self.out_point.z,  
+        except (NameError, AttributeError): 
+            raise Exception("in and out points have not been defined!") 
+        traj_x, traj_y, traj_z = x2-x1, y2-y1, z2-z1
+        norm = np.sqrt(traj_x**2+traj_y**2+traj_z**2)
+        traj_x, traj_y, traj_z = traj_x/norm, traj_y/norm, traj_z/norm
+        vec_traj = [traj_x, traj_y, traj_z]
+        def angle_btwn(vec_a, vec_b):
+            """ angle between vector a and vector b 
+            
+            return angle in degree
+            """
+            costheta = np.dot(vec_a, vec_b)
+            angle = np.arccos(costheta)*180/np.pi
+            return angle
+        self.direction = angle_btwn(vec_ax, vec_traj) 
+        return self.direction
+
+    def calc_in_out_with_zeta_bt(self, rIC):
+        """ Calculate in and out points from the BT point + zeta value 
+        
+        zeta = self.direction
+        Hypotheses are norm(v)=1, v.e_z=cos(zeta), v.e_r=0 (perpendicular to the e_r at the BT point)
+        There is a bias in the calculation, with vectors always pointing same way... TODO better.
+        """
+        x, y, z = self.bottom_turning_point.x,  self.bottom_turning_point.y, self.bottom_turning_point.z
+        def calc_vec(x, y, z, zeta):
+            """ Calculate the vector direction of the path """
+            zeta = np.pi/180*zeta #to have radians 
+            v_z = np.cos(zeta)
+            if x==0 and y ==0:
+                print("Error, the bt point is exactly on the rotation axis")
+                return [0, 0, 0]
+            else:
+                if x==0:
+                    v_y = -z/y * v_z
+                    v_x = np.sqrt(1-v_z**2-v_y**2) 
+                else:
+                    # v_z is solution of a quadratic equation, and v_x is calculated from v_z
+                    polynome = [y**2/x**2+1, 2*z*y/x**2*v_z, z**2/x**2*v_z**2+v_z**2-1]
+                    sol_v_y = np.roots(polynome)
+                    v_y = sol_v_y[0] #test what is the other root?
+                    print("roots of the quadratic equation: {}. Root used: {}".format(sol_v_y, v_y))
+                    v_x = -y/x*v_y-z/x*v_z
+            return v_x, v_y, v_z
+        v_x, v_y, v_z = calc_vec(x, y, z, self.direction)
+        # intersection between the trajectory and the rIC
+        polynome = [v_x**2+v_y**2+v_z**2, 2*(v_x*x+v_y*y+v_z*z), x**2+y**2+z**2-rIC**2]
+        solutions = np.roots(polynome) #2 solutions, 1 for in, for out. 
+        # Here we have no difference between in and out, so we just say first is in.
+        self.in_point = CartesianPoint(x+solutions[0]*v_x, y+solutions[0]*v_y, z+solutions[0]*v_z)
+        self.out_point = CartesianPoint(x+solutions[1]*v_x, y+solutions[1]*v_y, z+solutions[1]*v_z)
+
 
 # TODO
 ## calculate zeta from in/out points
 ## calculate bottom turning point
+
+if __name__ == "__main__":
+
+    ray = Raypath()
+    ray.in_point, ray.out_point = CartesianPoint(10, 20, -10), CartesianPoint(0, 40, -40)
+
+    print(ray.calc_zeta())
+
+    ray = Raypath()
+    ray.bottom_turning_point = SeismoPoint(0.9, 0, 0)
+    ray.direction = 90
+    ray.calc_in_out_with_zeta_bt(1.)
+    print(ray.in_point.r, ray.in_point.x, ray.in_point.y, ray.in_point.z)
+    print(ray.out_point.r, ray.out_point.x, ray.out_point.y, ray.out_point.z)
 
