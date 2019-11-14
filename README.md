@@ -1,3 +1,8 @@
+
+
+[![DOI](https://zenodo.org/badge/49926307.svg)](https://zenodo.org/badge/latestdoi/49926307)
+
+
 # GrowYourIC
 From geodynamics to Seismic observations in the Earth's inner core
 
